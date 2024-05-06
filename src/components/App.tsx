@@ -13,6 +13,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter'
 import theme from '@/theme'
 
 import Header from './Header'
+import Notifier from './Notifier'
 
 interface AppProps {
   children: React.ReactNode
@@ -28,6 +29,7 @@ export default function App({ children }: AppProps): React.JSX.Element {
           <Container component={'main'} maxWidth='xl'>
             <Toolbar sx={{ mb: 1 }} />
             {children}
+            <Notifier />
           </Container>
         </AppRouterCacheProvider>
       </Box>

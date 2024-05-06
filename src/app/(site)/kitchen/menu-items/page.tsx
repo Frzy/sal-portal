@@ -1,8 +1,8 @@
 import { Alert, AlertTitle, Paper, Typography } from '@mui/material'
 
-import { getUsers } from '@/lib/users'
+import { getMenuItems } from '@/lib/menuItems'
 import { getServerAuthSession } from '@/util/auth'
-import UsersView from '@/views/UsersView'
+import MenuItemsView from '@/views/MenuItems'
 
 export default async function UserPage(): Promise<React.JSX.Element> {
   const session = await getServerAuthSession()
@@ -20,7 +20,7 @@ export default async function UserPage(): Promise<React.JSX.Element> {
       </Paper>
     )
 
-  const users = await getUsers()
+  const menuItems = await getMenuItems()
 
-  return <UsersView users={users} />
+  return <MenuItemsView menuItems={menuItems} />
 }

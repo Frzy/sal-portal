@@ -1,5 +1,6 @@
-import { deleteUser, findUser, updateUser } from '@/lib/users'
+import { deleteUser, findUser, updateUser, validateOldPassword } from '@/lib/users'
 import { getServerAuthSession } from '@/util/auth'
+import { isPasswordValid } from '@/util/functions'
 
 export async function GET(
   request: Request,
@@ -24,15 +25,28 @@ export async function PUT(
 ): Promise<Response> {
   const { userId } = params
   const session = await getServerAuthSession()
+  const isAdminLoggedIn = session?.user.isAdmin
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
-  if (!session.user.isAdmin || session.user.id !== userId)
+  if (!isAdminLoggedIn && session.user.id !== userId)
     return Response.json({ message: 'Unauthorized' }, { status: 403 })
 
   const payload = (await request.json()) as User.UpdatePayload
 
+  if (!isAdminLoggedIn && !!payload.oldPassword) {
+    const isOldPasswardValid = await validateOldPassword(userId, payload.oldPassword)
+
+    if (!isOldPasswardValid) return Response.json({ message: 'Invalid request' }, { status: 400 })
+  }
+
+  if (payload.newPassword) {
+    const isNewPasswordValid = isPasswordValid(payload.newPassword)
+
+    if (!isNewPasswordValid) return Response.json({ message: 'Invalid request' }, { status: 400 })
+  }
+
   try {
-    const updatedUser = updateUser(payload)
+    const updatedUser = await updateUser(userId, payload)
 
     if (!updateUser) return Response.json({ message: 'Member not Found' }, { status: 404 })
 
@@ -52,7 +66,7 @@ export async function DELETE(
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
   if (!session.user.isAdmin) return Response.json({ message: 'Unauthorized' }, { status: 403 })
 
-  await deleteUser(userId)
+  const deletedUser = await deleteUser(userId)
 
-  return Response.json({})
+  return Response.json(deletedUser)
 }

@@ -4,8 +4,7 @@ import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
 const BASE_USER = {
-  email: '',
-  phone: '',
+  name: '',
   isAdmin: false,
 }
 
@@ -13,11 +12,10 @@ function userMapper(row: GoogleSpreadsheetRow<User.Row>): User.Base {
   const u = row.toObject()
 
   return {
-    email: u?.email ?? '',
     id: u?.id ?? '',
     isAdmin: u.administrator === 'TRUE',
     username: u?.username ?? '',
-    phone: u?.phone ?? '',
+    name: u?.name ?? '',
   } satisfies User.Base
 }
 
@@ -34,7 +32,7 @@ export async function getUsers(): Promise<User.Base[]> {
   return (await getGoogleUserRows()).map(userMapper)
 }
 
-export async function getUsersBy(filter: (user: User.Base) => User.Base[]): Promise<User.Base[]> {
+export async function getUsersBy(filter: (user: User.Base) => boolean): Promise<User.Base[]> {
   return (await getUsers()).filter(filter)
 }
 
@@ -70,15 +68,21 @@ export async function createUsers(
   return (await workSheet.addRows(newUserData)).map(userMapper)
 }
 
-export async function updateUser(payload: User.UpdatePayload): Promise<User.Base | undefined> {
-  const googleUser = await findGoogleUserRow((r) => r.get('id') === payload.id)
+export async function updateUser(
+  userId: string,
+  newUserData: User.UpdatePayload,
+): Promise<User.Base | undefined> {
+  const googleUser = await findGoogleUserRow((r) => r.get('id') === userId)
+  const salt = await bcrypt.genSalt(10)
 
   if (googleUser) {
-    const { isAdmin, ...googlePayload } = payload
+    const { isAdmin, oldPassword, newPassword, ...googlePayload } = newUserData
+
     const updatedData: User.Row = {
       ...(googleUser.toObject() as User.Row),
       ...googlePayload,
       administrator: isAdmin ? 'TRUE' : 'FALSE',
+      ...(newPassword ? { password: bcrypt.hashSync(newPassword, salt) } : {}),
     }
 
     googleUser.assign(updatedData)
@@ -88,32 +92,35 @@ export async function updateUser(payload: User.UpdatePayload): Promise<User.Base
   }
 }
 
-export async function deleteUser(userId: string): Promise<void> {
+export async function deleteUser(userId: string): Promise<boolean> {
   const googleUser = await findGoogleUserRow((u) => u.get('id') === userId)
 
   if (googleUser && googleUser.get('username') !== 'admin') {
     await googleUser.delete()
+
+    return true
   }
+
+  return false
 }
 
 export async function getValidatedUser(
   credentials: Record<'username' | 'password', string>,
 ): Promise<User.Session | undefined> {
   const { username, password } = credentials
-  const rows = await getGoogleSheetRows<User.Row>(
-    process.env.SPREADSHEET_KEY,
-    process.env.USER_SHEET_KEY,
-  )
 
-  const userRow = rows.find((r) => {
+  const user = await findGoogleUserRow((r) => {
     const passwordHash: string = r.get('password')
 
     return r.get('username') === username && bcrypt.compareSync(password, passwordHash)
   })
 
-  if (userRow) {
-    const { phone, ...user } = userMapper(userRow)
+  if (user) return userMapper(user)
+}
 
-    return user
-  }
+export async function validateOldPassword(userId: string, oldPassword: string): Promise<boolean> {
+  const googleUser = await findGoogleUserRow((r) => r.get('id') === userId)
+  const originalPassword: string = googleUser?.get('password') ?? ''
+
+  return googleUser ? bcrypt.compareSync(oldPassword, originalPassword) : false
 }

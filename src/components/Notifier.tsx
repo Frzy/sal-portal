@@ -2,9 +2,14 @@
 
 import * as React from 'react'
 
-import { Alert, Slide, type SlideProps, Snackbar, type SnackbarProps } from '@mui/material'
-
-import type { Notification } from '@/types/portal'
+import {
+  Alert,
+  AlertTitle,
+  Slide,
+  type SlideProps,
+  Snackbar,
+  type SnackbarProps,
+} from '@mui/material'
 
 function Transition(props: SlideProps): JSX.Element {
   return <Slide {...props} direction='up' />
@@ -16,7 +21,7 @@ export default function Notifier({
   onClose,
   ...props
 }: SnackbarProps): JSX.Element {
-  const [notification, setNotification] = React.useState<Notification>()
+  const [notification, setNotification] = React.useState<INotification>()
   const [open, setOpen] = React.useState(false)
 
   function handleOnClose(): void {
@@ -24,15 +29,15 @@ export default function Notifier({
   }
 
   React.useEffect(() => {
-    function handleNotificationEvent(event: CustomEvent<Notification>): void {
+    function handleNotificationEvent(event: CustomEvent<INotification>): void {
       setNotification(event.detail)
       setOpen(true)
     }
 
-    addEventListener('notify', handleNotificationEvent as EventListener)
+    addEventListener('notify', handleNotificationEvent)
 
     return () => {
-      removeEventListener('notify', handleNotificationEvent as EventListener)
+      removeEventListener('notify', handleNotificationEvent)
     }
   }, [])
 
@@ -56,6 +61,7 @@ export default function Notifier({
         onClose={handleOnClose}
         variant='filled'
       >
+        {notification?.title && <AlertTitle>{notification.title}</AlertTitle>}
         {notification?.message}
       </Alert>
     </Snackbar>

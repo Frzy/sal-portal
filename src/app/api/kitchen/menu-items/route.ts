@@ -1,4 +1,4 @@
-import { createUsers, getUsers } from '@/lib/users'
+import { createMenuItems, getMenuItems } from '@/lib/menuItems'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(): Promise<Response> {
@@ -7,9 +7,9 @@ export async function GET(): Promise<Response> {
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
   if (!session.user.isAdmin) return Response.json({ message: 'Unauthorized' }, { status: 403 })
 
-  const users = await getUsers()
+  const menuItems = await getMenuItems()
 
-  return Response.json(users)
+  return Response.json(menuItems)
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -18,10 +18,10 @@ export async function POST(request: Request): Promise<Response> {
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
   if (!session.user.isAdmin) return Response.json({ message: 'Unauthorized' }, { status: 403 })
 
-  const payload = (await request.json()) as User.CreatePayload
+  const payload = (await request.json()) as Kitchen.MenuItemPayload
 
   try {
-    const response = await createUsers(payload)
+    const response = await createMenuItems({ ...payload, lastModifiedBy: session.user.username })
 
     return Response.json(response, { status: 201 })
   } catch (error) {
