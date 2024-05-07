@@ -1,3 +1,7 @@
+import dayjs, { type Dayjs } from 'dayjs'
+
+import { LEGION_MONTH_START } from './constants'
+
 export function isPasswordValid(password: string): boolean {
   if (password.length < 4) return false
 
@@ -17,4 +21,23 @@ export function arrayFill<D = unknown>(n: number, filler: any): D[] {
   return Array.from({ length: n }, (e, i) => {
     return typeof filler === 'function' ? filler(i) : filler
   })
+}
+
+export function getLegionYearDatesFrom(date: Dayjs): { startDate: Dayjs; endDate: Dayjs } {
+  const year = date.year()
+  const month = date.month()
+  const format = 'YYYY-M'
+  let startYear = year
+  let endYear = year
+
+  if (month < LEGION_MONTH_START) {
+    startYear -= 1
+  } else {
+    endYear += 1
+  }
+
+  const startDate = dayjs(`${startYear}-${LEGION_MONTH_START}`, format).startOf('month')
+  const endDate = dayjs(`${endYear}-${LEGION_MONTH_START - 1}`, format).endOf('month')
+
+  return { startDate, endDate }
 }

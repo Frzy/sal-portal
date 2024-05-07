@@ -1,7 +1,12 @@
 'use client'
 
-import { experimental_extendTheme as extendTheme } from '@mui/material/styles'
+import {
+  type CssVarsTheme,
+  type Theme,
+  experimental_extendTheme as extendTheme,
+} from '@mui/material/styles'
 import type {} from '@mui/material/themeCssVarsAugmentation'
+import mediaQuery from 'css-mediaquery'
 import { Roboto } from 'next/font/google'
 
 const SAL_BLUE = '#008bff'
@@ -13,27 +18,44 @@ const roboto = Roboto({
   display: 'swap',
 })
 
-const theme = extendTheme({
-  colorSchemes: {
-    light: {
-      palette: {
-        primary: { main: SAL_BLUE },
-        secondary: { main: SAL_YELLOW },
-      },
-    },
-    dark: {
-      palette: {
-        primary: { main: SAL_BLUE },
-        secondary: { main: SAL_YELLOW },
-      },
-    },
-  },
-  typography: {
-    fontFamily: roboto.style.fontFamily,
-  },
+const ssrMatchMedia = (deviceType: string) => (query: string) => ({
+  matches: mediaQuery.match(query, {
+    width: deviceType === 'mobile' ? '0px' : '1024px',
+  }),
 })
 
-// @ts-expect-error Need to remove the light theme
-delete theme.colorSchemes.light
+const theme = (deviceType: string): Omit<Theme, 'palette' | 'applyStyles'> & CssVarsTheme => {
+  const newTheme = extendTheme({
+    colorSchemes: {
+      light: {
+        palette: {
+          primary: { main: SAL_BLUE },
+          secondary: { main: SAL_YELLOW },
+        },
+      },
+      dark: {
+        palette: {
+          primary: { main: SAL_BLUE },
+          secondary: { main: SAL_YELLOW },
+        },
+      },
+    },
+    components: {
+      MuiUseMediaQuery: {
+        defaultProps: {
+          ssrMatchMedia: ssrMatchMedia(deviceType),
+        },
+      },
+    },
+    typography: {
+      fontFamily: roboto.style.fontFamily,
+    },
+  })
+
+  // @ts-expect-error Needed to remove unwanted theme
+  delete newTheme.colorSchemes.light
+
+  return newTheme
+}
 
 export default theme

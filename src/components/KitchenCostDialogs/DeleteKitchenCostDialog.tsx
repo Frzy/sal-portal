@@ -53,7 +53,7 @@ export default function DeleteKitchenCostsDialog({
 
   return (
     <Dialog onClose={onClose} {...other}>
-      <DialogTitle>Delete Menu Item</DialogTitle>
+      <DialogTitle>Delete Kitchen Costs</DialogTitle>
       <DialogContent dividers>
         <Typography>
           Are you sure you want to delete the following cost items:{' '}

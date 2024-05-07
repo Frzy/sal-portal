@@ -7,7 +7,7 @@ const BASE_COST_ITEM = {
   amount: '0',
 }
 
-function costMapper(row: GoogleSpreadsheetRow<Kitchen.CostRow>): Kitchen.CostItem {
+function costMapper(row: GoogleSpreadsheetRow<Kitchen.CostRow>): Kitchen.ServerCostItem {
   const item = row.toObject()
   const amount = parseInt(item?.amount ?? '0')
 
@@ -19,7 +19,7 @@ function costMapper(row: GoogleSpreadsheetRow<Kitchen.CostRow>): Kitchen.CostIte
     createdBy: item?.createdBy ?? '',
     modified: item?.modified ?? '',
     lastModifiedBy: item?.lastModifiedBy ?? '',
-  } satisfies Kitchen.CostItem
+  }
 }
 
 export async function getGoogleCostRows(): Promise<GoogleSpreadsheetRow<Kitchen.CostRow>[]> {
@@ -33,23 +33,23 @@ export async function findGoogleCostRows(
 ): Promise<GoogleSpreadsheetRow<Kitchen.CostRow> | undefined> {
   return (await getGoogleCostRows()).find(filter)
 }
-export async function getCosts(): Promise<Kitchen.CostItem[]> {
+export async function getCosts(): Promise<Kitchen.ServerCostItem[]> {
   return (await getGoogleCostRows()).map(costMapper)
 }
 export async function getCostsBy(
-  filter: (item: Kitchen.CostItem) => boolean,
-): Promise<Kitchen.CostItem[]> {
+  filter: (item: Kitchen.ServerCostItem) => boolean,
+): Promise<Kitchen.ServerCostItem[]> {
   return (await getCosts()).filter(filter)
 }
 export async function findCostItem(
-  filter: (item: Kitchen.CostItem) => boolean,
-): Promise<Kitchen.CostItem | undefined> {
+  filter: (item: Kitchen.ServerCostItem) => boolean,
+): Promise<Kitchen.ServerCostItem | undefined> {
   return (await getCosts()).find(filter)
 }
 
 export async function createCostItem(
   payload: Kitchen.CostItemCreatePayload | Kitchen.CostItemCreatePayload[],
-): Promise<Kitchen.CostItem> {
+): Promise<Kitchen.ServerCostItem> {
   const workSheet = await getGoogleSheetWorkSheet(
     process.env.SPREADSHEET_KEY,
     process.env.KITCHEN_COST_SHEET_KEY,
@@ -80,7 +80,7 @@ export async function updateCostItem(
   costId: string,
   payloadData: Kitchen.CostItemEditPayload,
   validator?: (item: GoogleSpreadsheetRow<Kitchen.CostRow>) => boolean,
-): Promise<Kitchen.CostItem | undefined> {
+): Promise<Kitchen.ServerCostItem | undefined> {
   const rowItem = await findGoogleCostRows((r) => r.get('id') === costId)
 
   if (rowItem) {
@@ -92,7 +92,6 @@ export async function updateCostItem(
     const updatedData: Kitchen.CostRow = {
       ...(rowItem.toObject() as Kitchen.CostRow),
       ...payload,
-      amount: `${amount}`,
       modified: now,
     }
 

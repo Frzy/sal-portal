@@ -66,7 +66,7 @@ export default function EditKitchenCostDialog({
 
   return (
     <Dialog onClose={onClose} {...other}>
-      <DialogTitle>Edit Menu Item</DialogTitle>
+      <DialogTitle>Edit Cost Item</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
           <Grid xs={12}>

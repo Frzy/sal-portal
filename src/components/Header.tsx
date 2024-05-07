@@ -169,7 +169,7 @@ export default function Header(): React.JSX.Element {
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton href='/kitchen/checkout'>
                 <ListItemIcon>
                   <CheckoutIcon />
                 </ListItemIcon>

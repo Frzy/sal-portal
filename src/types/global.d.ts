@@ -1,3 +1,5 @@
+import { type Dayjs } from 'dayjs'
+
 declare global {
   interface WindowEventMap {
     // Notification
@@ -51,18 +53,22 @@ declare global {
       id: string
       name: string
       description: string
-      amount: string
+      price: string
       created: string
       modified: string
       lastModifiedBy: string
     }
-    interface MenuItem extends Omit<MenuItemRow, 'amount'> {
-      amount: number
+    interface ServerMenuItem extends Omit<MenuItemRow, 'price'> {
+      price: number
+    }
+    interface MenuItem extends Omit<ServerMenuItem, 'created' | 'modified'> {
+      created: Dayjs
+      modified: Dayjs
     }
     interface MenuItemPayload {
       name: string
       description?: string
-      amount: number
+      price: number
     }
     interface MenuItemServerPayload extends MenuItemPayload {
       lastModifiedBy: string
@@ -77,9 +83,13 @@ declare global {
       lastModifiedBy: string
     }
 
-    interface CostItem extends Omit<CostRow, 'amount'> {
+    interface ServerCostItem extends Omit<CostRow, 'amount'> {
       amount: number
       name: string
+    }
+    interface CostItem extends Omit<ServerCostItem, 'created' | 'modified'> {
+      created: Dayjs
+      modified: Dayjs
     }
 
     interface CostItemPayload {

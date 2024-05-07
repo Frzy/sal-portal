@@ -29,18 +29,18 @@ export default function EditMenuItemDialog({
 }: EditMenuItemDialogProps): React.JSX.Element {
   const [loading, setLoading] = useState(false)
   const [menuItem, setMenuItem] = useState<Kitchen.MenuItemPayload>({
-    amount: initItem.amount,
+    price: initItem.price,
     description: initItem.description,
     name: initItem.name,
   })
   const isFormInvalid = useMemo(() => {
-    return !menuItem.name || !menuItem.amount
+    return !menuItem.name || !menuItem.price
   }, [menuItem])
 
   function handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { value, name } = event.target
 
-    if (name === 'amount') {
+    if (name === 'price') {
       setMenuItem((prev) => ({ ...prev, [name]: parseInt(value) }))
     } else {
       setMenuItem((prev) => ({ ...prev, [name]: value }))
@@ -81,10 +81,10 @@ export default function EditMenuItemDialog({
           </Grid>
           <Grid xs={12}>
             <TextField
-              label='Amount'
-              name='amount'
+              label='Price'
+              name='price'
               type='number'
-              value={menuItem.amount || ''}
+              value={menuItem.price || ''}
               onChange={handleTextChange}
               InputProps={{
                 startAdornment: (

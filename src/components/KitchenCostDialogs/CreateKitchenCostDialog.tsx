@@ -17,7 +17,7 @@ import Grid from '@mui/material/Unstable_Grid2/Grid2'
 import { createKitchenCost } from '@/util/requests'
 
 export interface CreateKitchenCostDialogProps extends Omit<DialogProps, 'onClose'> {
-  onCreated?: (newMenuItem: Kitchen.CostItem) => void
+  onCreated?: (newItem: Kitchen.CostItem) => void
   onClose?: () => void
 }
 export default function CreateKitchenCostDialog({
@@ -39,7 +39,7 @@ export default function CreateKitchenCostDialog({
     setItem((prev) => ({ ...prev, [name]: value }))
   }
 
-  async function handleCreateMenuItem(): Promise<void> {
+  async function handleCreateKitchenCost(): Promise<void> {
     setLoading(true)
     const createdItem = await createKitchenCost(item)
 
@@ -65,7 +65,7 @@ export default function CreateKitchenCostDialog({
 
   return (
     <Dialog onClose={onClose} {...other}>
-      <DialogTitle>Create Menu Item</DialogTitle>
+      <DialogTitle>Create Cost Item</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
           <Grid xs={12}>
@@ -96,7 +96,7 @@ export default function CreateKitchenCostDialog({
           color='secondary'
           loading={loading}
           disabled={isFormInvalid}
-          onClick={handleCreateMenuItem}
+          onClick={handleCreateKitchenCost}
         >
           Create
         </LoadingButton>

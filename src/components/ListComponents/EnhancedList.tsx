@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
 
 import { Collapse, Tooltip, Typography } from '@mui/material'
 import Box from '@mui/material/Box'
@@ -13,6 +13,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TablePagination from '@mui/material/TablePagination'
 import TableRow from '@mui/material/TableRow'
 import dayjs from 'dayjs'
+import minMax from 'dayjs/plugin/minMax'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
 import { LONG_TIME_FORMAT } from '@/util/constants'
@@ -22,7 +23,9 @@ import ListHeader, { type ListColumns } from './ListHeader'
 import ListToolbar from './ListToolbar'
 
 dayjs.extend(relativeTime)
+dayjs.extend(minMax)
 
+type ListSelection = 'single' | 'multiple'
 type Order = 'asc' | 'desc'
 
 type Row<T> = { id: string } & {
@@ -47,48 +50,58 @@ function getComparator<Key extends keyof any>(
     : (a, b) => -descendingComparator(a, b, orderBy)
 }
 
-interface EnhancedListProps<T extends Row<T>> {
-  columns: ListColumns<T>[]
-  rows: T[]
+export interface EnhancedListRef {
+  clearSelection: () => void
+  closeFilters: () => void
+  openFilters: () => void
+}
 
-  filter?: (item: T) => boolean
+interface Props<T extends Row<T>> {
+  columns: ListColumns<T>[]
   filterComponent?: React.ReactNode
-  onEdit?: (item: T) => void
+  hasFilters?: boolean
   onCreate?: () => void
   onDelete?: (items: T[]) => void
-  sortOrder?: Order
+  onEdit?: (item: T) => void
+  onSearch?: (term: string) => void
   orderBy: keyof T
+  rows: T[]
+  selection?: ListSelection
+  sortOrder?: Order
+  title?: string
+  totalRows: number
 }
-export default function EnhancedList<T extends Row<T>>({
+type PropsWithForwardRef<T extends Row<T>> = Props<T> & { forwardedRef: React.Ref<EnhancedListRef> }
+type PropsWithStandardRef<T extends Row<T>> = Props<T> & { ref?: React.Ref<EnhancedListRef> }
+
+function ListComponent<T extends Row<T>>({
   columns,
-  filter,
   filterComponent,
+  hasFilters,
   onCreate,
   onDelete,
   onEdit,
+  onSearch,
   orderBy: initOrderBy,
   rows,
+  selection = 'single',
   sortOrder: initSortOrder = 'asc',
-}: EnhancedListProps<T>): React.JSX.Element {
+  title = 'List',
+  forwardedRef,
+}: PropsWithForwardRef<T>): React.JSX.Element {
   const [order, setOrder] = useState<Order>(initSortOrder)
   const [orderBy, setOrderBy] = useState<string>(initOrderBy as string)
   const [selected, setSelected] = useState<readonly string[]>([])
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
   const [showFilters, setShowFilters] = useState(false)
   const props = useMemo<(keyof T)[]>(() => columns.map((c) => c.id), [columns])
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
   const visibleRows = useMemo(() => {
-    if (filter) {
-      return rows
-        .filter(filter)
-        .sort(getComparator(order, orderBy))
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    }
     return rows
       .sort(getComparator(order, orderBy))
       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-  }, [order, orderBy, page, rows, rowsPerPage, filter])
+  }, [order, orderBy, page, rows, rowsPerPage])
 
   function handleRequestSort(event: React.MouseEvent<unknown>, property: string): void {
     const isAsc = orderBy === property && order === 'asc'
@@ -107,19 +120,27 @@ export default function EnhancedList<T extends Row<T>>({
     const selectedIndex = selected.indexOf(id)
     let newSelected: readonly string[] = []
 
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id)
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1))
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1))
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      )
+    if (selection === 'single') {
+      if (selectedIndex === -1) {
+        setSelected([id])
+      } else {
+        setSelected([])
+      }
+    } else {
+      if (selectedIndex === -1) {
+        newSelected = newSelected.concat(selected, id)
+      } else if (selectedIndex === 0) {
+        newSelected = newSelected.concat(selected.slice(1))
+      } else if (selectedIndex === selected.length - 1) {
+        newSelected = newSelected.concat(selected.slice(0, -1))
+      } else if (selectedIndex > 0) {
+        newSelected = newSelected.concat(
+          selected.slice(0, selectedIndex),
+          selected.slice(selectedIndex + 1),
+        )
+      }
+      setSelected(newSelected)
     }
-    setSelected(newSelected)
   }
   function handleChangePage(event: unknown, newPage: number): void {
     setPage(newPage)
@@ -133,12 +154,10 @@ export default function EnhancedList<T extends Row<T>>({
   }
   function formatRowData(column: ListColumns<T>, data: string | number): React.ReactNode {
     if (column.isCurrency && typeof data === 'number') return formatCurrency(data)
-    if (column.isDate && typeof data === 'string') {
-      const date = dayjs(data)
-
+    if (column.isDate && dayjs.isDayjs(data)) {
       return (
-        <Tooltip title={`${date.format(LONG_TIME_FORMAT)}`} placement='bottom-end'>
-          <Typography>{date.fromNow()}</Typography>
+        <Tooltip title={`${data.format(LONG_TIME_FORMAT)}`} placement='bottom-end'>
+          <Typography>{data.fromNow()}</Typography>
         </Tooltip>
       )
     }
@@ -168,25 +187,45 @@ export default function EnhancedList<T extends Row<T>>({
     setSelected([])
   }
 
+  useImperativeHandle(
+    forwardedRef,
+    () => {
+      return {
+        clearSelection() {
+          setSelected([])
+        },
+        closeFilters() {
+          setShowFilters(false)
+        },
+        openFilters() {
+          setShowFilters(true)
+        },
+      }
+    },
+    [],
+  )
+
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
         <ListToolbar
-          title='Cost Entries'
+          title={title}
           numSelected={selected.length}
-          showFilterButton={!!filterComponent}
-          hasFilter={!!filter}
-          showCreateButton={!!onCreate}
+          hideFilterButton={!filterComponent}
+          hideCreateButton={!onCreate}
+          hideSearch={!onSearch}
+          hasFilter={hasFilters}
           onCreateClick={onCreate}
           onEditClick={onEdit ? handleEditClick : undefined}
           onDeleteClick={onDelete ? handleDeleteClick : undefined}
+          onSearchChange={onSearch}
           onFilterClick={() => {
             setShowFilters(!showFilters)
           }}
         />
         <Collapse in={showFilters}>{filterComponent}</Collapse>
         <TableContainer>
-          <Table sx={{ minWidth: 750 }} aria-labelledby='tableTitle'>
+          <Table aria-labelledby='tableTitle'>
             <ListHeader
               columns={columns}
               numSelected={selected.length}
@@ -195,6 +234,7 @@ export default function EnhancedList<T extends Row<T>>({
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
+              selection={selection}
             />
             <TableBody>
               {visibleRows.map((row, rowIndex) => {
@@ -227,6 +267,7 @@ export default function EnhancedList<T extends Row<T>>({
                       return colIndex === 0 ? (
                         <TableCell
                           key={colIndex}
+                          align={columns[colIndex]?.align ?? 'left'}
                           component='th'
                           id={labelId}
                           scope='row'
@@ -235,7 +276,7 @@ export default function EnhancedList<T extends Row<T>>({
                           {formatRowData(columns[colIndex], row[key])}
                         </TableCell>
                       ) : (
-                        <TableCell key={colIndex} align='right'>
+                        <TableCell key={colIndex} align={columns[colIndex]?.align ?? 'right'}>
                           {formatRowData(columns[colIndex], row[key])}
                         </TableCell>
                       )
@@ -268,3 +309,15 @@ export default function EnhancedList<T extends Row<T>>({
     </Box>
   )
 }
+
+// @ts-expect-error Have no idea how to type this properly
+const EnhancedList: <T extends Row<T>>(
+  props: PropsWithStandardRef<T>,
+  // @ts-expect-error Have no idea how to type this properly
+) => React.ReactElement | null = forwardRef<EnhancedListRef, Props<Row<T>>>((props, ref) => (
+  <ListComponent {...props} forwardedRef={ref} />
+))
+// @ts-expect-error Not sure why the display name isn't on the return type
+EnhancedList.displayName = 'EnhancedList'
+
+export default EnhancedList

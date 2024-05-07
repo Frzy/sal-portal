@@ -12,16 +12,16 @@ import { useSession } from 'next-auth/react'
 import TimeFrame, { type TimeFrameValue } from '@/components/TimeFrame'
 import { TIME_FRAME } from '@/util/constants'
 
-import EnhancedList from './ListComponents/EnhancedList'
+import EnhancedList, { type EnhancedListRef } from './ListComponents/EnhancedList'
 import { type ListColumns } from './ListComponents/ListHeader'
 
 interface Filters {
-  timeframe?: TimeFrameValue
-  createdBy?: string[]
   modifiedBy?: string[]
+  term?: string
+  timeframe?: TimeFrameValue
 }
 
-const columns: ListColumns<Kitchen.CostItem>[] = [
+const columns: ListColumns<Kitchen.MenuItem>[] = [
   {
     id: 'name',
     disablePadding: true,
@@ -29,27 +29,22 @@ const columns: ListColumns<Kitchen.CostItem>[] = [
     minWidth: 100,
   },
   {
-    id: 'amount',
+    id: 'description',
     disablePadding: false,
-    label: 'Amount',
+    label: 'Description',
+    isDate: true,
+    minWidth: 250,
+    align: 'left',
+  },
+  {
+    id: 'price',
+    disablePadding: false,
+    label: 'Price',
     isNumber: true,
     isCurrency: true,
   },
-  {
-    id: 'created',
-    disablePadding: false,
-    label: 'Created',
-    isDate: true,
-    minWidth: 150,
-  },
 ]
-const adminColumns: ListColumns<Kitchen.CostItem>[] = [
-  {
-    id: 'createdBy',
-    disablePadding: false,
-    label: 'Created By',
-    minWidth: 130,
-  },
+const adminColumns: ListColumns<Kitchen.MenuItem>[] = [
   {
     id: 'modified',
     disablePadding: false,
@@ -67,20 +62,18 @@ const adminColumns: ListColumns<Kitchen.CostItem>[] = [
 const icon = <CheckBoxOutlineBlankIcon fontSize='small' />
 const checkedIcon = <CheckBoxIcon fontSize='small' />
 
-interface CostListFiltersProps {
+interface MenuItemListFiltersProps {
   isAdmin?: boolean
   onFilterChange?: (filter?: Filters) => void
-  createdOptions?: string[]
   modifiedOptions?: string[]
   minDate?: Dayjs
 }
-function CostListFilters({
+function MenuItemListFilters({
   onFilterChange,
   isAdmin,
-  createdOptions,
   modifiedOptions,
   minDate,
-}: CostListFiltersProps): React.JSX.Element {
+}: MenuItemListFiltersProps): React.JSX.Element {
   const [filters, setFilters] = useState<Filters>()
 
   function updateFilters(partialFilter: Filters): void {
@@ -91,9 +84,6 @@ function CostListFilters({
   }
   function handleTimeframeChange(timeframe: TimeFrameValue): void {
     updateFilters({ timeframe })
-  }
-  function handleCreatedOptionChange(event: React.SyntheticEvent, value: string[]): void {
-    updateFilters({ createdBy: value })
   }
   function handleModifiedOptionChange(event: React.SyntheticEvent, value: string[]): void {
     updateFilters({ modifiedBy: value })
@@ -118,41 +108,8 @@ function CostListFilters({
             minDate={minDate}
           />
         </Grid>
-        {isAdmin && !!createdOptions?.length && (
-          <Grid xs={12} md={6}>
-            <Autocomplete
-              disableCloseOnSelect
-              fullWidth
-              multiple
-              value={filters?.createdBy ?? []}
-              options={createdOptions}
-              onChange={handleCreatedOptionChange}
-              renderOption={(props, option, { selected }) => {
-                return (
-                  <li {...props} key={option}>
-                    <Checkbox
-                      icon={icon}
-                      checkedIcon={checkedIcon}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option}
-                  </li>
-                )
-              }}
-              renderTags={(tagValue, getTagProps) => {
-                return tagValue.map((option, index) => (
-                  <Chip {...getTagProps({ index })} key={option} label={option} />
-                ))
-              }}
-              renderInput={(params) => (
-                <TextField {...params} label='Created By' placeholder='Pick users' />
-              )}
-            />
-          </Grid>
-        )}
         {isAdmin && !!modifiedOptions?.length && (
-          <Grid xs={12} md={6}>
+          <Grid xs={12}>
             <Autocomplete
               disableCloseOnSelect
               fullWidth
@@ -199,77 +156,76 @@ function CostListFilters({
   )
 }
 
-interface CostListProps {
-  title: string
-  costItems: Kitchen.CostItem[]
-  onEdit?: (item: Kitchen.CostItem) => void
+interface MenuItemListProps {
+  menuItems: Kitchen.MenuItem[]
   onCreate?: () => void
-  onDelete?: (items: Kitchen.CostItem[]) => void
+  onDelete?: (items: Kitchen.MenuItem[]) => void
+  onEdit?: (item: Kitchen.MenuItem) => void
+  title: string
+  forwardedRef?: React.Ref<EnhancedListRef>
 }
-export default function CostList({
-  costItems,
-  title,
+export default function MenuItemList({
+  menuItems,
   onCreate,
   onDelete,
   onEdit,
-}: CostListProps): React.JSX.Element {
+  title,
+  forwardedRef,
+}: MenuItemListProps): React.JSX.Element {
   const { data: session } = useSession()
   const minDate = useMemo(() => {
-    const min = dayjs.min(costItems.map((c) => c.created))
+    const min = dayjs.min(menuItems.map((c) => c.created))
 
     return min ?? undefined
-  }, [costItems])
+  }, [menuItems])
   const isAdmin = useMemo(() => session?.user.isAdmin, [session])
   const tableColumns = useMemo(() => {
     return isAdmin ? [...columns, ...adminColumns] : columns
   }, [isAdmin])
   const [filters, setFilters] = useState<Filters>()
   const filterItems = useMemo(() => {
-    if (!filters) return costItems
+    if (!filters) return menuItems
 
-    return costItems.filter((item: Kitchen.CostItem): boolean => {
+    return menuItems.filter((item: Kitchen.MenuItem): boolean => {
       if (filters.timeframe) {
         const { startDate, endDate } = filters.timeframe
         if (item.created.isBefore(startDate) || item.created.isAfter(endDate)) return false
       }
-
-      if (filters.createdBy?.length && !filters.createdBy.includes(item.createdBy)) return false
       if (filters.modifiedBy?.length && !filters.modifiedBy.includes(item.lastModifiedBy))
         return false
 
       return true
     })
-  }, [costItems, filters])
-  const { createdOptions, modifiedOptions } = useMemo(() => {
+  }, [menuItems, filters])
+  const { modifiedOptions } = useMemo(() => {
     const createdOptions: string[] = []
     const modifiedOptions: string[] = []
 
     if (isAdmin) {
-      costItems.forEach((item) => {
-        if (!createdOptions.includes(item.createdBy)) createdOptions.push(item.createdBy)
+      menuItems.forEach((item) => {
         if (!modifiedOptions.includes(item.lastModifiedBy))
           modifiedOptions.push(item.lastModifiedBy)
       })
     }
 
     return { createdOptions, modifiedOptions }
-  }, [isAdmin, costItems])
+  }, [isAdmin, menuItems])
 
   return (
     <EnhancedList
-      columns={tableColumns}
-      hasFilters={!!filters}
-      onCreate={onCreate}
-      onDelete={onDelete}
-      onEdit={onEdit}
-      orderBy='created'
-      rows={filterItems}
-      sortOrder='desc'
+      ref={forwardedRef}
       title={title}
-      totalRows={costItems.length}
+      columns={tableColumns}
+      totalRows={menuItems.length}
+      hasFilters={!!filters}
+      rows={filterItems}
+      orderBy='name'
+      onCreate={onCreate}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      selection='multiple'
       filterComponent={
-        <CostListFilters
-          createdOptions={createdOptions}
+        <MenuItemListFilters
           modifiedOptions={modifiedOptions}
           minDate={minDate}
           onFilterChange={(newFilters) => {

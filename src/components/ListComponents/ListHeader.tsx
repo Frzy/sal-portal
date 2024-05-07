@@ -2,7 +2,7 @@ import { Box, Checkbox, TableCell, TableHead, TableRow, TableSortLabel } from '@
 import { visuallyHidden } from '@mui/utils'
 
 type Order = 'asc' | 'desc'
-
+type ListSelection = 'single' | 'multiple'
 interface ListHeaderProps<T> {
   columns: ListColumns<T>[]
   numSelected: number
@@ -11,6 +11,7 @@ interface ListHeaderProps<T> {
   order: Order
   orderBy: string
   rowCount: number
+  selection: ListSelection
 }
 
 type StringKeys<T> = {
@@ -24,6 +25,8 @@ export interface ListColumns<T> {
   isNumber?: boolean
   isCurrency?: boolean
   isDate?: boolean
+  minWidth?: number
+  align?: 'left' | 'center' | 'right'
 }
 
 export default function ListHeader<T>({
@@ -34,6 +37,7 @@ export default function ListHeader<T>({
   order,
   orderBy,
   rowCount,
+  selection,
 }: ListHeaderProps<T>): React.JSX.Element {
   const createSortHandler = (property: string) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property)
@@ -43,22 +47,25 @@ export default function ListHeader<T>({
     <TableHead>
       <TableRow>
         <TableCell padding='checkbox'>
-          <Checkbox
-            color='primary'
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              'aria-label': 'select all desserts',
-            }}
-          />
+          {selection === 'multiple' && (
+            <Checkbox
+              color='primary'
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              checked={rowCount > 0 && numSelected === rowCount}
+              onChange={onSelectAllClick}
+              inputProps={{
+                'aria-label': 'select all desserts',
+              }}
+            />
+          )}
         </TableCell>
         {columns.map((column, index) => (
           <TableCell
             key={column.id}
-            align={index === 0 ? 'left' : 'right'}
+            align={column?.align ?? index === 0 ? 'left' : 'right'}
             padding={column.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === column.id ? order : false}
+            sx={{ minWidth: column?.minWidth }}
           >
             <TableSortLabel
               active={orderBy === column.id}

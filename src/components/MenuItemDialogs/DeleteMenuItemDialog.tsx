@@ -11,24 +11,24 @@ import {
   Typography,
 } from '@mui/material'
 
-import { deleteMenuItem } from '@/util/requests'
+import { deleteMenuItems } from '@/util/requests'
 
 interface DeleteMenuItemDialogProps extends Omit<DialogProps, 'onClose'> {
   onClose?: () => void
-  onDeleted?: (menuItem: Kitchen.MenuItem) => void
-  menuItem: Kitchen.MenuItem
+  onDeleted?: (items: Kitchen.MenuItem[]) => void
+  items?: Kitchen.MenuItem[]
 }
 export default function DeleteMenuItemDialog({
   onDeleted,
   onClose,
-  menuItem,
+  items = [],
   ...other
 }: DeleteMenuItemDialogProps): React.JSX.Element {
   const [loading, setLoading] = useState(false)
 
   async function handleDeleteMenuItem(): Promise<void> {
     setLoading(true)
-    const deletedMenuItem = await deleteMenuItem(menuItem)
+    const deletedMenuItem = await deleteMenuItems(items)
 
     if (!deletedMenuItem) {
       const event = new CustomEvent<INotification>('notify', {
@@ -36,7 +36,7 @@ export default function DeleteMenuItemDialog({
       })
 
       dispatchEvent(event)
-    } else if (onDeleted) onDeleted(menuItem)
+    } else if (onDeleted) onDeleted(items)
 
     setLoading(false)
 
@@ -54,7 +54,7 @@ export default function DeleteMenuItemDialog({
             fontWeight='fontWeightBold'
             sx={{ textTransform: 'uppercase' }}
           >
-            {menuItem.name}
+            {items.map((i) => i.name)}
           </Typography>
         </Typography>
       </DialogContent>

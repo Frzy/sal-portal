@@ -4,16 +4,19 @@ import { Fragment, useMemo, useState } from 'react'
 
 import CostList from '@c/CostList'
 import { KitchenCostDialog } from '@c/KitchenCostDialog'
+import dayjs from 'dayjs'
 
 import { DIALOG_TYPES } from '@/util/constants'
 
 interface CostViewProps {
-  costItems: Kitchen.CostItem[]
+  costItems: Kitchen.ServerCostItem[]
 }
 export default function CostView({
   costItems: initCostItems = [],
 }: CostViewProps): React.JSX.Element {
-  const [costItems, setCostItems] = useState(initCostItems)
+  const [costItems, setCostItems] = useState<Kitchen.CostItem[]>(
+    initCostItems.map((c) => ({ ...c, created: dayjs(c.created), modified: dayjs(c.modified) })),
+  )
   const [showCreate, setShowCreate] = useState(false)
   const [toEdit, setToEdit] = useState<Kitchen.CostItem>()
   const [toDelete, setToDelete] = useState<Kitchen.CostItem[]>()
@@ -62,6 +65,7 @@ export default function CostView({
   return (
     <Fragment>
       <CostList
+        title='Costs'
         costItems={costItems}
         onCreate={handleCreateClick}
         onEdit={handleEditClick}

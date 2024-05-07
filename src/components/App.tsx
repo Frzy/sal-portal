@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  Box,
   Container,
   CssBaseline,
   Experimental_CssVarsProvider as CssVarsProvider,
@@ -9,6 +8,8 @@ import {
   getInitColorSchemeScript,
 } from '@mui/material'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter'
+import { LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 import theme from '@/theme'
 
@@ -17,22 +18,23 @@ import Notifier from './Notifier'
 
 interface AppProps {
   children: React.ReactNode
+  deviceType: string
 }
-export default function App({ children }: AppProps): React.JSX.Element {
+export default function App({ children, deviceType }: AppProps): React.JSX.Element {
   return (
-    <CssVarsProvider theme={theme} defaultMode='dark'>
-      <Box component='body' sx={{ display: 'flex' }}>
+    <AppRouterCacheProvider>
+      <CssVarsProvider theme={theme(deviceType)} defaultMode='dark'>
+        {getInitColorSchemeScript()}
         <CssBaseline />
-        <AppRouterCacheProvider>
-          {getInitColorSchemeScript()}
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Header />
           <Container component={'main'} maxWidth='xl'>
             <Toolbar sx={{ mb: 1 }} />
             {children}
             <Notifier />
           </Container>
-        </AppRouterCacheProvider>
-      </Box>
-    </CssVarsProvider>
+        </LocalizationProvider>
+      </CssVarsProvider>
+    </AppRouterCacheProvider>
   )
 }
