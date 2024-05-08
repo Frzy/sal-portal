@@ -41,3 +41,17 @@ export function getLegionYearDatesFrom(date: Dayjs): { startDate: Dayjs; endDate
 
   return { startDate, endDate }
 }
+
+export function getNumber(value: unknown, defaultValue: number = 0): number {
+  if (!value) return defaultValue
+
+  let number = defaultValue
+
+  if (typeof value === 'string') {
+    number = parseInt(value)
+  } else if (typeof value === 'number') {
+    number = value
+  }
+
+  return isNaN(number) ? defaultValue : number
+}

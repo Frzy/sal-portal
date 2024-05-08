@@ -8,11 +8,11 @@ import EditMenuItemDialog from './MenuItemDialogs/EditMenuItemDialog'
 
 interface MenuItemDialogProps extends DialogProps {
   type: DIALOG_TYPES
-  item?: Kitchen.MenuItem
-  items?: Kitchen.MenuItem[]
-  onCreated?: (item: Kitchen.MenuItem) => void
-  onDeleted?: (items: Kitchen.MenuItem[]) => void
-  onEdited?: (item: Kitchen.MenuItem) => void
+  item?: Kitchen.Menu.Item
+  items?: Kitchen.Menu.Item[]
+  onCreated?: (item: Kitchen.Menu.Item) => void
+  onDeleted?: (items: Kitchen.Menu.Item[]) => void
+  onEdited?: (item: Kitchen.Menu.Item) => void
   onClose?: () => void
 }
 export function MenuItemDialog({

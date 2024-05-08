@@ -11,12 +11,12 @@ import {
   Typography,
 } from '@mui/material'
 
-import { deleteMenuItems } from '@/util/requests'
+import { deleteMKitchenenuItems } from '@/util/requests'
 
 interface DeleteMenuItemDialogProps extends Omit<DialogProps, 'onClose'> {
   onClose?: () => void
-  onDeleted?: (items: Kitchen.MenuItem[]) => void
-  items?: Kitchen.MenuItem[]
+  onDeleted?: (items: Kitchen.Menu.Item[]) => void
+  items?: Kitchen.Menu.Item[]
 }
 export default function DeleteMenuItemDialog({
   onDeleted,
@@ -28,7 +28,7 @@ export default function DeleteMenuItemDialog({
 
   async function handleDeleteMenuItem(): Promise<void> {
     setLoading(true)
-    const deletedMenuItem = await deleteMenuItems(items)
+    const deletedMenuItem = await deleteMKitchenenuItems(items)
 
     if (!deletedMenuItem) {
       const event = new CustomEvent<INotification>('notify', {

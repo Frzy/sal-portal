@@ -15,8 +15,8 @@ import { deleteKitchenCosts } from '@/util/requests'
 
 interface DeleteKitchenCostsDialogProps extends Omit<DialogProps, 'onClose'> {
   onClose?: () => void
-  onDeleted?: (items: Kitchen.CostItem[]) => void
-  items: Kitchen.CostItem[]
+  onDeleted?: (items: Kitchen.Cost.Item[]) => void
+  items: Kitchen.Cost.Item[]
 }
 export default function DeleteKitchenCostsDialog({
   onDeleted,

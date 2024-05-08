@@ -17,7 +17,7 @@ import Grid from '@mui/material/Unstable_Grid2/Grid2'
 import { createKitchenCost } from '@/util/requests'
 
 export interface CreateKitchenCostDialogProps extends Omit<DialogProps, 'onClose'> {
-  onCreated?: (newItem: Kitchen.CostItem) => void
+  onCreated?: (newItem: Kitchen.Cost.Item) => void
   onClose?: () => void
 }
 export default function CreateKitchenCostDialog({
@@ -26,7 +26,7 @@ export default function CreateKitchenCostDialog({
   ...other
 }: CreateKitchenCostDialogProps): React.JSX.Element {
   const [loading, setLoading] = useState(false)
-  const [item, setItem] = useState<Kitchen.CostItemPayload>({
+  const [item, setItem] = useState<Kitchen.Cost.Payload>({
     amount: 0,
   })
   const isFormInvalid = useMemo(() => {

@@ -8,30 +8,25 @@ import MenuItemList from '@c/MenuItemList'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
+import { serverToMenuItem } from '@/lib/menuItems'
 import { DIALOG_TYPES } from '@/util/constants'
 
 dayjs.extend(relativeTime)
 
 interface MenuItemsViewProps {
-  menuItems: Kitchen.ServerMenuItem[]
+  menuItems: Kitchen.Menu.ServerItem[]
 }
 export default function MenuItemsView({
   menuItems: intiItems = [],
 }: MenuItemsViewProps): React.JSX.Element {
-  const [menuItems, setMenuItems] = useState<Kitchen.MenuItem[]>(
-    intiItems.map((i) => ({
-      ...i,
-      created: dayjs(i.created),
-      modified: dayjs(i.modified),
-    })),
-  )
+  const [menuItems, setMenuItems] = useState<Kitchen.Menu.Item[]>(intiItems.map(serverToMenuItem))
   const [showCreate, setShowCreate] = useState(false)
-  const [toEdit, setToEdit] = useState<Kitchen.MenuItem>()
-  const [toDelete, setToDelete] = useState<Kitchen.MenuItem[]>()
+  const [toEdit, setToEdit] = useState<Kitchen.Menu.Item>()
+  const [toDelete, setToDelete] = useState<Kitchen.Menu.Item[]>()
   const { type, item, items, open } = useMemo(() => {
     let type = DIALOG_TYPES.CREATE
-    let item: Kitchen.MenuItem | undefined
-    let items: Kitchen.MenuItem[] = []
+    let item: Kitchen.Menu.Item | undefined
+    let items: Kitchen.Menu.Item[] = []
 
     if (toEdit) {
       type = DIALOG_TYPES.EDIT
@@ -49,23 +44,23 @@ export default function MenuItemsView({
   function handleCreateClick(): void {
     setShowCreate(true)
   }
-  function handleEditClick(item: Kitchen.MenuItem): void {
+  function handleEditClick(item: Kitchen.Menu.Item): void {
     setToEdit(item)
   }
-  function handleDeleteClick(items: Kitchen.MenuItem[]): void {
+  function handleDeleteClick(items: Kitchen.Menu.Item[]): void {
     setToDelete(items)
   }
 
-  function handleCreated(newItem: Kitchen.MenuItem): void {
+  function handleCreated(newItem: Kitchen.Menu.Item): void {
     if (listRef.current) listRef.current.clearSelection()
     setMenuItems((prev) => [...prev, newItem])
   }
-  function handleDeleted(deletedItems: Kitchen.MenuItem[]): void {
+  function handleDeleted(deletedItems: Kitchen.Menu.Item[]): void {
     const ids = deletedItems.map((i) => i.id)
     if (listRef.current) listRef.current.clearSelection()
     setMenuItems(menuItems.filter((item) => !ids.includes(item.id)))
   }
-  function handleEdited(editedItem: Kitchen.MenuItem): void {
+  function handleEdited(editedItem: Kitchen.Menu.Item): void {
     if (listRef.current) listRef.current.clearSelection()
     setMenuItems(menuItems.map((item) => (item.id === editedItem.id ? editedItem : item)))
   }

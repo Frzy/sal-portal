@@ -29,7 +29,7 @@ export async function PUT(
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
   if (!isAdminLoggedIn) return Response.json({ message: 'Unauthorized' }, { status: 403 })
 
-  const payload = (await request.json()) as Kitchen.MenuItemPayload
+  const payload = (await request.json()) as Kitchen.Menu.EditPayload
 
   try {
     const updatedMenuItem = await updateMenuItem(menuItemId, {

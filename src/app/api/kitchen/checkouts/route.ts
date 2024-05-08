@@ -1,4 +1,4 @@
-import { createCostItem, deleteCostItems, getCostsBy } from '@/lib/costs'
+import { createCheckouts, deleteCheckouts, getCheckoutsBy } from '@/lib/kitchenCheckout'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(): Promise<Response> {
@@ -7,7 +7,7 @@ export async function GET(): Promise<Response> {
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const items = await getCostsBy((item) => {
+  const items = await getCheckoutsBy((item) => {
     return isAdmin || item.createdBy === session.user.username
   })
 
@@ -17,11 +17,14 @@ export async function POST(request: Request): Promise<Response> {
   const session = await getServerAuthSession()
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const payload = (await request.json()) as Kitchen.Cost.CreatePayload
+  const payloadData = (await request.json()) as
+    | Kitchen.Checkout.CreatePayload
+    | Kitchen.Checkout.CreatePayload[]
+  const payloads = Array.isArray(payloadData) ? payloadData : [payloadData]
   const user = session?.user.username
 
   try {
-    const response = await createCostItem({ ...payload, createdBy: user })
+    const response = await createCheckouts(payloads.map((p) => ({ ...p, createdBy: user })))
 
     return Response.json(response, { status: 201 })
   } catch (error) {
@@ -36,7 +39,7 @@ export async function DELETE(request: Request): Promise<Response> {
   const isAdmin = session?.user.isAdmin
 
   try {
-    const response = await deleteCostItems(ids, (item) => {
+    const response = await deleteCheckouts(ids, (item) => {
       return isAdmin || item.get('createdBy') === session.user.username
     })
 

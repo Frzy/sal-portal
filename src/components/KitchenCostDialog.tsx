@@ -8,11 +8,11 @@ import EditKitchenCostDialog from './KitchenCostDialogs/EditKitchenCostDialog'
 
 interface KitchenCostDialogProps extends DialogProps {
   type: DIALOG_TYPES
-  item?: Kitchen.CostItem
-  items?: Kitchen.CostItem[]
-  onCreated?: (item: Kitchen.CostItem) => void
-  onDeleted?: (items: Kitchen.CostItem[]) => void
-  onEdited?: (item: Kitchen.CostItem) => void
+  item?: Kitchen.Cost.Item
+  items?: Kitchen.Cost.Item[]
+  onCreated?: (item: Kitchen.Cost.Item) => void
+  onDeleted?: (items: Kitchen.Cost.Item[]) => void
+  onEdited?: (item: Kitchen.Cost.Item) => void
   onClose?: () => void
 }
 export function KitchenCostDialog({

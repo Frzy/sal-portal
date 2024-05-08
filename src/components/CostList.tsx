@@ -21,7 +21,7 @@ interface Filters {
   modifiedBy?: string[]
 }
 
-const columns: ListColumns<Kitchen.CostItem>[] = [
+const columns: ListColumns<Kitchen.Cost.Item>[] = [
   {
     id: 'name',
     disablePadding: true,
@@ -43,7 +43,7 @@ const columns: ListColumns<Kitchen.CostItem>[] = [
     minWidth: 150,
   },
 ]
-const adminColumns: ListColumns<Kitchen.CostItem>[] = [
+const adminColumns: ListColumns<Kitchen.Cost.Item>[] = [
   {
     id: 'createdBy',
     disablePadding: false,
@@ -201,10 +201,10 @@ function CostListFilters({
 
 interface CostListProps {
   title: string
-  costItems: Kitchen.CostItem[]
-  onEdit?: (item: Kitchen.CostItem) => void
+  costItems: Kitchen.Cost.Item[]
+  onEdit?: (item: Kitchen.Cost.Item) => void
   onCreate?: () => void
-  onDelete?: (items: Kitchen.CostItem[]) => void
+  onDelete?: (items: Kitchen.Cost.Item[]) => void
 }
 export default function CostList({
   costItems,
@@ -227,7 +227,7 @@ export default function CostList({
   const filterItems = useMemo(() => {
     if (!filters) return costItems
 
-    return costItems.filter((item: Kitchen.CostItem): boolean => {
+    return costItems.filter((item: Kitchen.Cost.Item): boolean => {
       if (filters.timeframe) {
         const { startDate, endDate } = filters.timeframe
         if (item.created.isBefore(startDate) || item.created.isAfter(endDate)) return false

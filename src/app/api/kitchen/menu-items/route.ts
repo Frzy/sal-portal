@@ -16,10 +16,10 @@ export async function POST(request: Request): Promise<Response> {
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const payload = (await request.json()) as Kitchen.MenuItemPayload
+  const payload = (await request.json()) as Kitchen.Menu.CreatePayload
 
   try {
-    const response = await createMenuItems({ ...payload, lastModifiedBy: session.user.username })
+    const response = await createMenuItems({ ...payload, createdBy: session.user.username })
 
     return Response.json(response, { status: 201 })
   } catch (error) {
@@ -31,7 +31,7 @@ export async function DELETE(request: Request): Promise<Response> {
   const session = await getServerAuthSession()
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const ids = (await request.json()) as Kitchen.CostItemDeletePayload
+  const ids = (await request.json()) as string[]
 
   try {
     const response = await deleteMenuItems(ids)

@@ -14,10 +14,10 @@ import {
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
-import { createMenuItem } from '@/util/requests'
+import { createKitchenMenuItem } from '@/util/requests'
 
 export interface CreateMenuItemDialogProps extends Omit<DialogProps, 'onClose'> {
-  onCreated?: (newMenuItem: Kitchen.MenuItem) => void
+  onCreated?: (newMenuItem: Kitchen.Menu.Item) => void
   onClose?: () => void
 }
 export default function CreateMenuItemDialog({
@@ -26,13 +26,14 @@ export default function CreateMenuItemDialog({
   ...other
 }: CreateMenuItemDialogProps): React.JSX.Element {
   const [loading, setLoading] = useState(false)
-  const [menuItem, setMenuItem] = useState<Kitchen.MenuItemPayload>({
-    amount: 0,
+  const [menuItem, setMenuItem] = useState<Kitchen.Menu.Payload>({
+    price: 0,
     description: '',
+    includesDrinkChip: false,
     name: '',
   })
   const isFormInvalid = useMemo(() => {
-    return !menuItem.name && menuItem.amount > 0
+    return !menuItem.name && menuItem.price > 0
   }, [menuItem])
 
   function handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -43,7 +44,7 @@ export default function CreateMenuItemDialog({
 
   async function handleCreateMenuItem(): Promise<void> {
     setLoading(true)
-    const createdMenuItem = await createMenuItem(menuItem)
+    const createdMenuItem = await createKitchenMenuItem(menuItem)
 
     if (!createdMenuItem) {
       const event = new CustomEvent<INotification>('notify', {
@@ -75,10 +76,10 @@ export default function CreateMenuItemDialog({
           </Grid>
           <Grid xs={12}>
             <TextField
-              label='Amount'
-              name='amount'
+              label='Price'
+              name='price'
               type='number'
-              value={menuItem.amount || ''}
+              value={menuItem.price || ''}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position='start'>

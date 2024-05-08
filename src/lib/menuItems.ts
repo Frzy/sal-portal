@@ -1,113 +1,111 @@
 import dayjs from 'dayjs'
 import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 
+import { getNumber } from '@/util/functions'
+
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
+
+type GoogleMenuRow = GoogleSpreadsheetRow<Kitchen.Menu.ServerItem>
 
 const BASE_MENU_ITEM = {
   name: '',
   description: '',
-  price: '0',
+  price: 0,
 }
 
-function menuItemMapper(row: GoogleSpreadsheetRow<Kitchen.MenuItemRow>): Kitchen.ServerMenuItem {
-  const menuItem = row.toObject()
-  const price = parseInt(menuItem?.price ?? '0')
+export function serverToMenuItem(item: Kitchen.Menu.ServerItem): Kitchen.Menu.Item {
+  return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
+}
 
+function googleToServer(row: GoogleMenuRow): Kitchen.Menu.ServerItem {
   return {
-    id: menuItem?.id ?? '',
-    name: menuItem?.name ?? '',
-    description: menuItem?.description ?? '',
-    price: isNaN(price) ? 0 : price,
-    created: menuItem?.created ?? '',
-    modified: menuItem?.modified ?? '',
-    lastModifiedBy: menuItem?.lastModifiedBy ?? '',
-  } satisfies Kitchen.ServerMenuItem
+    created: row.get('created'),
+    createdBy: row.get('createdBy'),
+    description: row.get('description'),
+    id: row.get('id'),
+    includesDrinkChip: row.get('includesDrinkChip') === 'TRUE',
+    lastModifiedBy: row.get('lastModifiedBy'),
+    modified: row.get('modified'),
+    name: row.get('name'),
+    price: getNumber(row.get('price')),
+  }
 }
 
-export async function getGoogleMenuItemRows(): Promise<
-  GoogleSpreadsheetRow<Kitchen.MenuItemRow>[]
-> {
-  return await getGoogleSheetRows<Kitchen.MenuItemRow>(
+export async function getGoogleMenuItemRows(): Promise<GoogleMenuRow[]> {
+  return await getGoogleSheetRows<Kitchen.Menu.ServerItem>(
     process.env.SPREADSHEET_KEY,
     process.env.MENU_ITEM_SHEET_KEY,
   )
 }
 export async function findGoogleMenuItemRows(
-  filter: (row: GoogleSpreadsheetRow<Kitchen.MenuItemRow>) => boolean,
-): Promise<GoogleSpreadsheetRow<Kitchen.MenuItemRow> | undefined> {
+  filter: (row: GoogleMenuRow) => boolean,
+): Promise<GoogleMenuRow | undefined> {
   return (await getGoogleMenuItemRows()).find(filter)
 }
-export async function getMenuItems(): Promise<Kitchen.ServerMenuItem[]> {
-  return (await getGoogleMenuItemRows()).map(menuItemMapper)
+export async function getMenuItems(): Promise<Kitchen.Menu.ServerItem[]> {
+  return (await getGoogleMenuItemRows()).map(googleToServer)
 }
 export async function getMenuItemsBy(
-  filter: (item: Kitchen.ServerMenuItem) => boolean,
-): Promise<Kitchen.ServerMenuItem[]> {
+  filter: (item: Kitchen.Menu.ServerItem) => boolean,
+): Promise<Kitchen.Menu.ServerItem[]> {
   return (await getMenuItems()).filter(filter)
 }
 export async function findMenuItem(
-  filter: (item: Kitchen.ServerMenuItem) => boolean,
-): Promise<Kitchen.ServerMenuItem | undefined> {
+  filter: (item: Kitchen.Menu.ServerItem) => boolean,
+): Promise<Kitchen.Menu.ServerItem | undefined> {
   return (await getMenuItems()).find(filter)
 }
 
 export async function createMenuItems(
-  payload: Kitchen.MenuItemServerPayload | Kitchen.MenuItemServerPayload[],
-): Promise<Kitchen.ServerMenuItem> {
+  payload: Kitchen.Menu.CreatePayload | Kitchen.Menu.CreatePayload[],
+): Promise<Kitchen.Menu.ServerItem[]> {
   const workSheet = await getGoogleSheetWorkSheet(
     process.env.SPREADSHEET_KEY,
     process.env.MENU_ITEM_SHEET_KEY,
   )
-  const newMenuItemPayload: Kitchen.MenuItemServerPayload[] = Array.isArray(payload)
-    ? [...payload]
-    : [payload]
-
-  const newMenuItemData: Kitchen.MenuItemRow[] = newMenuItemPayload.map((menuItem) => {
-    const { price, ...details } = menuItem
+  const payloads: Kitchen.Menu.CreatePayload[] = Array.isArray(payload) ? [...payload] : [payload]
+  const newRows: RawRowData[] = payloads.map((menuItem) => {
     const now = dayjs().format()
-
     return {
       ...BASE_MENU_ITEM,
-      ...details,
-      price: `${price}`,
+      ...menuItem,
+      description: menuItem?.description ?? '',
+      includesDrinkChip: !!menuItem.includesDrinkChip,
       id: crypto.randomUUID(),
       created: now,
       modified: now,
+      lastModifiedBy: menuItem.createdBy,
     }
   })
 
-  // @ts-expect-error Not sure how to cast this
-  return (await workSheet.addRows(newMenuItemData)).map(menuItemMapper)
+  return (await workSheet.addRows(newRows)).map(googleToServer)
 }
 export async function updateMenuItem(
-  menuItemId: string,
-  menuItemData: Kitchen.MenuItemServerPayload,
-  validator?: (item: GoogleSpreadsheetRow<Kitchen.MenuItemRow>) => boolean,
-): Promise<Kitchen.ServerMenuItem | undefined> {
-  const googleMenuItem = await findGoogleMenuItemRows((r) => r.get('id') === menuItemId)
+  id: string,
+  payload: Kitchen.Menu.EditPayload,
+  validator?: (item: GoogleMenuRow) => boolean,
+): Promise<Kitchen.Menu.ServerItem | undefined> {
+  const googleMenuItem = await findGoogleMenuItemRows((r) => r.get('id') === id)
 
   if (googleMenuItem) {
     if (validator && !validator(googleMenuItem)) return undefined
-
-    const { price, ...googlePayload } = menuItemData
+    const originalData = googleMenuItem.toObject() as unknown as Kitchen.Menu.ServerItem
     const now = dayjs().format()
-
-    const updatedData: Kitchen.MenuItemRow = {
-      ...(googleMenuItem.toObject() as Kitchen.MenuItemRow),
-      ...googlePayload,
-      price: `${price}`,
+    const updatedData: Kitchen.Menu.ServerItem = {
+      ...originalData,
+      ...payload,
       modified: now,
     }
 
     googleMenuItem.assign(updatedData)
     await googleMenuItem.save()
 
-    return menuItemMapper(googleMenuItem)
+    return googleToServer(googleMenuItem)
   }
 }
 export async function deleteMenuItem(
   menuItemId: string,
-  validator?: (item: GoogleSpreadsheetRow<Kitchen.MenuItemRow>) => boolean,
+  validator?: (item: GoogleMenuRow) => boolean,
 ): Promise<boolean> {
   const googleMenuItem = await findGoogleMenuItemRows((u) => u.get('id') === menuItemId)
 
@@ -123,7 +121,7 @@ export async function deleteMenuItem(
 }
 export async function deleteMenuItems(
   itemIds: string[],
-  validator?: (item: GoogleSpreadsheetRow<Kitchen.MenuItemRow>) => boolean,
+  validator?: (item: GoogleMenuRow) => boolean,
 ): Promise<boolean> {
   const rows = (await getGoogleMenuItemRows()).filter((item) => {
     return itemIds.includes(item.get('id') as string) && (validator ? validator(item) : true)

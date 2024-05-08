@@ -1,5 +1,8 @@
 import dayjs from 'dayjs'
 
+import { serverToCostItem } from '@/lib/costs'
+import { serverToMenuItem } from '@/lib/menuItems'
+
 export async function createUser(payload: User.CreatePayload): Promise<User.Base | undefined> {
   return await create<User.Base, User.CreatePayload>('/api/users', payload)
 }
@@ -13,79 +16,103 @@ export async function deleteUser(user: User.Base): Promise<boolean> {
   return await deleted(`/api/user/${user.id}`)
 }
 
-export async function createMenuItem(
-  payload: Kitchen.MenuItemPayload,
-): Promise<Kitchen.MenuItem | undefined> {
-  const item = await create<Kitchen.ServerMenuItem, Kitchen.MenuItemPayload>(
+export async function createKitchenMenuItem(
+  payload: Kitchen.Menu.Payload,
+): Promise<Kitchen.Menu.Item | undefined> {
+  const item = await create<Kitchen.Menu.ServerItem, Kitchen.Menu.Payload>(
     '/api/kitchen/menu-items',
     payload,
   )
 
-  return item
-    ? { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
-    : undefined
+  return item ? serverToMenuItem(item) : undefined
 }
-export async function editMenuItem(
+export async function editKitchenMenuItem(
   id: string,
-  payload: Kitchen.MenuItemPayload,
-): Promise<Kitchen.MenuItem | undefined> {
-  const item = await edit<Kitchen.ServerMenuItem, Kitchen.MenuItemPayload>(
+  payload: Kitchen.Menu.Payload,
+): Promise<Kitchen.Menu.Item | undefined> {
+  const item = await edit<Kitchen.Menu.ServerItem, Kitchen.Menu.Payload>(
     `/api/kitchen/menu-item/${id}`,
     payload,
   )
 
-  return item
-    ? { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
-    : undefined
+  return item ? serverToMenuItem(item) : undefined
 }
-export async function deleteMenuItem(menuItem: Kitchen.MenuItem): Promise<boolean> {
+export async function deleteKitchenMenuItem(menuItem: Kitchen.Menu.Item): Promise<boolean> {
   return await deleted(`/api/kitchen/menu-item/${menuItem.id}`)
 }
-export async function deleteMenuItems(items: Kitchen.MenuItem[]): Promise<boolean> {
-  if (items.length > 1) {
-    return await deletedAll(
-      '/api/kitchen/menu-items',
-      items.map((i) => i.id),
-    )
-  }
-  const item = items[0]
-  return await deleted(`/api/kitchen/menu-item/${item.id}`)
+export async function deleteMKitchenenuItems(items: Kitchen.Menu.Item[]): Promise<boolean> {
+  return await deletedAll(
+    '/api/kitchen/menu-items',
+    items.map((i) => i.id),
+  )
 }
 
 export async function createKitchenCost(
-  payload: Kitchen.CostItemPayload,
-): Promise<Kitchen.CostItem | undefined> {
-  const item = await create<Kitchen.ServerCostItem, Kitchen.CostItemPayload>(
+  payload: Kitchen.Cost.Payload,
+): Promise<Kitchen.Cost.Item | undefined> {
+  const item = await create<Kitchen.Cost.ServerItem, Kitchen.Cost.Payload>(
     '/api/kitchen/costs',
     payload,
   )
 
-  return item
-    ? { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
-    : undefined
+  return item ? serverToCostItem(item) : undefined
 }
 export async function editKitchenCost(
   id: string,
-  payload: Kitchen.CostItemPayload,
-): Promise<Kitchen.CostItem | undefined> {
-  const item = await edit<Kitchen.ServerCostItem, Kitchen.CostItemPayload>(
+  payload: Kitchen.Cost.Payload,
+): Promise<Kitchen.Cost.Item | undefined> {
+  const item = await edit<Kitchen.Cost.ServerItem, Kitchen.Cost.Payload>(
     `/api/kitchen/cost/${id}`,
     payload,
   )
 
+  return item ? serverToCostItem(item) : undefined
+}
+export async function deleteKitchenCosts(items: Kitchen.Cost.Item[]): Promise<boolean> {
+  return await deletedAll(
+    '/api/kitchen/costs',
+    items.map((i) => i.id),
+  )
+}
+
+export async function createKitchenCheckout(
+  payload: Kitchen.Checkout.Payload,
+): Promise<Kitchen.Checkout.Item | undefined> {
+  const item = await create<Kitchen.Checkout.ServerItem, Kitchen.Checkout.Payload>(
+    '/api/kitchen/checkouts',
+    payload,
+  )
+
   return item
-    ? { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
+    ? {
+        ...item,
+        created: dayjs(item.created),
+        modified: dayjs(item.modified),
+      }
     : undefined
 }
-export async function deleteKitchenCosts(items: Kitchen.CostItem[]): Promise<boolean> {
-  if (items.length > 1) {
-    return await deletedAll(
-      '/api/kitchen/costs',
-      items.map((i) => i.id),
-    )
-  }
-  const item = items[0]
-  return await deleted(`/api/kitchen/cost/${item.id}`)
+export async function editKitchenCheckout(
+  id: string,
+  payload: Kitchen.Checkout.Payload,
+): Promise<Kitchen.Checkout.Item | undefined> {
+  const item = await edit<Kitchen.Checkout.ServerItem, Kitchen.Checkout.Payload>(
+    `/api/kitchen/checkout/${id}`,
+    payload,
+  )
+
+  return item
+    ? {
+        ...item,
+        created: dayjs(item.created),
+        modified: dayjs(item.modified),
+      }
+    : undefined
+}
+export async function deleteKitchenCheckouts(items: Kitchen.Checkout.Item[]): Promise<boolean> {
+  return await deletedAll(
+    '/api/kitchen/checkouts',
+    items.map((i) => i.id),
+  )
 }
 
 async function create<D = unknown, P = unknown>(url: string, payload: P): Promise<D | undefined> {

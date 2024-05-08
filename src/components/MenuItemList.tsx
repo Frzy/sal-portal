@@ -21,7 +21,7 @@ interface Filters {
   timeframe?: TimeFrameValue
 }
 
-const columns: ListColumns<Kitchen.MenuItem>[] = [
+const columns: ListColumns<Kitchen.Menu.Item>[] = [
   {
     id: 'name',
     disablePadding: true,
@@ -44,7 +44,7 @@ const columns: ListColumns<Kitchen.MenuItem>[] = [
     isCurrency: true,
   },
 ]
-const adminColumns: ListColumns<Kitchen.MenuItem>[] = [
+const adminColumns: ListColumns<Kitchen.Menu.Item>[] = [
   {
     id: 'modified',
     disablePadding: false,
@@ -157,10 +157,10 @@ function MenuItemListFilters({
 }
 
 interface MenuItemListProps {
-  menuItems: Kitchen.MenuItem[]
+  menuItems: Kitchen.Menu.Item[]
   onCreate?: () => void
-  onDelete?: (items: Kitchen.MenuItem[]) => void
-  onEdit?: (item: Kitchen.MenuItem) => void
+  onDelete?: (items: Kitchen.Menu.Item[]) => void
+  onEdit?: (item: Kitchen.Menu.Item) => void
   title: string
   forwardedRef?: React.Ref<EnhancedListRef>
 }
@@ -186,7 +186,7 @@ export default function MenuItemList({
   const filterItems = useMemo(() => {
     if (!filters) return menuItems
 
-    return menuItems.filter((item: Kitchen.MenuItem): boolean => {
+    return menuItems.filter((item: Kitchen.Menu.Item): boolean => {
       if (filters.timeframe) {
         const { startDate, endDate } = filters.timeframe
         if (item.created.isBefore(startDate) || item.created.isAfter(endDate)) return false

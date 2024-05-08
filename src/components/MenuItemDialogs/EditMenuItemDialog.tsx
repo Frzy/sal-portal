@@ -14,11 +14,11 @@ import {
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
-import { editMenuItem } from '@/util/requests'
+import { editKitchenMenuItem } from '@/util/requests'
 
 export interface EditMenuItemDialogProps extends Omit<DialogProps, 'onClose'> {
-  menuItem: Kitchen.MenuItem
-  onEdited?: (menuItem: Kitchen.MenuItem) => void
+  menuItem: Kitchen.Menu.Item
+  onEdited?: (menuItem: Kitchen.Menu.Item) => void
   onClose?: () => void
 }
 export default function EditMenuItemDialog({
@@ -28,9 +28,10 @@ export default function EditMenuItemDialog({
   ...other
 }: EditMenuItemDialogProps): React.JSX.Element {
   const [loading, setLoading] = useState(false)
-  const [menuItem, setMenuItem] = useState<Kitchen.MenuItemPayload>({
+  const [menuItem, setMenuItem] = useState<Kitchen.Menu.Payload>({
     price: initItem.price,
     description: initItem.description,
+    includesDrinkChip: initItem.includesDrinkChip,
     name: initItem.name,
   })
   const isFormInvalid = useMemo(() => {
@@ -49,7 +50,7 @@ export default function EditMenuItemDialog({
 
   async function handleEditMenuItem(): Promise<void> {
     setLoading(true)
-    const editedMenuItem = await editMenuItem(initItem.id, menuItem)
+    const editedMenuItem = await editKitchenMenuItem(initItem.id, menuItem)
 
     if (!editedMenuItem) {
       const event = new CustomEvent<INotification>('notify', {
