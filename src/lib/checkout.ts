@@ -4,10 +4,10 @@ import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 import { getNumber } from '@/util/functions'
 
 import { createCostItem } from './costs'
-import { createOrders } from './orders'
+import { createOrders, getOrders } from './orders'
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
-type GoogleCheckoutRow = GoogleSpreadsheetRow<Kitchen.Checkout.ServerItem>
+type GoogleCheckoutRow = GoogleSpreadsheetRow<Omit<Kitchen.Checkout.ServerItem, 'orders' | 'name'>>
 
 const BASE_CHECKOUT_ITEM = {
   totalSales: 0,
@@ -18,6 +18,7 @@ const BASE_CHECKOUT_ITEM = {
 function googleToServerCheckout(row: GoogleCheckoutRow): Kitchen.Checkout.ServerItem {
   return {
     id: row.get('id'),
+    name: `Checkout #${(row.rowNumber - 1).toString().padStart(4, '0')}`,
     created: row.get('created'),
     createdBy: row.get('createdBy'),
     creditCardSales: getNumber(row.get('creditCardSales')),
@@ -27,6 +28,7 @@ function googleToServerCheckout(row: GoogleCheckoutRow): Kitchen.Checkout.Server
     lastModifiedBy: row.get('lastModifiedBy'),
     modified: row.get('modified'),
     sales: getNumber(row.get('sales')),
+    orders: [],
   }
 }
 
@@ -43,7 +45,13 @@ export async function findGoogleCheckoutRows(
 }
 
 export async function getCheckouts(): Promise<Kitchen.Checkout.ServerItem[]> {
-  return (await getGoogleCheckoutRows()).map(googleToServerCheckout)
+  const allCheckouts = (await getGoogleCheckoutRows()).map(googleToServerCheckout)
+  const allOrders = await getOrders()
+
+  return allCheckouts.map((checkout) => ({
+    ...checkout,
+    orders: allOrders.filter((o) => o.checkoutId === checkout.id),
+  }))
 }
 export async function getCheckoutsBy(
   filter: (item: Kitchen.Checkout.ServerItem) => boolean,
@@ -105,15 +113,26 @@ export async function createCheckouts(
     ]
   })
 
+  let allOrders: Kitchen.Order.ServerItem[] = []
+
   if (costPayloads.length) {
     await createCostItem(costPayloads)
   }
 
   if (orderPayloads.length) {
-    await createOrders(orderPayloads)
+    allOrders = await createOrders(orderPayloads)
   }
 
-  return (await workSheet.addRows(checkoutRows)).map(googleToServerCheckout)
+  const allCheckouts = (await workSheet.addRows(checkoutRows)).map(googleToServerCheckout)
+
+  if (allOrders.length) {
+    return allCheckouts.map((checkout) => ({
+      ...checkout,
+      orders: allOrders.filter((o) => o.checkoutId === checkout.id),
+    }))
+  }
+
+  return allCheckouts
 }
 export async function updateCheckout(
   costId: string,
@@ -127,7 +146,7 @@ export async function updateCheckout(
 
     const now = dayjs().format()
 
-    const updatedData: Kitchen.Checkout.ServerItem = {
+    const updatedData: Omit<Kitchen.Checkout.ServerItem, 'orders' | 'name'> = {
       ...(rowItem.toObject() as Kitchen.Checkout.ServerItem),
       ...payload,
       modified: now,

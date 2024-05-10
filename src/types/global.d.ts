@@ -109,10 +109,13 @@ declare global {
       createdBy: string
       modified: string
       lastModifiedBy: string
+      name: string
+      orders: Kitchen.Order.ServerItem[]
     }
     interface Item extends ServerItem {
       created: Dayjs
       modified: Dayjs
+      orders: Kitchen.Order.Item[]
     }
 
     interface Order {
