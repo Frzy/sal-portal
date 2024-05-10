@@ -10,14 +10,10 @@ const BASE_COST_ITEM = {
   amount: 0,
 }
 
-export function serverToCostItem(item: Kitchen.Cost.ServerItem): Kitchen.Cost.Item {
-  return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
-}
-
 function googleToServer(row: GoogleCostRow): Kitchen.Cost.ServerItem {
   return {
     id: row.get('id'),
-    name: `Cost #${row.rowNumber.toString().padStart(3, '0')}`,
+    name: `Cost #${(row.rowNumber - 1).toString().padStart(4, '0')}`,
     amount: getNumber(row.get('amount')),
     created: row.get('created'),
     createdBy: row.get('createdBy'),
@@ -61,15 +57,13 @@ export async function createCostItem(
   const payloads: Kitchen.Cost.CreatePayload[] = Array.isArray(payload) ? [...payload] : [payload]
 
   const newRows: RawRowData[] = payloads.map((data) => {
-    const { amount, ...details } = data
     const now = dayjs().format()
 
     return {
       ...BASE_COST_ITEM,
-      ...details,
-      amount: `${amount}`,
+      ...data,
       id: crypto.randomUUID(),
-      lastModifiedBy: details.createdBy,
+      lastModifiedBy: data.createdBy,
       created: now,
       modified: now,
     }

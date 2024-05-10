@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import NumberInput, { type HTMLNumericElement } from '@c/NumberInput'
 import MoneyIcon from '@mui/icons-material/AttachMoney'
 import { LoadingButton } from '@mui/lab'
 import {
@@ -10,7 +11,6 @@ import {
   type DialogProps,
   DialogTitle,
   InputAdornment,
-  TextField,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
@@ -35,10 +35,10 @@ export default function EditKitchenCostDialog({
     return item.amount <= 0
   }, [item])
 
-  function handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
+  function handleNumberChange(event: React.ChangeEvent<HTMLNumericElement>): void {
     const { value, name } = event.target
 
-    setItem((prev) => ({ ...prev, [name]: parseInt(value) }))
+    setItem((prev) => ({ ...prev, [name!]: typeof value === 'number' ? value : 0 }))
   }
 
   async function handleEditItem(): Promise<void> {
@@ -53,7 +53,7 @@ export default function EditKitchenCostDialog({
       window.dispatchEvent(event)
     } else {
       const event = new CustomEvent<INotification>('notify', {
-        detail: { message: `Successfully updated cost item.`, severity: 'success' },
+        detail: { message: `Successfully updated.`, severity: 'success' },
       })
 
       window.dispatchEvent(event)
@@ -70,12 +70,11 @@ export default function EditKitchenCostDialog({
       <DialogContent dividers>
         <Grid container spacing={2}>
           <Grid xs={12}>
-            <TextField
+            <NumberInput
               label='Amount'
               name='amount'
-              type='number'
-              value={item.amount || ''}
-              onChange={handleTextChange}
+              value={item.amount}
+              onChange={handleNumberChange}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position='start'>
@@ -84,6 +83,7 @@ export default function EditKitchenCostDialog({
                 ),
               }}
               required
+              autoFocus
               fullWidth
             />
           </Grid>

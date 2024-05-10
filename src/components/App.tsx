@@ -28,7 +28,7 @@ export default function App({ children, deviceType }: AppProps): React.JSX.Eleme
         <CssBaseline />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Header />
-          <Container component={'main'} maxWidth='xl'>
+          <Container component={'main'} maxWidth='xl' sx={{ pb: 1 }}>
             <Toolbar sx={{ mb: 1 }} />
             {children}
             <Notifier />

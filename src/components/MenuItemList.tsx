@@ -4,6 +4,8 @@ import React, { useMemo, useState } from 'react'
 
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import DrinkIcon from '@mui/icons-material/LocalBar'
+import NoDrinksIcon from '@mui/icons-material/NoDrinks'
 import { Autocomplete, Box, Button, Checkbox, Chip, TextField } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -24,13 +26,11 @@ interface Filters {
 const columns: ListColumns<Kitchen.Menu.Item>[] = [
   {
     id: 'name',
-    disablePadding: true,
     label: 'Name',
     minWidth: 100,
   },
   {
     id: 'description',
-    disablePadding: false,
     label: 'Description',
     isDate: true,
     minWidth: 250,
@@ -38,23 +38,31 @@ const columns: ListColumns<Kitchen.Menu.Item>[] = [
   },
   {
     id: 'price',
-    disablePadding: false,
     label: 'Price',
     isNumber: true,
     isCurrency: true,
+  },
+  {
+    id: 'hasDrinkChip',
+    label: 'Drink Chip',
+    cellRender: (data: unknown) => {
+      return data ? (
+        <DrinkIcon sx={{ color: (theme) => theme.vars.palette.success.main }} />
+      ) : (
+        <NoDrinksIcon sx={{ color: (theme) => theme.vars.palette.error.main }} />
+      )
+    },
   },
 ]
 const adminColumns: ListColumns<Kitchen.Menu.Item>[] = [
   {
     id: 'modified',
-    disablePadding: false,
     label: 'Modified',
     isDate: true,
     minWidth: 150,
   },
   {
     id: 'lastModifiedBy',
-    disablePadding: false,
     label: 'Modified By',
     minWidth: 135,
   },

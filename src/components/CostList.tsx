@@ -24,20 +24,17 @@ interface Filters {
 const columns: ListColumns<Kitchen.Cost.Item>[] = [
   {
     id: 'name',
-    disablePadding: true,
     label: 'Name',
     minWidth: 100,
   },
   {
     id: 'amount',
-    disablePadding: false,
     label: 'Amount',
     isNumber: true,
     isCurrency: true,
   },
   {
     id: 'created',
-    disablePadding: false,
     label: 'Created',
     isDate: true,
     minWidth: 150,
@@ -46,20 +43,17 @@ const columns: ListColumns<Kitchen.Cost.Item>[] = [
 const adminColumns: ListColumns<Kitchen.Cost.Item>[] = [
   {
     id: 'createdBy',
-    disablePadding: false,
     label: 'Created By',
     minWidth: 130,
   },
   {
     id: 'modified',
-    disablePadding: false,
     label: 'Modified',
     isDate: true,
     minWidth: 150,
   },
   {
     id: 'lastModifiedBy',
-    disablePadding: false,
     label: 'Modified By',
     minWidth: 135,
   },
@@ -267,6 +261,7 @@ export default function CostList({
       sortOrder='desc'
       title={title}
       totalRows={costItems.length}
+      selection='single'
       filterComponent={
         <CostListFilters
           createdOptions={createdOptions}

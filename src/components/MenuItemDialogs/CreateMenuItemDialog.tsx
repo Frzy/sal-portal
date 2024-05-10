@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import NumberInput, { type HTMLNumericElement } from '@c/NumberInput'
 import MoneyIcon from '@mui/icons-material/AttachMoney'
 import { LoadingButton } from '@mui/lab'
 import {
@@ -9,12 +10,21 @@ import {
   DialogContent,
   type DialogProps,
   DialogTitle,
+  FormControlLabel,
   InputAdornment,
+  Switch,
   TextField,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
 import { createKitchenMenuItem } from '@/util/requests'
+
+const BASE = {
+  price: 0,
+  description: '',
+  hasDrinkChip: false,
+  name: '',
+}
 
 export interface CreateMenuItemDialogProps extends Omit<DialogProps, 'onClose'> {
   onCreated?: (newMenuItem: Kitchen.Menu.Item) => void
@@ -26,12 +36,7 @@ export default function CreateMenuItemDialog({
   ...other
 }: CreateMenuItemDialogProps): React.JSX.Element {
   const [loading, setLoading] = useState(false)
-  const [menuItem, setMenuItem] = useState<Kitchen.Menu.Payload>({
-    price: 0,
-    description: '',
-    includesDrinkChip: false,
-    name: '',
-  })
+  const [menuItem, setMenuItem] = useState<Kitchen.Menu.Payload>(BASE)
   const isFormInvalid = useMemo(() => {
     return !menuItem.name && menuItem.price > 0
   }, [menuItem])
@@ -40,6 +45,20 @@ export default function CreateMenuItemDialog({
     const { value, name } = event.target
 
     setMenuItem((prev) => ({ ...prev, [name]: value }))
+  }
+  function handleNumberChange(event: React.ChangeEvent<HTMLNumericElement>): void {
+    const { value, name } = event.target
+
+    setMenuItem((prev) => ({ ...prev, [name!]: typeof value === 'number' ? value : 0 }))
+  }
+  function handleSwitchChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    setMenuItem((prev) => ({ ...prev, hasDrinkChip: event.target.checked }))
+  }
+  function handleClose(): void {
+    if (onClose) {
+      setMenuItem(BASE)
+      onClose()
+    }
   }
 
   async function handleCreateMenuItem(): Promise<void> {
@@ -55,11 +74,11 @@ export default function CreateMenuItemDialog({
     } else if (onCreated) onCreated(createdMenuItem)
 
     setLoading(false)
-    if (createdMenuItem && onClose) onClose()
+    if (createdMenuItem) handleClose()
   }
 
   return (
-    <Dialog onClose={onClose} {...other}>
+    <Dialog onClose={handleClose} {...other}>
       <DialogTitle>Create Menu Item</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
@@ -74,12 +93,12 @@ export default function CreateMenuItemDialog({
               fullWidth
             />
           </Grid>
-          <Grid xs={12}>
-            <TextField
+          <Grid xs={12} sm={6} md={7}>
+            <NumberInput
               label='Price'
               name='price'
               type='number'
-              value={menuItem.price || ''}
+              value={menuItem.price}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position='start'>
@@ -87,9 +106,15 @@ export default function CreateMenuItemDialog({
                   </InputAdornment>
                 ),
               }}
-              onChange={handleTextChange}
+              onChange={handleNumberChange}
               required
               fullWidth
+            />
+          </Grid>
+          <Grid xs={12} sm={6} md={5} sx={{ display: 'flex', alignItems: 'center' }}>
+            <FormControlLabel
+              control={<Switch value={menuItem.hasDrinkChip} onChange={handleSwitchChange} />}
+              label='Includes Drink Chip'
             />
           </Grid>
           <Grid xs={12}>
@@ -108,7 +133,7 @@ export default function CreateMenuItemDialog({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color='inherit'>
+        <Button onClick={handleClose} color='inherit'>
           Cancel
         </Button>
         <LoadingButton

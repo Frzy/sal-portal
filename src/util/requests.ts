@@ -1,7 +1,6 @@
 import dayjs from 'dayjs'
 
-import { serverToCostItem } from '@/lib/costs'
-import { serverToMenuItem } from '@/lib/menuItems'
+import { serverToCostItem, serverToMenuItem } from './functions'
 
 export async function createUser(payload: User.CreatePayload): Promise<User.Base | undefined> {
   return await create<User.Base, User.CreatePayload>('/api/users', payload)

@@ -13,17 +13,13 @@ const BASE_MENU_ITEM = {
   price: 0,
 }
 
-export function serverToMenuItem(item: Kitchen.Menu.ServerItem): Kitchen.Menu.Item {
-  return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
-}
-
 function googleToServer(row: GoogleMenuRow): Kitchen.Menu.ServerItem {
   return {
     created: row.get('created'),
     createdBy: row.get('createdBy'),
     description: row.get('description'),
     id: row.get('id'),
-    includesDrinkChip: row.get('includesDrinkChip') === 'TRUE',
+    hasDrinkChip: row.get('hasDrinkChip') === 'TRUE',
     lastModifiedBy: row.get('lastModifiedBy'),
     modified: row.get('modified'),
     name: row.get('name'),
@@ -64,13 +60,14 @@ export async function createMenuItems(
     process.env.MENU_ITEM_SHEET_KEY,
   )
   const payloads: Kitchen.Menu.CreatePayload[] = Array.isArray(payload) ? [...payload] : [payload]
+
   const newRows: RawRowData[] = payloads.map((menuItem) => {
     const now = dayjs().format()
     return {
       ...BASE_MENU_ITEM,
       ...menuItem,
       description: menuItem?.description ?? '',
-      includesDrinkChip: !!menuItem.includesDrinkChip,
+      hasDrinkChip: !!menuItem.hasDrinkChip,
       id: crypto.randomUUID(),
       created: now,
       modified: now,

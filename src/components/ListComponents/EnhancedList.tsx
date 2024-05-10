@@ -25,7 +25,7 @@ import ListToolbar from './ListToolbar'
 dayjs.extend(relativeTime)
 dayjs.extend(minMax)
 
-type ListSelection = 'single' | 'multiple'
+type ListSelection = 'single' | 'multiple' | 'none'
 type Order = 'asc' | 'desc'
 
 type Row<T> = { id: string } & {
@@ -93,7 +93,7 @@ function ListComponent<T extends Row<T>>({
   const [orderBy, setOrderBy] = useState<string>(initOrderBy as string)
   const [selected, setSelected] = useState<readonly string[]>([])
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
   const [showFilters, setShowFilters] = useState(false)
   const props = useMemo<(keyof T)[]>(() => columns.map((c) => c.id), [columns])
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
@@ -150,9 +150,10 @@ function ListComponent<T extends Row<T>>({
     setPage(0)
   }
   function isSelected(id: string): boolean {
-    return selected.includes(id)
+    return selection !== 'none' ? selected.includes(id) : false
   }
-  function formatRowData(column: ListColumns<T>, data: string | number): React.ReactNode {
+  function formatRowData(column: ListColumns<T>, data: string | number | boolean): React.ReactNode {
+    if (column.cellRender) return column.cellRender(data)
     if (column.isCurrency && typeof data === 'number') return formatCurrency(data)
     if (column.isDate && dayjs.isDayjs(data)) {
       return (
@@ -244,25 +245,31 @@ function ListComponent<T extends Row<T>>({
                 return (
                   <TableRow
                     hover
-                    onClick={(event) => {
-                      handleClick(event, row.id)
-                    }}
+                    onClick={
+                      selection !== 'none'
+                        ? (event) => {
+                            handleClick(event, row.id)
+                          }
+                        : undefined
+                    }
                     role='checkbox'
                     aria-checked={isItemSelected}
                     tabIndex={-1}
                     key={row.id}
                     selected={isItemSelected}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ cursor: selection !== 'none' ? 'pointer' : 'default' }}
                   >
-                    <TableCell padding='checkbox'>
-                      <Checkbox
-                        color='primary'
-                        checked={isItemSelected}
-                        inputProps={{
-                          'aria-labelledby': labelId,
-                        }}
-                      />
-                    </TableCell>
+                    {selection !== 'none' && (
+                      <TableCell padding='checkbox'>
+                        <Checkbox
+                          color='primary'
+                          checked={isItemSelected}
+                          inputProps={{
+                            'aria-labelledby': labelId,
+                          }}
+                        />
+                      </TableCell>
+                    )}
                     {props.map((key, colIndex) => {
                       return colIndex === 0 ? (
                         <TableCell
@@ -271,7 +278,7 @@ function ListComponent<T extends Row<T>>({
                           component='th'
                           id={labelId}
                           scope='row'
-                          padding='none'
+                          padding={selection !== 'none' ? 'none' : undefined}
                         >
                           {formatRowData(columns[colIndex], row[key])}
                         </TableCell>
@@ -287,10 +294,10 @@ function ListComponent<T extends Row<T>>({
               {emptyRows > 0 && (
                 <TableRow
                   style={{
-                    height: 53 * emptyRows,
+                    height: 63 * emptyRows,
                   }}
                 >
-                  <TableCell colSpan={6} />
+                  <TableCell colSpan={columns.length} />
                 </TableRow>
               )}
             </TableBody>

@@ -5,8 +5,8 @@ import { Fragment, useMemo, useState } from 'react'
 import CostList from '@c/CostList'
 import { KitchenCostDialog } from '@c/KitchenCostDialog'
 
-import { serverToCostItem } from '@/lib/costs'
 import { DIALOG_TYPES } from '@/util/constants'
+import { serverToCostItem } from '@/util/functions'
 
 interface CostViewProps {
   costItems: Kitchen.Cost.ServerItem[]

@@ -48,10 +48,17 @@ export function getNumber(value: unknown, defaultValue: number = 0): number {
   let number = defaultValue
 
   if (typeof value === 'string') {
-    number = parseInt(value)
+    number = parseFloat(value)
   } else if (typeof value === 'number') {
     number = value
   }
 
   return isNaN(number) ? defaultValue : number
+}
+
+export function serverToCostItem(item: Kitchen.Cost.ServerItem): Kitchen.Cost.Item {
+  return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
+}
+export function serverToMenuItem(item: Kitchen.Menu.ServerItem): Kitchen.Menu.Item {
+  return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
 }

@@ -2,7 +2,7 @@ import { Box, Checkbox, TableCell, TableHead, TableRow, TableSortLabel } from '@
 import { visuallyHidden } from '@mui/utils'
 
 type Order = 'asc' | 'desc'
-type ListSelection = 'single' | 'multiple'
+type ListSelection = 'single' | 'multiple' | 'none'
 interface ListHeaderProps<T> {
   columns: ListColumns<T>[]
   numSelected: number
@@ -19,7 +19,6 @@ type StringKeys<T> = {
 }[keyof T]
 
 export interface ListColumns<T> {
-  disablePadding: boolean
   id: StringKeys<T>
   label: string
   isNumber?: boolean
@@ -27,6 +26,7 @@ export interface ListColumns<T> {
   isDate?: boolean
   minWidth?: number
   align?: 'left' | 'center' | 'right'
+  cellRender?: (data: unknown) => React.ReactNode
 }
 
 export default function ListHeader<T>({
@@ -46,24 +46,26 @@ export default function ListHeader<T>({
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding='checkbox'>
-          {selection === 'multiple' && (
-            <Checkbox
-              color='primary'
-              indeterminate={numSelected > 0 && numSelected < rowCount}
-              checked={rowCount > 0 && numSelected === rowCount}
-              onChange={onSelectAllClick}
-              inputProps={{
-                'aria-label': 'select all desserts',
-              }}
-            />
-          )}
-        </TableCell>
+        {selection !== 'none' && (
+          <TableCell padding='checkbox'>
+            {selection === 'multiple' && (
+              <Checkbox
+                color='primary'
+                indeterminate={numSelected > 0 && numSelected < rowCount}
+                checked={rowCount > 0 && numSelected === rowCount}
+                onChange={onSelectAllClick}
+                inputProps={{
+                  'aria-label': 'select all desserts',
+                }}
+              />
+            )}
+          </TableCell>
+        )}
         {columns.map((column, index) => (
           <TableCell
             key={column.id}
             align={column?.align ?? index === 0 ? 'left' : 'right'}
-            padding={column.disablePadding ? 'none' : 'normal'}
+            padding={selection !== 'none' ? 'none' : 'normal'}
             sortDirection={orderBy === column.id ? order : false}
             sx={{ minWidth: column?.minWidth }}
           >

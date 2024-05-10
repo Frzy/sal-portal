@@ -32,11 +32,19 @@ export default function DeleteUserDialog({
 
     if (!deletedUser) {
       const event = new CustomEvent<INotification>('notify', {
-        detail: { message: 'Failed to delete user account.', severity: 'error' },
+        detail: { message: 'Failed to delete user.', severity: 'error' },
       })
 
       dispatchEvent(event)
-    } else if (onDeleted) onDeleted(user)
+    } else {
+      const event = new CustomEvent<INotification>('notify', {
+        detail: { message: `Successfully deleted user.`, severity: 'success' },
+      })
+
+      dispatchEvent(event)
+
+      if (onDeleted) onDeleted(user)
+    }
 
     setLoading(false)
 
@@ -49,7 +57,11 @@ export default function DeleteUserDialog({
       <DialogContent dividers>
         <Typography>
           Are you sure you want to delete the following user account:{' '}
-          <Typography fontWeight='fontWeightBold' sx={{ textTransform: 'uppercase' }}>
+          <Typography
+            component='span'
+            fontWeight='fontWeightBold'
+            sx={{ textTransform: 'uppercase' }}
+          >
             {user.username}
           </Typography>
         </Typography>

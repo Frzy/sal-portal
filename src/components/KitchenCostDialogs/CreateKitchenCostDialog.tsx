@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import NumberInput, { type HTMLNumericElement } from '@c/NumberInput'
 import MoneyIcon from '@mui/icons-material/AttachMoney'
 import { LoadingButton } from '@mui/lab'
 import {
@@ -10,7 +11,6 @@ import {
   type DialogProps,
   DialogTitle,
   InputAdornment,
-  TextField,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
@@ -33,10 +33,10 @@ export default function CreateKitchenCostDialog({
     return item.amount <= 0
   }, [item])
 
-  function handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
+  function handleTextChange(event: React.ChangeEvent<HTMLNumericElement>): void {
     const { value, name } = event.target
 
-    setItem((prev) => ({ ...prev, [name]: value }))
+    setItem((prev) => ({ ...prev, [name!]: typeof value === 'number' ? value : 0 }))
   }
 
   async function handleCreateKitchenCost(): Promise<void> {
@@ -60,7 +60,9 @@ export default function CreateKitchenCostDialog({
     }
 
     setLoading(false)
-    if (createdItem && onClose) onClose()
+    if (createdItem && onClose) {
+      onClose()
+    }
   }
 
   return (
@@ -69,11 +71,10 @@ export default function CreateKitchenCostDialog({
       <DialogContent dividers>
         <Grid container spacing={2}>
           <Grid xs={12}>
-            <TextField
+            <NumberInput
               label='Amount'
               name='amount'
-              type='number'
-              value={item.amount || ''}
+              value={item.amount}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position='start'>
@@ -82,6 +83,7 @@ export default function CreateKitchenCostDialog({
                 ),
               }}
               onChange={handleTextChange}
+              autoFocus
               required
               fullWidth
             />

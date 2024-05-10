@@ -3,6 +3,8 @@ import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 
 import { getNumber } from '@/util/functions'
 
+import { createCostItem } from './costs'
+import { createOrders } from './orders'
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
 type GoogleCheckoutRow = GoogleSpreadsheetRow<Kitchen.Checkout.ServerItem>
@@ -13,17 +15,18 @@ const BASE_CHECKOUT_ITEM = {
   deposit: 0,
 }
 
-function checkoutMapper(row: GoogleCheckoutRow): Kitchen.Checkout.ServerItem {
+function googleToServerCheckout(row: GoogleCheckoutRow): Kitchen.Checkout.ServerItem {
   return {
+    id: row.get('id'),
     created: row.get('created'),
     createdBy: row.get('createdBy'),
     creditCardSales: getNumber(row.get('creditCardSales')),
     deposit: getNumber(row.get('deposit')),
-    description: row.get('description'),
-    id: row.get('id'),
+    drinkChips: getNumber(row.get('drinkChips')),
+    expenses: row.get('expenses'),
     lastModifiedBy: row.get('lastModifiedBy'),
     modified: row.get('modified'),
-    totalSales: getNumber(row.get('totalSales')),
+    sales: getNumber(row.get('sales')),
   }
 }
 
@@ -40,7 +43,7 @@ export async function findGoogleCheckoutRows(
 }
 
 export async function getCheckouts(): Promise<Kitchen.Checkout.ServerItem[]> {
-  return (await getGoogleCheckoutRows()).map(checkoutMapper)
+  return (await getGoogleCheckoutRows()).map(googleToServerCheckout)
 }
 export async function getCheckoutsBy(
   filter: (item: Kitchen.Checkout.ServerItem) => boolean,
@@ -56,30 +59,61 @@ export async function findCheckout(
 export async function createCheckouts(
   payload: Kitchen.Checkout.CreatePayload | Kitchen.Checkout.CreatePayload[],
 ): Promise<Kitchen.Checkout.ServerItem[]> {
+  const now = dayjs().format()
   const workSheet = await getGoogleSheetWorkSheet(
     process.env.SPREADSHEET_KEY,
     process.env.KITCHEN_CHECKOUT_SHEET_KEY,
   )
-  const newItems: Kitchen.Checkout.CreatePayload[] = Array.isArray(payload)
+  const payloads: Kitchen.Checkout.CreatePayload[] = Array.isArray(payload)
     ? [...payload]
     : [payload]
 
-  const newRows: RawRowData[] = newItems.map((data) => {
-    const { description, ...details } = data
-    const now = dayjs().format()
+  let checkoutRows: RawRowData[] = []
+  let costPayloads: Kitchen.Cost.CreatePayload[] = []
+  let orderPayloads: Kitchen.Order.CreatePayload[] = []
 
-    return {
+  payloads.forEach((p) => {
+    const { orders, ...other } = p
+    const id = crypto.randomUUID()
+    const checkPayload = {
       ...BASE_CHECKOUT_ITEM,
-      ...details,
-      id: crypto.randomUUID(),
-      description: description ?? '',
+      ...other,
+      id,
       created: now,
       modified: now,
-      lastModifiedBy: details.createdBy,
+      lastModifiedBy: p.createdBy,
+    } satisfies RawRowData
+
+    if (p.drinkChips + p.expenses > 0) {
+      costPayloads = [
+        ...costPayloads,
+        { amount: p.drinkChips + p.expenses, createdBy: p.createdBy },
+      ]
     }
+
+    checkoutRows = [...checkoutRows, checkPayload]
+    orderPayloads = [
+      ...orderPayloads,
+      ...orders.map((o) => ({
+        checkoutId: id,
+        menuItemHasDrinkChip: o.menuItem.hasDrinkChip,
+        menuItemName: o.menuItem.name,
+        menuItemPrice: o.menuItem.price,
+        menuItemQuantity: o.quantity,
+        createdBy: p.createdBy,
+      })),
+    ]
   })
 
-  return ((await workSheet.addRows(newRows)) as unknown as GoogleCheckoutRow[]).map(checkoutMapper)
+  if (costPayloads.length) {
+    await createCostItem(costPayloads)
+  }
+
+  if (orderPayloads.length) {
+    await createOrders(orderPayloads)
+  }
+
+  return (await workSheet.addRows(checkoutRows)).map(googleToServerCheckout)
 }
 export async function updateCheckout(
   costId: string,
@@ -102,7 +136,7 @@ export async function updateCheckout(
     rowItem.assign(updatedData)
     await rowItem.save()
 
-    return checkoutMapper(rowItem)
+    return googleToServerCheckout(rowItem)
   }
 }
 export async function deleteCheckout(

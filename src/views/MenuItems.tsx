@@ -8,8 +8,8 @@ import MenuItemList from '@c/MenuItemList'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
-import { serverToMenuItem } from '@/lib/menuItems'
 import { DIALOG_TYPES } from '@/util/constants'
+import { serverToMenuItem } from '@/util/functions'
 
 dayjs.extend(relativeTime)
 

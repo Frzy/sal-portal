@@ -3,7 +3,7 @@ declare global {
     interface ProcessEnv {
       API_EMAIL: string
       API_KEY: string
-      KITCHEN_CHECKOUT_DETAILS_SHEET_KEY: number
+      KITCHEN_ORDER_SHEET_KEY: number
       KITCHEN_CHECKOUT_SHEET_KEY: number
       KITCHEN_COST_SHEET_KEY: number
       MENU_ITEM_SHEET_KEY: number

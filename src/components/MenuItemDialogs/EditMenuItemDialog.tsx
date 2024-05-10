@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import NumberInput, { type HTMLNumericElement } from '@c/NumberInput'
 import MoneyIcon from '@mui/icons-material/AttachMoney'
 import { LoadingButton } from '@mui/lab'
 import {
@@ -9,7 +10,9 @@ import {
   DialogContent,
   type DialogProps,
   DialogTitle,
+  FormControlLabel,
   InputAdornment,
+  Switch,
   TextField,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
@@ -31,7 +34,7 @@ export default function EditMenuItemDialog({
   const [menuItem, setMenuItem] = useState<Kitchen.Menu.Payload>({
     price: initItem.price,
     description: initItem.description,
-    includesDrinkChip: initItem.includesDrinkChip,
+    hasDrinkChip: initItem.hasDrinkChip,
     name: initItem.name,
   })
   const isFormInvalid = useMemo(() => {
@@ -41,11 +44,15 @@ export default function EditMenuItemDialog({
   function handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
     const { value, name } = event.target
 
-    if (name === 'price') {
-      setMenuItem((prev) => ({ ...prev, [name]: parseInt(value) }))
-    } else {
-      setMenuItem((prev) => ({ ...prev, [name]: value }))
-    }
+    setMenuItem((prev) => ({ ...prev, [name]: value }))
+  }
+  function handleNumberInputChange(event: React.ChangeEvent<HTMLNumericElement>): void {
+    const { value, name } = event.target
+
+    setMenuItem((prev) => ({ ...prev, [name!]: typeof value === 'number' ? value : 0 }))
+  }
+  function handleSwitchChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    setMenuItem((prev) => ({ ...prev, hasDrinkChip: event.target.checked }))
   }
 
   async function handleEditMenuItem(): Promise<void> {
@@ -54,11 +61,19 @@ export default function EditMenuItemDialog({
 
     if (!editedMenuItem) {
       const event = new CustomEvent<INotification>('notify', {
-        detail: { message: `Failed to edit menu item: ${initItem.name}`, severity: 'error' },
+        detail: { message: `Failed to update.`, severity: 'error' },
       })
 
       window.dispatchEvent(event)
-    } else if (onEdited) onEdited(editedMenuItem)
+    } else {
+      const event = new CustomEvent<INotification>('notify', {
+        detail: { message: `Successfully updated.`, severity: 'success' },
+      })
+
+      if (onEdited) onEdited(editedMenuItem)
+
+      window.dispatchEvent(event)
+    }
 
     setLoading(false)
     if (editedMenuItem && onClose) onClose()
@@ -80,13 +95,13 @@ export default function EditMenuItemDialog({
               fullWidth
             />
           </Grid>
-          <Grid xs={12}>
-            <TextField
+          <Grid xs={12} sm={6} md={7}>
+            <NumberInput
               label='Price'
               name='price'
               type='number'
-              value={menuItem.price || ''}
-              onChange={handleTextChange}
+              value={menuItem.price || 0}
+              onChange={handleNumberInputChange}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position='start'>
@@ -96,6 +111,12 @@ export default function EditMenuItemDialog({
               }}
               required
               fullWidth
+            />
+          </Grid>
+          <Grid xs={12} sm={6} md={5} sx={{ display: 'flex', alignItems: 'center' }}>
+            <FormControlLabel
+              control={<Switch value={menuItem.hasDrinkChip} onChange={handleSwitchChange} />}
+              label='Includes Drink Chip'
             />
           </Grid>
           <Grid xs={12}>

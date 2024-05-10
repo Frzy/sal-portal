@@ -1,4 +1,4 @@
-import { createCheckouts, deleteCheckouts, getCheckoutsBy } from '@/lib/kitchenCheckout'
+import { createCheckouts, deleteCheckouts, getCheckoutsBy } from '@/lib/checkout'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(): Promise<Response> {

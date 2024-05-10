@@ -74,7 +74,7 @@ declare global {
       createdBy: string
       description: string
       id: string
-      includesDrinkChip: boolean
+      hasDrinkChip: boolean
       lastModifiedBy: string
       modified: string
       name: string
@@ -86,7 +86,7 @@ declare global {
     }
     interface Payload {
       description?: string
-      includesDrinkChip?: boolean
+      hasDrinkChip?: boolean
       name: string
       price: number
     }
@@ -100,10 +100,48 @@ declare global {
   namespace Kitchen.Checkout {
     interface ServerItem {
       id: string
-      totalSales: number
       creditCardSales: number
       deposit: number
-      description: string
+      drinkChips: number
+      expenses: number
+      sales: number
+      created: string
+      createdBy: string
+      modified: string
+      lastModifiedBy: string
+    }
+    interface Item extends ServerItem {
+      created: Dayjs
+      modified: Dayjs
+    }
+
+    interface Order {
+      quantity: number
+      menuItem: Kitchen.Menu.Item
+    }
+    interface Payload {
+      creditCardSales: number
+      deposit: number
+      drinkChips: number
+      sales: number
+      expenses: number
+      orders: Order[]
+    }
+    interface CreatePayload extends Payload {
+      createdBy: string
+    }
+    interface EditPayload extends Payload {
+      lastModifiedBy: string
+    }
+  }
+  namespace Kitchen.Order {
+    interface ServerItem {
+      id: string
+      checkoutId: string
+      menuItemName: string
+      menuItemPrice: number
+      menuItemQuantity: number
+      menuItemHasDrinkChip: boolean
       created: string
       createdBy: string
       modified: string
@@ -114,45 +152,11 @@ declare global {
       modified: Dayjs
     }
     interface Payload {
-      creditCardSales: number
-      deposit: number
-      description?: string
-      totalSales: number
-    }
-    interface CreatePayload extends Payload {
-      createdBy: string
-    }
-    interface EditPayload extends Payload {
-      lastModifiedBy: string
-    }
-  }
-  namespace Kitchen.CheckoutDetail {
-    interface Row {
       checkoutId: string
-      created: string
-      createdBy: string
-      id: string
-      lastModifiedBy: string
-      menuItemDrinkChip: string
-      menuItemName: string
-      menuItemPrice: string | number
-      menuItemQuantity: string | number
-      modified: string
-    }
-    interface Item extends Row {
-      created: Dayjs
-      menuItemDrinkChip: boolean
-      menuItemPrice: number
-      menuItemQuantity: number
-      modified: Dayjs
-    }
-    interface Payload {
-      checkoutId: string
-      creditCardSales: number
+      menuItemHasDrinkChip: boolean
       menuItemName: string
       menuItemPrice: number
       menuItemQuantity: number
-      totalSales: number
     }
 
     interface CreatePayload extends Payload {
