@@ -62,3 +62,16 @@ export function serverToCostItem(item: Kitchen.Cost.ServerItem): Kitchen.Cost.It
 export function serverToMenuItem(item: Kitchen.Menu.ServerItem): Kitchen.Menu.Item {
   return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
 }
+export function serverToCheckoutItem(item: Kitchen.Checkout.ServerItem): Kitchen.Checkout.Item {
+  const { orders, ...checkout } = item
+
+  return {
+    ...checkout,
+    created: dayjs(item.created),
+    modified: dayjs(item.modified),
+    orders: orders.map(serverToOrderItem),
+  }
+}
+export function serverToOrderItem(item: Kitchen.Order.ServerItem): Kitchen.Order.Item {
+  return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
+}
