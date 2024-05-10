@@ -65,7 +65,7 @@ export default function ListHeader<T>({
           <TableCell
             key={column.id}
             align={column?.align ?? index === 0 ? 'left' : 'right'}
-            padding={selection !== 'none' ? 'none' : 'normal'}
+            padding={selection !== 'none' && index === 0 ? 'none' : 'normal'}
             sortDirection={orderBy === column.id ? order : false}
             sx={{ minWidth: column?.minWidth }}
           >
