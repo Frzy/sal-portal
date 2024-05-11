@@ -161,19 +161,19 @@ export default function Header(): React.JSX.Element {
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton href='/kitchen/summary'>
+              <ListItemButton href='/kitchen/checkouts'>
                 <ListItemIcon>
                   <ReceiptIcon />
                 </ListItemIcon>
-                <ListItemText primary='Summary' />
+                <ListItemText primary='Checkouts' />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton href='/kitchen/checkout'>
+              <ListItemButton href='/kitchen/checkout-form'>
                 <ListItemIcon>
                   <CheckoutIcon />
                 </ListItemIcon>
-                <ListItemText primary='Checkout' />
+                <ListItemText primary='Checkout Form' />
               </ListItemButton>
             </ListItem>
             <Divider />

@@ -3,8 +3,14 @@ import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 
 import { getNumber } from '@/util/functions'
 
-import { createCostItem } from './costs'
-import { createOrders, getOrders } from './orders'
+import {
+  createCostItem,
+  deleteCostItems,
+  findGoogleCostRows,
+  getGoogleCostRows,
+  updateCostItem,
+} from './costs'
+import { createOrders, getGoogleOrderRows, getOrders } from './orders'
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
 type GoogleCheckoutRow = GoogleSpreadsheetRow<Omit<Kitchen.Checkout.ServerItem, 'orders' | 'name'>>
@@ -24,7 +30,7 @@ function googleToServerCheckout(row: GoogleCheckoutRow): Kitchen.Checkout.Server
     creditCardSales: getNumber(row.get('creditCardSales')),
     deposit: getNumber(row.get('deposit')),
     drinkChips: getNumber(row.get('drinkChips')),
-    expenses: row.get('expenses'),
+    expenses: getNumber(row.get('expenses')),
     lastModifiedBy: row.get('lastModifiedBy'),
     modified: row.get('modified'),
     sales: getNumber(row.get('sales')),
@@ -95,7 +101,7 @@ export async function createCheckouts(
     if (p.drinkChips + p.expenses > 0) {
       costPayloads = [
         ...costPayloads,
-        { amount: p.drinkChips + p.expenses, createdBy: p.createdBy },
+        { amount: p.drinkChips + p.expenses, createdBy: p.createdBy, checkoutId: id },
       ]
     }
 
@@ -135,64 +141,88 @@ export async function createCheckouts(
   return allCheckouts
 }
 export async function updateCheckout(
-  costId: string,
+  checkoutId: string,
   payload: Kitchen.Checkout.EditPayload,
   validator?: (item: GoogleCheckoutRow) => boolean,
 ): Promise<Kitchen.Checkout.ServerItem | undefined> {
-  const rowItem = await findGoogleCheckoutRows((r) => r.get('id') === costId)
+  const row = await findGoogleCheckoutRows((r) => {
+    const isValid = validator ? validator(r) : true
+    return r.get('id') === checkoutId && isValid
+  })
 
-  if (rowItem) {
-    if (validator && !validator(rowItem)) return undefined
-
+  if (row) {
     const now = dayjs().format()
+    const costRow = await findGoogleCostRows((r) => r.get('checkoutId') === checkoutId)
+    const amount = payload.drinkChips + payload.expenses
+    const needCostRow = !!amount
+
+    if (needCostRow) {
+      if (costRow) {
+        const costId: string = costRow.get('id')
+
+        await updateCostItem(costId, {
+          amount,
+          lastModifiedBy: payload.lastModifiedBy,
+        })
+      } else {
+        await createCostItem({
+          checkoutId,
+          amount,
+          createdBy: payload.lastModifiedBy,
+        })
+      }
+    } else if (!needCostRow && costRow) {
+      const costId: string = costRow.get('id')
+
+      await deleteCostItems([costId])
+    }
 
     const updatedData: Omit<Kitchen.Checkout.ServerItem, 'orders' | 'name'> = {
-      ...(rowItem.toObject() as Kitchen.Checkout.ServerItem),
+      ...(row.toObject() as Kitchen.Checkout.ServerItem),
       ...payload,
       modified: now,
     }
 
-    rowItem.assign(updatedData)
-    await rowItem.save()
+    row.assign(updatedData)
+    await row.save()
 
-    return googleToServerCheckout(rowItem)
+    return await findCheckout((r) => r.id === checkoutId)
   }
-}
-export async function deleteCheckout(
-  itemId: string,
-  validator?: (item: GoogleCheckoutRow) => boolean,
-): Promise<boolean> {
-  const rowItem = await findGoogleCheckoutRows((u) => u.get('id') === itemId)
-
-  if (rowItem) {
-    if (validator && !validator(rowItem)) return false
-
-    await rowItem.delete()
-    // TODO - Need to delete the associated CheckoutDetails
-
-    return true
-  }
-
-  return false
 }
 export async function deleteCheckouts(
   itemIds: string[],
   validator?: (item: GoogleCheckoutRow) => boolean,
 ): Promise<boolean> {
-  const rows = (await getGoogleCheckoutRows()).filter((item) => {
-    return itemIds.includes(item.get('id') as string) && (validator ? validator(item) : true)
-  })
-  // const rowIds = rows.map((r) => r.get('id') as string)
+  const checkoutRows = (await getGoogleCheckoutRows())
+    .filter((item) => {
+      return itemIds.includes(item.get('id') as string) && (validator ? validator(item) : true)
+    })
+    .sort((a, b) => b.rowNumber - a.rowNumber)
+  const ids: string[] = checkoutRows.map((r) => r.get('id'))
+  const orderRows = (await getGoogleOrderRows())
+    .filter((item) => {
+      const checkId: string = item.get('checkoutId') ?? ''
+      return ids.includes(checkId)
+    })
+    .sort((a, b) => b.rowNumber - a.rowNumber)
+  const costRows = (await getGoogleCostRows())
+    .filter((item) => {
+      const checkId: string = item.get('checkoutId') ?? ''
+      return ids.includes(checkId)
+    })
+    .sort((a, b) => b.rowNumber - a.rowNumber)
 
-  await Promise.all(
-    rows.map(async (r) => {
-      await r.delete()
+  await orderRows.reduce(async (p, row) => {
+    return await p.then(async () => await row.delete())
+  }, Promise.resolve())
 
-      return true
-    }),
-  )
+  await costRows.reduce(async (p, row) => {
+    return await p.then(async () => await row.delete())
+  }, Promise.resolve())
 
-  // TODO - Need to use rowIds to delete all associated CheckoutDetails
+  await checkoutRows.reduce(async (p, row) => {
+    return await p.then(async () => await row.delete())
+  }, Promise.resolve())
 
   return true
 }

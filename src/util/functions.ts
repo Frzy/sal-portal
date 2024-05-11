@@ -1,3 +1,4 @@
+import { type CalculatedCheckoutValues } from '@c/CheckoutSteps/DetailStep'
 import dayjs, { type Dayjs } from 'dayjs'
 
 import { LEGION_MONTH_START } from './constants'
@@ -64,12 +65,22 @@ export function serverToMenuItem(item: Kitchen.Menu.ServerItem): Kitchen.Menu.It
 }
 export function serverToCheckoutItem(item: Kitchen.Checkout.ServerItem): Kitchen.Checkout.Item {
   const { orders, ...checkout } = item
-
+  const checkoutOrders = orders.map(serverToOrderItem)
   return {
     ...checkout,
     created: dayjs(item.created),
     modified: dayjs(item.modified),
-    orders: orders.map(serverToOrderItem),
+    totalOrders: orders.reduce((sum, o) => sum + o.menuItemQuantity, 0),
+    orders: checkoutOrders,
+    calculated: checkoutOrders.reduce<CalculatedCheckoutValues>(
+      (totals, item) => {
+        return {
+          sales: totals.sales + item.menuItemQuantity * item.menuItemPrice,
+          drinkChips: totals.drinkChips + (item.menuItemHasDrinkChip ? item.menuItemQuantity : 0),
+        }
+      },
+      { sales: 0, drinkChips: 0 },
+    ),
   }
 }
 export function serverToOrderItem(item: Kitchen.Order.ServerItem): Kitchen.Order.Item {

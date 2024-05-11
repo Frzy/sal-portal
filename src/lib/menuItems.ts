@@ -100,22 +100,6 @@ export async function updateMenuItem(
     return googleToServer(googleMenuItem)
   }
 }
-export async function deleteMenuItem(
-  menuItemId: string,
-  validator?: (item: GoogleMenuRow) => boolean,
-): Promise<boolean> {
-  const googleMenuItem = await findGoogleMenuItemRows((u) => u.get('id') === menuItemId)
-
-  if (googleMenuItem) {
-    if (validator && !validator(googleMenuItem)) return false
-
-    await googleMenuItem.delete()
-
-    return true
-  }
-
-  return false
-}
 export async function deleteMenuItems(
   itemIds: string[],
   validator?: (item: GoogleMenuRow) => boolean,
@@ -124,13 +108,9 @@ export async function deleteMenuItems(
     return itemIds.includes(item.get('id') as string) && (validator ? validator(item) : true)
   })
 
-  await Promise.all(
-    rows.map(async (r) => {
-      await r.delete()
-
-      return true
-    }),
-  )
+  await rows.reduce(async (p, row) => {
+    return await p.then(async () => await row.delete())
+  }, Promise.resolve())
 
   return true
 }

@@ -121,7 +121,7 @@ export default function OrderStep({
           </Typography>
         </Box>
       )}
-      <Divider sx={{ mt: 1 }} />
+      {!!menuOrders.length && <Divider sx={{ mt: 1 }} />}
       {!!menuOrders.length && (
         <List sx={{ p: 0 }}>
           {menuOrders.map((detail, index) => (

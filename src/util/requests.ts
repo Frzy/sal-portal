@@ -1,6 +1,4 @@
-import dayjs from 'dayjs'
-
-import { serverToCostItem, serverToMenuItem } from './functions'
+import { serverToCheckoutItem, serverToCostItem, serverToMenuItem } from './functions'
 
 export async function createUser(payload: User.CreatePayload): Promise<User.Base | undefined> {
   return await create<User.Base, User.CreatePayload>('/api/users', payload)
@@ -82,30 +80,18 @@ export async function createKitchenCheckout(
     payload,
   )
 
-  return item
-    ? {
-        ...item,
-        created: dayjs(item.created),
-        modified: dayjs(item.modified),
-      }
-    : undefined
+  return item ? serverToCheckoutItem(item) : undefined
 }
 export async function editKitchenCheckout(
   id: string,
-  payload: Kitchen.Checkout.Payload,
+  payload: Kitchen.Checkout.UiEditPayload,
 ): Promise<Kitchen.Checkout.Item | undefined> {
-  const item = await edit<Kitchen.Checkout.ServerItem, Kitchen.Checkout.Payload>(
+  const item = await edit<Kitchen.Checkout.ServerItem, Kitchen.Checkout.UiEditPayload>(
     `/api/kitchen/checkout/${id}`,
     payload,
   )
 
-  return item
-    ? {
-        ...item,
-        created: dayjs(item.created),
-        modified: dayjs(item.modified),
-      }
-    : undefined
+  return item ? serverToCheckoutItem(item) : undefined
 }
 export async function deleteKitchenCheckouts(items: Kitchen.Checkout.Item[]): Promise<boolean> {
   return await deletedAll(
@@ -132,7 +118,7 @@ async function create<D = unknown, P = unknown>(url: string, payload: P): Promis
       return responseData
     }
 
-    return response.ok ? ((await response.json()) as D) : undefined
+    return undefined
   } catch (error) {
     return undefined
   }

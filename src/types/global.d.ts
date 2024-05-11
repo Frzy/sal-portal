@@ -7,12 +7,25 @@ declare global {
   }
 
   type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
+  type StringKeys<T> = {
+    [P in keyof T]: P extends string ? P : never
+  }[keyof T]
+
   type RowCellData = string | number | boolean | Date
   type RawRowData = RowCellData[] | Record<string, RowCellData>
   interface INotification {
     title?: string
     message: string
     severity: 'info' | 'success' | 'warning' | 'error'
+  }
+
+  namespace List {
+    type SelectionMode = 'single' | 'multiple' | 'none'
+    type Order = 'asc' | 'desc'
+
+    interface AdminOptions {
+      showAdminColumns: boolean
+    }
   }
 
   namespace User {
@@ -53,6 +66,7 @@ declare global {
       lastModifiedBy: string
       modified: string
       name: string
+      checkoutId?: string
     }
     interface Item extends ServerItem {
       created: Dayjs
@@ -60,6 +74,7 @@ declare global {
     }
     interface Payload {
       amount: number
+      checkoutId?: string
     }
     interface CreatePayload extends Payload {
       createdBy: string
@@ -115,7 +130,12 @@ declare global {
     interface Item extends ServerItem {
       created: Dayjs
       modified: Dayjs
+      totalOrders: number
       orders: Kitchen.Order.Item[]
+      calculated: {
+        sales: number
+        drinkChips: number
+      }
     }
 
     interface Order {
@@ -130,6 +150,11 @@ declare global {
       expenses: number
       orders: Order[]
     }
+
+    interface UiEditPayload extends Payload {
+      orders: Kitchen.Order.Item[]
+    }
+
     interface CreatePayload extends Payload {
       createdBy: string
     }

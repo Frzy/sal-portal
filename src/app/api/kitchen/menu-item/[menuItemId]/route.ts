@@ -1,4 +1,4 @@
-import { deleteMenuItem, findMenuItem, updateMenuItem } from '@/lib/menuItems'
+import { deleteMenuItems, findMenuItem, updateMenuItem } from '@/lib/menuItems'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(
@@ -55,7 +55,7 @@ export async function DELETE(
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
   if (!session.user.isAdmin) return Response.json({ message: 'Unauthorized' }, { status: 403 })
 
-  const deletedMenuItem = await deleteMenuItem(menuItemId)
+  const deletedMenuItem = await deleteMenuItems([menuItemId])
 
   return Response.json(deletedMenuItem)
 }

@@ -93,14 +93,14 @@ export default function ListToolbar({
             {title}
           </Typography>
         )}
-        {numSelected === 1 && (
+        {numSelected === 1 && !!onEditClick && (
           <Tooltip title='Edit'>
             <IconButton onClick={onEditClick}>
               <EditIcon />
             </IconButton>
           </Tooltip>
         )}
-        {hasSelection && (
+        {hasSelection && !!onDeleteClick && (
           <Tooltip title='Delete'>
             <IconButton onClick={onDeleteClick}>
               <DeleteIcon />

@@ -1,36 +1,30 @@
 import { Box, Checkbox, TableCell, TableHead, TableRow, TableSortLabel } from '@mui/material'
 import { visuallyHidden } from '@mui/utils'
 
-type Order = 'asc' | 'desc'
-type ListSelection = 'single' | 'multiple' | 'none'
 interface ListHeaderProps<T> {
   columns: ListColumns<T>[]
   numSelected: number
   onRequestSort: (event: React.MouseEvent<unknown>, property: string) => void
   onSelectAllClick: (event: React.ChangeEvent<HTMLInputElement>) => void
-  order: Order
+  order: List.Order
   orderBy: string
   rowCount: number
-  selection: ListSelection
+  selection: List.SelectionMode
+  expandable?: boolean
 }
-
-type StringKeys<T> = {
-  [P in keyof T]: P extends string ? P : never
-}[keyof T]
 
 export interface ListColumns<T> {
   id: StringKeys<T>
   label: string
-  isNumber?: boolean
   isCurrency?: boolean
-  isDate?: boolean
   minWidth?: number
   align?: 'left' | 'center' | 'right'
-  cellRender?: (data: unknown) => React.ReactNode
+  cellRender?: (row: T) => React.ReactNode
 }
 
 export default function ListHeader<T>({
   columns,
+  expandable,
   numSelected,
   onRequestSort,
   onSelectAllClick,
@@ -64,7 +58,7 @@ export default function ListHeader<T>({
         {columns.map((column, index) => (
           <TableCell
             key={column.id}
-            align={column?.align ?? index === 0 ? 'left' : 'right'}
+            align={index === 0 ? 'left' : column?.align ?? 'right'}
             padding={selection !== 'none' && index === 0 ? 'none' : 'normal'}
             sortDirection={orderBy === column.id ? order : false}
             sx={{ minWidth: column?.minWidth }}
@@ -83,6 +77,7 @@ export default function ListHeader<T>({
             </TableSortLabel>
           </TableCell>
         ))}
+        {expandable && <TableCell padding='checkbox' />}
       </TableRow>
     </TableHead>
   )

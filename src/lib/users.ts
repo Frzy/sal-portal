@@ -27,19 +27,36 @@ export async function findGoogleUserRow(
 ): Promise<GoogleSpreadsheetRow<User.Row> | undefined> {
   return (await getGoogleUserRows()).find(filter)
 }
-
 export async function getUsers(): Promise<User.Base[]> {
   return (await getGoogleUserRows()).map(userMapper)
 }
-
 export async function getUsersBy(filter: (user: User.Base) => boolean): Promise<User.Base[]> {
   return (await getUsers()).filter(filter)
 }
-
 export async function findUser(
   filter: (user: User.Base) => boolean,
 ): Promise<User.Base | undefined> {
   return (await getUsers()).find(filter)
+}
+
+export async function getValidatedUser(
+  credentials: Record<'username' | 'password', string>,
+): Promise<User.Session | undefined> {
+  const { username, password } = credentials
+
+  const user = await findGoogleUserRow((r) => {
+    const passwordHash: string = r.get('password')
+
+    return r.get('username') === username && bcrypt.compareSync(password, passwordHash)
+  })
+
+  if (user) return userMapper(user)
+}
+export async function validateOldPassword(userId: string, oldPassword: string): Promise<boolean> {
+  const googleUser = await findGoogleUserRow((r) => r.get('id') === userId)
+  const originalPassword: string = googleUser?.get('password') ?? ''
+
+  return googleUser ? bcrypt.compareSync(oldPassword, originalPassword) : false
 }
 
 export async function createUsers(
@@ -67,7 +84,6 @@ export async function createUsers(
   // @ts-expect-error Not sure how to cast this
   return (await workSheet.addRows(newUserData)).map(userMapper)
 }
-
 export async function updateUser(
   userId: string,
   newUserData: User.UpdatePayload,
@@ -91,7 +107,6 @@ export async function updateUser(
     return userMapper(googleUser)
   }
 }
-
 export async function deleteUser(userId: string): Promise<boolean> {
   const googleUser = await findGoogleUserRow((u) => u.get('id') === userId)
 
@@ -102,25 +117,4 @@ export async function deleteUser(userId: string): Promise<boolean> {
   }
 
   return false
-}
-
-export async function getValidatedUser(
-  credentials: Record<'username' | 'password', string>,
-): Promise<User.Session | undefined> {
-  const { username, password } = credentials
-
-  const user = await findGoogleUserRow((r) => {
-    const passwordHash: string = r.get('password')
-
-    return r.get('username') === username && bcrypt.compareSync(password, passwordHash)
-  })
-
-  if (user) return userMapper(user)
-}
-
-export async function validateOldPassword(userId: string, oldPassword: string): Promise<boolean> {
-  const googleUser = await findGoogleUserRow((r) => r.get('id') === userId)
-  const originalPassword: string = googleUser?.get('password') ?? ''
-
-  return googleUser ? bcrypt.compareSync(oldPassword, originalPassword) : false
 }

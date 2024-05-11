@@ -1,34 +1,30 @@
 'use client'
 
-import React, { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
+import { forwardRef, useImperativeHandle, useMemo, useState } from 'react'
 
-import { Collapse, Tooltip, Typography } from '@mui/material'
-import Box from '@mui/material/Box'
-import Checkbox from '@mui/material/Checkbox'
-import Paper from '@mui/material/Paper'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableContainer from '@mui/material/TableContainer'
-import TablePagination from '@mui/material/TablePagination'
-import TableRow from '@mui/material/TableRow'
+import {
+  Box,
+  Collapse,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TablePagination,
+  TableRow,
+} from '@mui/material'
 import dayjs from 'dayjs'
 import minMax from 'dayjs/plugin/minMax'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
-import { LONG_TIME_FORMAT } from '@/util/constants'
-import { formatCurrency } from '@/util/functions'
-
 import ListHeader, { type ListColumns } from './ListHeader'
+import ListRow from './ListRow'
 import ListToolbar from './ListToolbar'
 
 dayjs.extend(relativeTime)
 dayjs.extend(minMax)
 
-type ListSelection = 'single' | 'multiple' | 'none'
-type Order = 'asc' | 'desc'
-
-type Row<T> = { id: string } & {
+export type Row<T> = { id: string } & {
   [K in keyof T]: T[K]
 }
 
@@ -42,7 +38,7 @@ function descendingComparator<T>(a: T, b: T, orderBy: keyof T): number {
   return 0
 }
 function getComparator<Key extends keyof any>(
-  order: Order,
+  order: List.Order,
   orderBy: Key,
 ): (a: { [key in Key]: number | string }, b: { [key in Key]: number | string }) => number {
   return order === 'desc'
@@ -65,9 +61,16 @@ interface Props<T extends Row<T>> {
   onEdit?: (item: T) => void
   onSearch?: (term: string) => void
   orderBy: keyof T
+  renderExpandable?: (
+    row: T,
+    options: {
+      selected: boolean
+      expanded: boolean
+    },
+  ) => React.ReactNode
   rows: T[]
-  selection?: ListSelection
-  sortOrder?: Order
+  selection?: List.SelectionMode
+  sortOrder?: List.Order
   title?: string
   totalRows: number
 }
@@ -77,26 +80,28 @@ type PropsWithStandardRef<T extends Row<T>> = Props<T> & { ref?: React.Ref<Enhan
 function ListComponent<T extends Row<T>>({
   columns,
   filterComponent,
+  forwardedRef,
   hasFilters,
   onCreate,
   onDelete,
   onEdit,
   onSearch,
   orderBy: initOrderBy,
+  renderExpandable,
   rows,
   selection = 'single',
   sortOrder: initSortOrder = 'asc',
   title = 'List',
-  forwardedRef,
 }: PropsWithForwardRef<T>): React.JSX.Element {
-  const [order, setOrder] = useState<Order>(initSortOrder)
+  const [order, setOrder] = useState<List.Order>(initSortOrder)
   const [orderBy, setOrderBy] = useState<string>(initOrderBy as string)
   const [selected, setSelected] = useState<readonly string[]>([])
+  const [expanded, setExpanded] = useState<readonly string[]>([])
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [showFilters, setShowFilters] = useState(false)
-  const props = useMemo<(keyof T)[]>(() => columns.map((c) => c.id), [columns])
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0
+  const totalColumns = columns.length + (selection !== 'none' ? 1 : 0) + (renderExpandable ? 1 : 0)
   const visibleRows = useMemo(() => {
     return rows
       .sort(getComparator(order, orderBy))
@@ -116,31 +121,39 @@ function ListComponent<T extends Row<T>>({
     }
     setSelected([])
   }
-  function handleClick(event: React.MouseEvent<unknown>, id: string): void {
-    const selectedIndex = selected.indexOf(id)
-    let newSelected: readonly string[] = []
+  function handleExpandChange(row: T): void {
+    const expandIndex = expanded.indexOf(row.id)
 
-    if (selection === 'single') {
-      if (selectedIndex === -1) {
-        setSelected([id])
-      } else {
-        setSelected([])
-      }
+    if (expandIndex === -1) {
+      setExpanded((prev) => [...prev, row.id])
     } else {
-      if (selectedIndex === -1) {
-        newSelected = newSelected.concat(selected, id)
-      } else if (selectedIndex === 0) {
-        newSelected = newSelected.concat(selected.slice(1))
-      } else if (selectedIndex === selected.length - 1) {
-        newSelected = newSelected.concat(selected.slice(0, -1))
-      } else if (selectedIndex > 0) {
-        newSelected = newSelected.concat(
-          selected.slice(0, selectedIndex),
-          selected.slice(selectedIndex + 1),
-        )
-      }
-      setSelected(newSelected)
+      const newExpanded = [...expanded]
+      newExpanded.splice(expandIndex, 1)
+
+      setExpanded(newExpanded)
     }
+  }
+  function isExpanded(id: string): boolean {
+    return expanded.includes(id)
+  }
+  function handleSelectionChange(row: T): void {
+    const selectedIndex = selected.indexOf(row.id)
+
+    // Need to add it to the selected id array
+    if (selectedIndex === -1) {
+      if (selection === 'single') setSelected([row.id])
+      else setSelected((prev) => [...prev, row.id])
+    } else {
+      if (selection === 'single') setSelected([])
+      else {
+        const newSelected = [...selected]
+        newSelected.splice(selectedIndex, 1)
+        setSelected(newSelected)
+      }
+    }
+  }
+  function isSelected(id: string): boolean {
+    return selection !== 'none' ? selected.includes(id) : false
   }
   function handleChangePage(event: unknown, newPage: number): void {
     setPage(newPage)
@@ -149,22 +162,7 @@ function ListComponent<T extends Row<T>>({
     setRowsPerPage(parseInt(event.target.value, 10))
     setPage(0)
   }
-  function isSelected(id: string): boolean {
-    return selection !== 'none' ? selected.includes(id) : false
-  }
-  function formatRowData(column: ListColumns<T>, data: string | number | boolean): React.ReactNode {
-    if (column.cellRender) return column.cellRender(data)
-    if (column.isCurrency && typeof data === 'number') return formatCurrency(data)
-    if (column.isDate && dayjs.isDayjs(data)) {
-      return (
-        <Tooltip title={`${data.format(LONG_TIME_FORMAT)}`} placement='bottom-end'>
-          <Typography>{data.fromNow()}</Typography>
-        </Tooltip>
-      )
-    }
 
-    return `${data}`
-  }
   function handleEditClick(): void {
     const editId = selected.length ? selected[0] : undefined
 
@@ -236,59 +234,26 @@ function ListComponent<T extends Row<T>>({
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
               selection={selection}
+              expandable={!!renderExpandable}
             />
             <TableBody>
-              {visibleRows.map((row, rowIndex) => {
-                const isItemSelected = isSelected(row.id)
-                const labelId = `enhanced-table-checkbox-${rowIndex}`
-
+              {visibleRows.map((row) => {
+                const selected = isSelected(row.id)
+                const expanded = isExpanded(row.id)
                 return (
-                  <TableRow
-                    hover
-                    onClick={
-                      selection !== 'none'
-                        ? (event) => {
-                            handleClick(event, row.id)
-                          }
-                        : undefined
-                    }
-                    role='checkbox'
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
+                  <ListRow
                     key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: selection !== 'none' ? 'pointer' : 'default' }}
+                    row={row}
+                    columns={columns}
+                    selection={selection}
+                    selected={selected}
+                    expanded={expanded}
+                    totalColumns={totalColumns}
+                    onSelectionChange={handleSelectionChange}
+                    onExpandChange={handleExpandChange}
                   >
-                    {selection !== 'none' && (
-                      <TableCell padding='checkbox'>
-                        <Checkbox
-                          color='primary'
-                          checked={isItemSelected}
-                          inputProps={{
-                            'aria-labelledby': labelId,
-                          }}
-                        />
-                      </TableCell>
-                    )}
-                    {props.map((key, colIndex) => {
-                      return colIndex === 0 ? (
-                        <TableCell
-                          key={colIndex}
-                          align={columns[colIndex]?.align ?? 'left'}
-                          component='th'
-                          id={labelId}
-                          scope='row'
-                          padding={selection !== 'none' ? 'none' : undefined}
-                        >
-                          {formatRowData(columns[colIndex], row[key])}
-                        </TableCell>
-                      ) : (
-                        <TableCell key={colIndex} align={columns[colIndex]?.align ?? 'right'}>
-                          {formatRowData(columns[colIndex], row[key])}
-                        </TableCell>
-                      )
-                    })}
-                  </TableRow>
+                    {!!renderExpandable && renderExpandable(row, { selected, expanded })}
+                  </ListRow>
                 )
               })}
               {emptyRows > 0 && (
@@ -297,7 +262,7 @@ function ListComponent<T extends Row<T>>({
                     height: 63 * emptyRows,
                   }}
                 >
-                  <TableCell colSpan={columns.length} />
+                  <TableCell colSpan={totalColumns} />
                 </TableRow>
               )}
             </TableBody>

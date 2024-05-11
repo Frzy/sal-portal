@@ -4,18 +4,23 @@ import React, { useMemo, useState } from 'react'
 
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
-import KitchenIcon from '@mui/icons-material/Countertops'
-import ShoppingIcon from '@mui/icons-material/ShoppingCart'
 import {
   Autocomplete,
+  Badge,
   Box,
   Button,
   Checkbox,
   Chip,
   FormControlLabel,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Stack,
   Switch,
   TextField,
   Tooltip,
+  Typography,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -23,6 +28,7 @@ import { useSession } from 'next-auth/react'
 
 import TimeFrame, { type TimeFrameValue } from '@/components/TimeFrame'
 import { TIME_FRAME } from '@/util/constants'
+import { formatCurrency } from '@/util/functions'
 
 import EnhancedList from './ListComponents/EnhancedList'
 import { type ListColumns } from './ListComponents/ListHeader'
@@ -33,29 +39,83 @@ interface Filters {
   modifiedBy?: string[]
 }
 
-const columns: ListColumns<Kitchen.Cost.Item>[] = [
+const columns: ListColumns<Kitchen.Checkout.Item>[] = [
   {
     id: 'name',
     label: 'Name',
-    minWidth: 100,
+    minWidth: 105,
   },
   {
-    id: 'amount',
-    label: 'Amount',
+    id: 'deposit',
+    label: 'Deposit',
     isCurrency: true,
   },
   {
-    id: 'checkoutId',
-    label: 'Originated',
+    id: 'sales',
+    label: 'Sales',
+    isCurrency: true,
     cellRender: (row) => {
-      return (
-        <Box sx={{ pr: 2 }}>
-          <Tooltip title={row.checkoutId ? 'Kitchen Service' : 'Shopping'}>
-            {row.checkoutId ? <KitchenIcon /> : <ShoppingIcon />}
+      if (row.calculated.sales !== row.sales) {
+        return (
+          <Tooltip
+            title={`Calculated value of ${formatCurrency(row.calculated.sales)} has been overridden`}
+          >
+            <Badge
+              variant='dot'
+              color='warning'
+              sx={{
+                '& .MuiBadge-badge': {
+                  right: -6,
+                  top: 12,
+                },
+              }}
+            >
+              <Typography sx={{ fontFamily: 'monospace' }}>{formatCurrency(row.sales)}</Typography>
+            </Badge>
           </Tooltip>
-        </Box>
-      )
+        )
+      }
     },
+  },
+  {
+    id: 'creditCardSales',
+    label: 'Credit Sales',
+    isCurrency: true,
+    minWidth: 135,
+  },
+  {
+    id: 'drinkChips',
+    label: 'Drink Chips',
+    minWidth: 130,
+    cellRender: (row) => {
+      if (row.calculated.drinkChips !== row.drinkChips) {
+        return (
+          <Tooltip title={`Calculated value of ${row.calculated.drinkChips} has been overridden`}>
+            <Badge
+              variant='dot'
+              color='warning'
+              sx={{
+                '& .MuiBadge-badge': {
+                  right: -6,
+                  top: 12,
+                },
+              }}
+            >
+              <Typography sx={{ fontFamily: 'monospace' }}>{row.drinkChips}</Typography>
+            </Badge>
+          </Tooltip>
+        )
+      }
+    },
+  },
+  {
+    id: 'expenses',
+    label: 'Expenses',
+    isCurrency: true,
+  },
+  {
+    id: 'totalOrders',
+    label: 'Orders',
   },
   {
     id: 'created',
@@ -63,7 +123,7 @@ const columns: ListColumns<Kitchen.Cost.Item>[] = [
     minWidth: 150,
   },
 ]
-const adminColumns: ListColumns<Kitchen.Cost.Item>[] = [
+const adminColumns: ListColumns<Kitchen.Checkout.Item>[] = [
   {
     id: 'createdBy',
     label: 'Created By',
@@ -83,7 +143,7 @@ const adminColumns: ListColumns<Kitchen.Cost.Item>[] = [
 const icon = <CheckBoxOutlineBlankIcon fontSize='small' />
 const checkedIcon = <CheckBoxIcon fontSize='small' />
 
-interface CostListFiltersProps {
+interface CheckoutListFiltersProps {
   adminOptions?: List.AdminOptions
   createdOptions?: string[]
   isAdmin?: boolean
@@ -92,15 +152,15 @@ interface CostListFiltersProps {
   onAdminOptionChange?: (options: Partial<List.AdminOptions>) => void
   onFilterChange?: (filter?: Filters) => void
 }
-function CostListFilters({
+function CheckoutListFilters({
   adminOptions,
   createdOptions,
   isAdmin,
   minDate,
   modifiedOptions,
-  onFilterChange,
   onAdminOptionChange,
-}: CostListFiltersProps): React.JSX.Element {
+  onFilterChange,
+}: CheckoutListFiltersProps): React.JSX.Element {
   const [filters, setFilters] = useState<Filters>()
 
   function updateFilters(partialFilter: Filters): void {
@@ -235,26 +295,28 @@ function CostListFilters({
   )
 }
 
-interface CostListProps {
+interface CheckoutListProps {
   title: string
-  costItems: Kitchen.Cost.Item[]
-  onEdit?: (item: Kitchen.Cost.Item) => void
+  checkouts: Kitchen.Checkout.Item[]
+  selection?: List.SelectionMode
+  onEdit?: (item: Kitchen.Checkout.Item) => void
   onCreate?: () => void
-  onDelete?: (items: Kitchen.Cost.Item[]) => void
+  onDelete?: (items: Kitchen.Checkout.Item[]) => void
 }
-export default function CostList({
-  costItems,
+export default function CheckoutList({
+  checkouts,
   title,
+  selection = 'multiple',
   onCreate,
   onDelete,
   onEdit,
-}: CostListProps): React.JSX.Element {
+}: CheckoutListProps): React.JSX.Element {
   const { data: session } = useSession()
   const minDate = useMemo(() => {
-    const min = dayjs.min(costItems.map((c) => c.created))
+    const min = dayjs.min(checkouts.map((c) => c.created))
 
     return min ?? undefined
-  }, [costItems])
+  }, [checkouts])
   const [adminOptions, setAdminOptions] = useState<List.AdminOptions>({
     showAdminColumns: false,
   })
@@ -264,9 +326,9 @@ export default function CostList({
   }, [adminOptions])
   const [filters, setFilters] = useState<Filters>()
   const filterItems = useMemo(() => {
-    if (!filters) return costItems
+    if (!filters) return checkouts
 
-    return costItems.filter((item: Kitchen.Cost.Item): boolean => {
+    return checkouts.filter((item: Kitchen.Checkout.Item): boolean => {
       if (filters.timeframe) {
         const { startDate, endDate } = filters.timeframe
         if (item.created.isBefore(startDate) || item.created.isAfter(endDate)) return false
@@ -278,13 +340,13 @@ export default function CostList({
 
       return true
     })
-  }, [costItems, filters])
+  }, [checkouts, filters])
   const { createdOptions, modifiedOptions } = useMemo(() => {
     const createdOptions: string[] = []
     const modifiedOptions: string[] = []
 
     if (isAdmin) {
-      costItems.forEach((item) => {
+      checkouts.forEach((item) => {
         if (!createdOptions.includes(item.createdBy)) createdOptions.push(item.createdBy)
         if (!modifiedOptions.includes(item.lastModifiedBy))
           modifiedOptions.push(item.lastModifiedBy)
@@ -292,7 +354,7 @@ export default function CostList({
     }
 
     return { createdOptions, modifiedOptions }
-  }, [isAdmin, costItems])
+  }, [isAdmin, checkouts])
 
   return (
     <EnhancedList
@@ -305,10 +367,66 @@ export default function CostList({
       rows={filterItems}
       sortOrder='desc'
       title={title}
-      totalRows={costItems.length}
-      selection='single'
+      totalRows={checkouts.length}
+      selection={selection}
+      renderExpandable={(row) => {
+        const hasOrders = !!row.orders.length
+
+        return (
+          <Stack
+            spacing={1}
+            sx={{
+              p: 1,
+            }}
+          >
+            <Typography variant='h5'>Orders</Typography>
+            <Paper variant='outlined' sx={{ p: 1 }} square>
+              {hasOrders ? (
+                <List disablePadding>
+                  {row.orders.map((order, index) => {
+                    return (
+                      <ListItem key={order.id} divider={index < row.orders.length - 1}>
+                        <Typography
+                          component='span'
+                          sx={{
+                            minWidth: 65,
+                            textAlign: 'right',
+                            fontFamily: 'monospace',
+                            fontSize: 32,
+                            pr: 4,
+                            color: 'text.secondary',
+                          }}
+                        >
+                          {order.menuItemQuantity}
+                        </Typography>
+                        <ListItemText
+                          primary={order.menuItemName}
+                          secondary={formatCurrency(order.menuItemPrice)}
+                        />
+                        <Typography
+                          component='span'
+                          sx={{
+                            fontFamily: 'monospace',
+                            textAlign: 'right',
+                            minWidth: 70,
+                            fontSize: 32,
+                          }}
+                        >
+                          {formatCurrency(order.menuItemQuantity * order.menuItemPrice)}
+                        </Typography>
+                      </ListItem>
+                    )
+                  })}
+                </List>
+              ) : (
+                <Typography>No Orders</Typography>
+              )}
+            </Paper>
+          </Stack>
+        )
+      }}
       filterComponent={
-        <CostListFilters
+        <CheckoutListFilters
           adminOptions={adminOptions}
           createdOptions={createdOptions}
           modifiedOptions={modifiedOptions}

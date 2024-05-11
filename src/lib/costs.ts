@@ -19,6 +19,7 @@ function googleToServer(row: GoogleCostRow): Kitchen.Cost.ServerItem {
     createdBy: row.get('createdBy'),
     modified: row.get('modified'),
     lastModifiedBy: row.get('lastModifiedBy'),
+    checkoutId: row.get('checkoutId') ? row.get('checkoutId') : undefined,
   }
 }
 
@@ -76,11 +77,13 @@ export async function updateCostItem(
   payload: Kitchen.Cost.EditPayload,
   validator?: (item: GoogleCostRow) => boolean,
 ): Promise<Kitchen.Cost.ServerItem | undefined> {
-  const googleItem = await findGoogleCostRows((r) => r.get('id') === costId)
+  const row = await findGoogleCostRows((r) => {
+    const isValid = validator ? validator(r) : true
+    return r.get('id') === costId && isValid
+  })
 
-  if (googleItem) {
-    if (validator && !validator(googleItem)) return undefined
-    const originalData = googleItem.toObject() as unknown as Omit<Kitchen.Cost.ServerItem, 'name'>
+  if (row) {
+    const originalData = row.toObject() as unknown as Omit<Kitchen.Cost.ServerItem, 'name'>
     const now = dayjs().format()
     const updatedData: Omit<Kitchen.Cost.ServerItem, 'name'> = {
       ...originalData,
@@ -88,27 +91,11 @@ export async function updateCostItem(
       modified: now,
     }
 
-    googleItem.assign(updatedData)
-    await googleItem.save()
+    row.assign(updatedData)
+    await row.save()
 
-    return googleToServer(googleItem)
+    return googleToServer(row)
   }
-}
-export async function deleteCostItem(
-  costId: string,
-  validator?: (item: GoogleCostRow) => boolean,
-): Promise<boolean> {
-  const rowItem = await findGoogleCostRows((u) => u.get('id') === costId)
-
-  if (rowItem) {
-    if (validator && !validator(rowItem)) return false
-
-    await rowItem.delete()
-
-    return true
-  }
-
-  return false
 }
 export async function deleteCostItems(
   ids: string[],
@@ -118,13 +105,9 @@ export async function deleteCostItems(
     return ids.includes(item.get('id') as string) && (validator ? validator(item) : true)
   })
 
-  await Promise.all(
-    rows.map(async (r) => {
-      await r.delete()
-
-      return true
-    }),
-  )
+  await rows.reduce(async (p, row) => {
+    return await p.then(async () => await row.delete())
+  }, Promise.resolve())
 
   return true
 }

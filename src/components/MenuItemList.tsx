@@ -32,21 +32,19 @@ const columns: ListColumns<Kitchen.Menu.Item>[] = [
   {
     id: 'description',
     label: 'Description',
-    isDate: true,
     minWidth: 250,
     align: 'left',
   },
   {
     id: 'price',
     label: 'Price',
-    isNumber: true,
     isCurrency: true,
   },
   {
     id: 'hasDrinkChip',
     label: 'Drink Chip',
-    cellRender: (data: unknown) => {
-      return data ? (
+    cellRender: (row) => {
+      return row.hasDrinkChip ? (
         <DrinkIcon sx={{ color: (theme) => theme.vars.palette.success.main }} />
       ) : (
         <NoDrinksIcon sx={{ color: (theme) => theme.vars.palette.error.main }} />
@@ -58,7 +56,6 @@ const adminColumns: ListColumns<Kitchen.Menu.Item>[] = [
   {
     id: 'modified',
     label: 'Modified',
-    isDate: true,
     minWidth: 150,
   },
   {

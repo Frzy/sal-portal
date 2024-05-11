@@ -1,4 +1,4 @@
-import { deleteCostItem, findCostItem, updateCostItem } from '@/lib/costs'
+import { deleteCostItems, findCostItem, updateCostItem } from '@/lib/costs'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(
@@ -58,7 +58,7 @@ export async function DELETE(
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const deletedItem = await deleteCostItem(costId, (item) => {
+  const deletedItem = await deleteCostItems([costId], (item) => {
     return isAdminLoggedIn || item.get('createdBy') === session.user.username
   })
 

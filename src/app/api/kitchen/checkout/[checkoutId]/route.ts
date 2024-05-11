@@ -1,4 +1,4 @@
-import { deleteCheckout, findCheckout, updateCheckout } from '@/lib/checkout'
+import { deleteCheckouts, findCheckout, updateCheckout } from '@/lib/checkout'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(
@@ -58,7 +58,7 @@ export async function DELETE(
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const deletedItem = await deleteCheckout(checkoutId, (item) => {
+  const deletedItem = await deleteCheckouts([checkoutId], (item) => {
     return isAdminLoggedIn || item.get('createdBy') === session.user.username
   })
 

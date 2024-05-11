@@ -1,6 +1,6 @@
 import UnauthorizedAlert from '@c/UnauthorizedAlert'
 
-import { getMenuItems } from '@/lib/menuItems'
+import { getCheckouts, getCheckoutsBy } from '@/lib/checkout'
 import { getServerAuthSession } from '@/util/auth'
 import CheckoutView from '@/views/CheckoutView'
 
@@ -9,7 +9,10 @@ export default async function UserPage(): Promise<React.JSX.Element> {
 
   if (!session?.user) return <UnauthorizedAlert />
 
-  const menuItems = await getMenuItems()
+  const isAdmin = session.user.isAdmin
+  const checkouts = isAdmin
+    ? await getCheckouts()
+    : await getCheckoutsBy((c) => c.createdBy === session.user.username)
 
-  return <CheckoutView serverMenuItems={menuItems} />
+  return <CheckoutView serverCheckouts={checkouts} />
 }

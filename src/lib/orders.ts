@@ -128,13 +128,9 @@ export async function deleteOrders(
     return itemIds.includes(item.get('id') as string) && (validator ? validator(item) : true)
   })
 
-  await Promise.all(
-    rows.map(async (r) => {
-      await r.delete()
-
-      return true
-    }),
-  )
+  await rows.reduce(async (p, row) => {
+    return await p.then(async () => await row.delete())
+  }, Promise.resolve())
 
   return true
 }
