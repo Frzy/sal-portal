@@ -8,14 +8,12 @@ export function isPasswordValid(password: string): boolean {
 
   return true
 }
-
 export function formatCurrency(currency: number): string {
   return new Intl.NumberFormat('en-US', {
     currency: 'USD',
     style: 'currency',
   }).format(currency)
 }
-
 export function arrayFill<D = unknown>(n: number, filler: (index: number) => D): D[]
 export function arrayFill<D = unknown>(n: number, filler: any): D[]
 export function arrayFill<D = unknown>(n: number, filler: any): D[] {
@@ -23,7 +21,6 @@ export function arrayFill<D = unknown>(n: number, filler: any): D[] {
     return typeof filler === 'function' ? filler(i) : filler
   })
 }
-
 export function getLegionYearDatesFrom(date: Dayjs): { startDate: Dayjs; endDate: Dayjs } {
   const year = date.year()
   const month = date.month()
@@ -42,7 +39,6 @@ export function getLegionYearDatesFrom(date: Dayjs): { startDate: Dayjs; endDate
 
   return { startDate, endDate }
 }
-
 export function getNumber(value: unknown, defaultValue: number = 0): number {
   if (!value) return defaultValue
 
