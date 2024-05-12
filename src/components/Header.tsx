@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from 'react'
 
+import AnalyticsIcon from '@mui/icons-material/Analytics'
 import CostIcon from '@mui/icons-material/AttachMoney'
 import MenuIcon from '@mui/icons-material/Fastfood'
 import QueenHeartIcon from '@mui/icons-material/Favorite'
@@ -63,7 +64,6 @@ export default function Header(): React.JSX.Element {
       <AppBar
         position='fixed'
         sx={{
-          backgroundColor: (theme) => theme.vars.palette.primary.main,
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
@@ -103,8 +103,8 @@ export default function Header(): React.JSX.Element {
             <ListSubheader
               component='div'
               sx={{
-                backgroundColor: (theme) => theme.vars.palette.secondary.main,
-                color: (theme) => theme.vars.palette.secondary.contrastText,
+                backgroundColor: (theme) => theme.vars.palette.primary.main,
+                color: (theme) => theme.vars.palette.primary.contrastText,
               }}
             >
               Information
@@ -115,7 +115,7 @@ export default function Header(): React.JSX.Element {
                 <ListItemIcon>
                   <ProfileIcon />
                 </ListItemIcon>
-                <ListItemText primary='Profile' />
+                <ListItemText primary='Home' />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
@@ -135,13 +135,23 @@ export default function Header(): React.JSX.Element {
             <ListSubheader
               component='div'
               sx={{
-                backgroundColor: (theme) => theme.vars.palette.secondary.main,
-                color: (theme) => theme.vars.palette.secondary.contrastText,
+                backgroundColor: (theme) => theme.vars.palette.primary.main,
+                color: (theme) => theme.vars.palette.primary.contrastText,
               }}
             >
               Kitchen
             </ListSubheader>
             <Divider />
+            {isAdminLoggedIn && (
+              <ListItem disablePadding>
+                <ListItemButton href='/kitchen/analytics'>
+                  <ListItemIcon>
+                    <AnalyticsIcon />
+                  </ListItemIcon>
+                  <ListItemText primary='Analytics' />
+                </ListItemButton>
+              </ListItem>
+            )}
             {isAdminLoggedIn && (
               <ListItem disablePadding>
                 <ListItemButton href='/kitchen/menu-items'>
@@ -153,19 +163,19 @@ export default function Header(): React.JSX.Element {
               </ListItem>
             )}
             <ListItem disablePadding>
-              <ListItemButton href='/kitchen/costs'>
-                <ListItemIcon>
-                  <CostIcon />
-                </ListItemIcon>
-                <ListItemText primary='Costs' />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
               <ListItemButton href='/kitchen/checkouts'>
                 <ListItemIcon>
                   <ReceiptIcon />
                 </ListItemIcon>
                 <ListItemText primary='Checkouts' />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton href='/kitchen/costs'>
+                <ListItemIcon>
+                  <CostIcon />
+                </ListItemIcon>
+                <ListItemText primary='Costs' />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
@@ -180,8 +190,8 @@ export default function Header(): React.JSX.Element {
             <ListSubheader
               component='div'
               sx={{
-                backgroundColor: (theme) => theme.vars.palette.secondary.main,
-                color: (theme) => theme.vars.palette.secondary.contrastText,
+                backgroundColor: (theme) => theme.vars.palette.primary.main,
+                color: (theme) => theme.vars.palette.primary.contrastText,
               }}
             >
               Pull Tabs
@@ -215,8 +225,8 @@ export default function Header(): React.JSX.Element {
             <ListSubheader
               component='div'
               sx={{
-                backgroundColor: (theme) => theme.vars.palette.secondary.main,
-                color: (theme) => theme.vars.palette.secondary.contrastText,
+                backgroundColor: (theme) => theme.vars.palette.primary.main,
+                color: (theme) => theme.vars.palette.primary.contrastText,
               }}
             >
               Queen of Hearts
@@ -244,8 +254,8 @@ export default function Header(): React.JSX.Element {
                 <ListSubheader
                   component='div'
                   sx={{
-                    backgroundColor: (theme) => theme.vars.palette.secondary.main,
-                    color: (theme) => theme.vars.palette.secondary.contrastText,
+                    backgroundColor: (theme) => theme.vars.palette.primary.main,
+                    color: (theme) => theme.vars.palette.primary.contrastText,
                   }}
                 >
                   Admin Section

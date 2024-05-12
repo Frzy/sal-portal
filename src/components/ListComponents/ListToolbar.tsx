@@ -69,30 +69,26 @@ export default function ListToolbar({
   }
 
   return (
-    <AppBar position='relative'>
+    <AppBar position='relative' component='div'>
       <Toolbar
         disableGutters
         sx={{
           columnGap: { xs: 0.25, sm: 1 },
           px: 0.5,
-          ...(numSelected > 0 && {
-            backgroundColor: (theme) =>
-              alpha(
-                `rgb(${theme.vars.palette.primary.mainChannel})`,
-                theme.vars.palette.action.activatedOpacity,
-              ),
-          }),
+          ...(numSelected > 0
+            ? {
+                backgroundColor: (theme) =>
+                  `rgba(${theme.vars.palette.primary.mainChannel} / 0.25)`,
+              }
+            : {
+                backgroundColor: (theme) =>
+                  `rgba(${theme.vars.palette.primary.mainChannel} / 0.50)`,
+              }),
         }}
       >
-        {hasSelection ? (
-          <Typography sx={{ flex: '1 1 100%' }} color='inherit' variant='subtitle1' component='div'>
-            {numSelected} selected
-          </Typography>
-        ) : (
-          <Typography sx={{ flex: '1 1 100%' }} variant='h6' id='tableTitle' component='div'>
-            {title}
-          </Typography>
-        )}
+        <Typography sx={{ flex: '1 1 100%', pl: 1 }} variant='h6' component='div'>
+          {hasSelection ? `${numSelected} selected` : title}
+        </Typography>
         {numSelected === 1 && !!onEditClick && (
           <Tooltip title='Edit'>
             <IconButton onClick={onEditClick}>
