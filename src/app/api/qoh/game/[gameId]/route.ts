@@ -1,36 +1,36 @@
-import { deleteCheckouts, findCheckout, updateCheckout } from '@/lib/checkouts'
+import { deleteQohGame, findQohGame, updateQohGame } from '@/lib/qohGames'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(
   request: Request,
-  { params }: { params: { checkoutId: string } },
+  { params }: { params: { gameId: string } },
 ): Promise<Response> {
-  const { checkoutId } = params
+  const { gameId } = params
   const session = await getServerAuthSession()
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const item = await findCheckout((item) => item.id === checkoutId)
+  const item = await findQohGame((item) => item.id === gameId)
 
-  if (!item) return Response.json({ message: 'Kitchen Checkout not found' }, { status: 404 })
+  if (!item) return Response.json({ message: 'Game Not Found' }, { status: 404 })
 
   return Response.json(item)
 }
 export async function PUT(
   request: Request,
-  { params }: { params: { checkoutId: string } },
+  { params }: { params: { gameId: string } },
 ): Promise<Response> {
-  const { checkoutId } = params
+  const { gameId } = params
   const session = await getServerAuthSession()
   const isAdminLoggedIn = session?.user.isAdmin ?? false
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const payload = (await request.json()) as Kitchen.Checkout.EditPayload
+  const payload = (await request.json()) as QoH.Game.Payload
 
   try {
-    const udpateItem = await updateCheckout(
-      checkoutId,
+    const udpateItem = await updateQohGame(
+      gameId,
       {
         ...payload,
         lastModifiedBy: session.user.username,
@@ -40,8 +40,7 @@ export async function PUT(
       },
     )
 
-    if (!udpateItem)
-      return Response.json({ message: 'Kitchen Checkout Not Found' }, { status: 404 })
+    if (!udpateItem) return Response.json({ message: 'Game Not Found' }, { status: 404 })
 
     return Response.json(udpateItem)
   } catch (error) {
@@ -50,15 +49,15 @@ export async function PUT(
 }
 export async function DELETE(
   request: Request,
-  { params }: { params: { checkoutId: string } },
+  { params }: { params: { gameId: string } },
 ): Promise<Response> {
-  const { checkoutId } = params
+  const { gameId } = params
   const session = await getServerAuthSession()
   const isAdminLoggedIn = session?.user.isAdmin ?? false
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const deletedItem = await deleteCheckouts([checkoutId], (item) => {
+  const deletedItem = await deleteQohGame([gameId], (item) => {
     return isAdminLoggedIn || item.get('createdBy') === session.user.username
   })
 

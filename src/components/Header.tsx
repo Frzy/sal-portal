@@ -5,7 +5,6 @@ import { Fragment, useState } from 'react'
 import AnalyticsIcon from '@mui/icons-material/Analytics'
 import CostIcon from '@mui/icons-material/AttachMoney'
 import MenuIcon from '@mui/icons-material/Fastfood'
-import QueenHeartIcon from '@mui/icons-material/Favorite'
 import UsersIcon from '@mui/icons-material/Group'
 import PullTabIcon from '@mui/icons-material/LocalActivity'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -14,7 +13,6 @@ import ProfileIcon from '@mui/icons-material/Person'
 import CheckoutIcon from '@mui/icons-material/PointOfSale'
 import ReceiptIcon from '@mui/icons-material/Receipt'
 import BankIcon from '@mui/icons-material/Savings'
-import QuuenDetailIcon from '@mui/icons-material/TurnedIn'
 import {
   AppBar,
   Box,
@@ -33,6 +31,10 @@ import {
   useTheme,
 } from '@mui/material'
 import { signOut, useSession } from 'next-auth/react'
+
+import DiagnosisIcon from '@/icons/Diagnosis'
+import HeartPlusIcon from '@/icons/HeartPlus'
+import PlayingCardsIcon from '@/icons/PlayingCards'
 
 const drawerWidth = 240
 
@@ -233,19 +235,27 @@ export default function Header(): React.JSX.Element {
             </ListSubheader>
             <Divider />
             <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton href='/qoh/games'>
                 <ListItemIcon>
-                  <QueenHeartIcon />
+                  <PlayingCardsIcon />
                 </ListItemIcon>
-                <ListItemText primary='Summary' />
+                <ListItemText primary='Games' />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
                 <ListItemIcon>
-                  <QuuenDetailIcon />
+                  <DiagnosisIcon />
                 </ListItemIcon>
-                <ListItemText primary='Details' />
+                <ListItemText primary='Current Game' />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  <HeartPlusIcon />
+                </ListItemIcon>
+                <ListItemText primary='Add Entry' />
               </ListItemButton>
             </ListItem>
             {isAdminLoggedIn && (

@@ -2,7 +2,7 @@ import UnauthorizedAlert from '@c/UnauthorizedAlert'
 
 import { getMenuItems } from '@/lib/menuItems'
 import { getServerAuthSession } from '@/util/auth'
-import CheckoutFormView from '@/views/CheckoutFormView'
+import CheckoutFormView from '@/views/Kitchen/CheckoutFormView'
 
 export default async function UserPage(): Promise<React.JSX.Element> {
   const session = await getServerAuthSession()

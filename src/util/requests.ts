@@ -1,4 +1,9 @@
-import { serverToCheckoutItem, serverToCostItem, serverToMenuItem } from './functions'
+import {
+  serverToCheckoutItem,
+  serverToCostItem,
+  serverToMenuItem,
+  serverToQoHGameItem,
+} from './functions'
 
 export async function createUser(payload: User.CreatePayload): Promise<User.Base | undefined> {
   return await create<User.Base, User.CreatePayload>('/api/users', payload)
@@ -98,6 +103,12 @@ export async function deleteKitchenCheckouts(items: Kitchen.Checkout.Item[]): Pr
     '/api/kitchen/checkouts',
     items.map((i) => i.id),
   )
+}
+
+export async function createQohGame(payload: QoH.Game.Payload): Promise<QoH.Game.Item | undefined> {
+  const item = await create<QoH.Game.ServerItem, QoH.Game.Payload>('/api/qoh/games', payload)
+
+  return item ? serverToQoHGameItem(item) : undefined
 }
 
 async function create<D = unknown, P = unknown>(url: string, payload: P): Promise<D | undefined> {

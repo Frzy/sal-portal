@@ -2,11 +2,9 @@
 
 import { useMemo, useState } from 'react'
 
-import TimeFrame, { type TimeFrameValue } from '@c/TimeFrame'
-import { Box, Card, CardContent, Paper, Stack, Typography } from '@mui/material'
+import { Box, Card, CardContent, Paper, Typography } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
-import { TIME_FRAME } from '@/util/constants'
 import { formatCurrency, serverToCheckoutItem, serverToCostItem } from '@/util/functions'
 
 interface KitchenStats {
@@ -27,8 +25,8 @@ export default function KitchenAnalyticsView({
   costs: serverCosts,
   checkouts: serverCheckouts,
 }: KitchenAnalyticsViewProps): React.JSX.Element {
-  const [costs, setCosts] = useState(serverCosts.map(serverToCostItem))
-  const [checkouts, setCheckouts] = useState(serverCheckouts.map(serverToCheckoutItem))
+  const [costs] = useState(serverCosts.map(serverToCostItem))
+  const [checkouts] = useState(serverCheckouts.map(serverToCheckoutItem))
   const stats = useMemo<KitchenStats>(() => {
     const checkoutStats = checkouts.reduce(
       (stats, c) => {

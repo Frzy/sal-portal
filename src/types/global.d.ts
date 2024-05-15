@@ -1,3 +1,4 @@
+import { type SvgIconProps } from '@mui/material'
 import { type Dayjs } from 'dayjs'
 
 declare global {
@@ -17,6 +18,9 @@ declare global {
     title?: string
     message: string
     severity: 'info' | 'success' | 'warning' | 'error'
+  }
+  interface PortalIconProps extends SvgIconProps {
+    variant?: 'filled' | 'outlined'
   }
 
   namespace List {
@@ -193,6 +197,124 @@ declare global {
     interface EditPayload extends Payload {
       lastModifiedBy: string
     }
+  }
+
+  namespace QoH.Game {
+    interface ServerItem {
+      id: string
+      created: string
+      createdBy: string
+      createSeed: boolean
+      endDate?: string
+      initialJackpot: number
+      jackpotPercent: number
+      lastModifiedBy: string
+      lastResetDate?: string
+      maxGameReset: number
+      maxSeed: number
+      modified: string
+      name: string
+      resetNumber: number
+      resetOnTwoJokers: boolean
+      seedPercent: number
+      startDate: string
+      ticketPrice: number
+      entries: QoH.Entry.ServerItem[]
+    }
+
+    interface Item extends ServerItem {
+      startDate: Dayjs
+      lastResetDate?: Dayjs
+      endDate?: Dayjs
+      created: Dayjs
+      modified: Dayjs
+      entries: QoH.Entry.Item[]
+    }
+
+    interface Payload {
+      createSeed: boolean
+      maxSeed: number
+      jackpotPercent: number
+      resetNumber: number
+      seedPercent: number
+      initialJackpot: number
+      startDate: string
+      endDate?: string
+      lastResetDate?: string
+      maxGameReset: number
+      resetOnTwoJokers: boolean
+      ticketPrice: number
+
+      entries?: Omit<QoH.Entry.CreatePayload, 'gameId'>[]
+    }
+
+    interface UiPayload extends Payload {
+      startDate: Dayjs
+      endDate?: Dayjs
+      lastResetDate?: Dayjs
+    }
+
+    interface CreatePayload extends Payload {
+      createdBy: string
+    }
+    interface EditPayload extends Payload {
+      lastModifiedBy: string
+    }
+  }
+
+  namespace QoH.Entry {
+    interface ServerItem {
+      id: string
+      gameId: string
+      createdBy: string
+      created: string
+      modified: string
+      lastModifiedBy: string
+
+      drawDate: string
+      cashIn: number
+      cardPayout: number
+      additionalPayouts: number
+      shuffel: number
+      cardPosition: number
+
+      cardDrawn?: Card.item
+    }
+
+    interface Item extends ServerItem {
+      drawDate: Dayjs
+      created: Dayjs
+      modified: Dayjs
+    }
+
+    interface Payload {
+      gameId: string
+      drawDate: string
+      cashIn: number
+      cardPayout: number
+      additionalPayouts: number
+      shuffel: number
+      cardPosition: number
+      cardDrawn: string
+    }
+    interface CreatePayload extends Payload {
+      createdBy: string
+    }
+    interface EditPayload extends Payload {
+      lastModifiedBy: string
+    }
+  }
+
+  namespace Card {
+    interface Item {
+      suit: Suit
+      value: Value
+    }
+    interface IconProps extends PortalIconProps {
+      suit: Suit
+    }
+    type Suit = 'heart' | 'diamond' | 'club' | 'spade' | 'red' | 'black'
+    type Value = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A' | 'Jk'
   }
 }
 

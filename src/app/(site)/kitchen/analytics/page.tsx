@@ -1,11 +1,10 @@
 import AdminAccessOnly from '@c/AdminAccessOnly'
 import UnauthorizedAlert from '@c/UnauthorizedAlert'
 
-import { getCheckouts, getCheckoutsBy } from '@/lib/checkout'
+import { getCheckouts } from '@/lib/checkouts'
 import { getCosts } from '@/lib/costs'
 import { getServerAuthSession } from '@/util/auth'
-import CheckoutView from '@/views/CheckoutView'
-import KitchenAnalyticsView from '@/views/KitchenAnalytics'
+import KitchenAnalyticsView from '@/views/Kitchen/KitchenAnalytics'
 
 export default async function KitchenAnalyticsPage(): Promise<React.JSX.Element> {
   const session = await getServerAuthSession()

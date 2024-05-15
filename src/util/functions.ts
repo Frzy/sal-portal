@@ -82,3 +82,22 @@ export function serverToCheckoutItem(item: Kitchen.Checkout.ServerItem): Kitchen
 export function serverToOrderItem(item: Kitchen.Order.ServerItem): Kitchen.Order.Item {
   return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
 }
+export function serverToQoHGameItem(item: QoH.Game.ServerItem): QoH.Game.Item {
+  return {
+    ...item,
+    created: dayjs(item.created),
+    modified: dayjs(item.modified),
+    startDate: dayjs(item.startDate),
+    endDate: item.endDate ? dayjs(item.endDate) : undefined,
+    lastResetDate: item.lastResetDate ? dayjs(item.lastResetDate) : undefined,
+    entries: item.entries.map(serverToQoHEntryItem),
+  }
+}
+export function serverToQoHEntryItem(item: QoH.Entry.ServerItem): QoH.Entry.Item {
+  return {
+    ...item,
+    drawDate: dayjs(item.drawDate),
+    created: dayjs(item.created),
+    modified: dayjs(item.modified),
+  }
+}

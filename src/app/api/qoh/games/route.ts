@@ -1,15 +1,12 @@
-import { createCheckouts, deleteCheckouts, getCheckoutsBy } from '@/lib/checkouts'
+import { createQohGame, deleteQohGame, getQohGames } from '@/lib/qohGames'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(): Promise<Response> {
   const session = await getServerAuthSession()
-  const isAdmin = session?.user.isAdmin ?? false
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const items = await getCheckoutsBy((item) => {
-    return isAdmin || item.createdBy === session.user.username
-  })
+  const items = await getQohGames()
 
   return Response.json(items)
 }
@@ -17,14 +14,11 @@ export async function POST(request: Request): Promise<Response> {
   const session = await getServerAuthSession()
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const payloadData = (await request.json()) as
-    | Kitchen.Checkout.CreatePayload
-    | Kitchen.Checkout.CreatePayload[]
-  const payloads = Array.isArray(payloadData) ? payloadData : [payloadData]
+  const payload = (await request.json()) as QoH.Game.Payload
   const user = session?.user.username
 
   try {
-    const response = await createCheckouts(payloads.map((p) => ({ ...p, createdBy: user })))
+    const response = await createQohGame({ ...payload, createdBy: user })
 
     return Response.json(response, { status: 201 })
   } catch (error) {
@@ -39,7 +33,7 @@ export async function DELETE(request: Request): Promise<Response> {
   const isAdmin = session?.user.isAdmin
 
   try {
-    const response = await deleteCheckouts(ids, (item) => {
+    const response = await deleteQohGame(ids, (item) => {
       return isAdmin || item.get('createdBy') === session.user.username
     })
 

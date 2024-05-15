@@ -2,7 +2,7 @@ import UnauthorizedAlert from '@c/UnauthorizedAlert'
 
 import { getCosts, getCostsBy } from '@/lib/costs'
 import { getServerAuthSession } from '@/util/auth'
-import CostView from '@/views/CostView'
+import CostView from '@/views/Kitchen/CostView'
 
 export default async function UserPage(): Promise<React.JSX.Element> {
   const session = await getServerAuthSession()
