@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import GeneralStep from '@c/QohGameSteps/GeneralStep'
 import PayoutsStep from '@c/QohGameSteps/PayoutStep'
@@ -11,6 +11,7 @@ import BankIcon from '@mui/icons-material/AccountBalance'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { Box } from '@mui/material'
 import dayjs from 'dayjs'
+import { useRouter } from 'next/navigation'
 
 import PlayingCardsIcon from '@/icons/PlayingCards'
 import PottedPlantIcon from '@/icons/PottedPlant'
@@ -43,7 +44,8 @@ const steps: Step[] = [
 ]
 
 export default function QohCreateGameView(): React.JSX.Element {
-  const [activeStep, setActiveStep] = useState(Steps.Payouts)
+  const router = useRouter()
+  const [activeStep, setActiveStep] = useState(Steps.General)
   const [loading, setLoading] = useState(false)
   const [isCreated, setIsCreated] = useState(false)
   const [payload, setPayload] = useState<QoH.Game.UiPayload>({
@@ -93,11 +95,25 @@ export default function QohCreateGameView(): React.JSX.Element {
       })
 
       dispatchEvent(event)
-      setIsCreated(true)
     }
 
-    setLoading(false)
+    const urlParams = new URLSearchParams(window.location.search)
+    const callbackUrl = urlParams.get('callbackUrl')
+
+    if (callbackUrl) {
+      router.push(callbackUrl)
+    } else {
+      setIsCreated(true)
+      setLoading(false)
+    }
   }
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const callbackUrl = urlParams.get('callbackUrl')
+
+    if (callbackUrl) router.prefetch(callbackUrl)
+  }, [router])
 
   return (
     <Box sx={{ pb: { xs: '56px', sm: 0 } }}>
@@ -112,7 +128,7 @@ export default function QohCreateGameView(): React.JSX.Element {
         {activeStep === Steps.General && <GeneralStep game={payload} onChange={updatePayload} />}
         {activeStep === Steps.Seed && <SeedStep game={payload} onChange={updatePayload} />}
         {activeStep === Steps.Payouts && <PayoutsStep game={payload} onChange={updatePayload} />}
-        {activeStep === Steps.Summary && <SummaryStep />}
+        {activeStep === Steps.Summary && <SummaryStep game={payload} />}
       </ResponsiveStepper>
     </Box>
   )

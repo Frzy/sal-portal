@@ -23,7 +23,7 @@ const HelpInfo: Help = {
   createSeed:
     'This setting will take part of the ticket sales and hold it for seeding the next game.',
   maxSeed:
-    'Once the seed passes this threshold, the game will stop adding funds to the next games seed.',
+    'Once the seed passes this threshold, the game will stop adding funds to the next games seed. Setting this to zero mean the seed will never stop.',
 }
 interface SeedStepProps {
   game: QoH.Game.UiPayload
