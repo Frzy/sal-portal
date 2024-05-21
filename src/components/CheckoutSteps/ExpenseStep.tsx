@@ -10,8 +10,11 @@ export default function ExpenseStep({ value = 0, onChange }: ExpenseStepProps): 
   return (
     <Box>
       <Typography sx={{ pb: 2 }}>
-        Please enter the total of all exenses, not going to the bar, that are coming out of the
-        deposit.
+        Please enter the total of all exenses that will be paid out of the deposit,{' '}
+        <Typography component='span' fontWeight='fontWeightBold'>
+          DO NOT
+        </Typography>{' '}
+        include drink chips they will automatically be included.
       </Typography>
       <Alert severity='info' sx={{ mb: 2 }}>
         These are usally small purchases made right before service that are paid out of deposit.
