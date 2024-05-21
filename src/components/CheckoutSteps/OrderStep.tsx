@@ -1,28 +1,36 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import AddIcon from '@mui/icons-material/Add'
-import CheckBoxIcon from '@mui/icons-material/CheckBox'
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import RemoveIcon from '@mui/icons-material/Remove'
 import {
-  Autocomplete,
   Box,
   Checkbox,
   Divider,
+  FormControl,
   FormControlLabel,
   IconButton,
   List,
   ListItem,
   ListItemText,
-  TextField,
+  MenuItem,
+  OutlinedInput,
+  Select,
+  type SelectChangeEvent,
   Typography,
 } from '@mui/material'
 
 import { formatCurrency } from '@/util/functions'
 
-const icon = <CheckBoxOutlineBlankIcon fontSize='small' />
-const checkedIcon = <CheckBoxIcon fontSize='small' />
-
+const ITEM_HEIGHT = 48
+const ITEM_PADDING_TOP = 8
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+}
 interface OrderStepProps {
   menuOptions?: Kitchen.Menu.Item[]
   menuOrders?: Kitchen.Checkout.Order[]
@@ -39,11 +47,18 @@ export default function OrderStep({
   onOrderChange,
   onRememberMeChange,
 }: OrderStepProps): React.JSX.Element {
-  const menuItems = useMemo(() => {
-    return menuOrders.map((d) => d.menuItem)
-  }, [menuOrders])
-  const [selectedItems, setSelectedItems] = useState<Kitchen.Menu.Item[] | null>(null)
-  const [hideText, setHideText] = useState(false)
+  const selectedItems = useMemo(() => menuOrders.map((o) => o.menuItem.id), [menuOrders])
+
+  function handleChange(event: SelectChangeEvent<string[]>): void {
+    const {
+      target: { value },
+    } = event
+
+    const ids = typeof value === 'string' ? value.split(',') : value
+    const items = menuOptions.filter((item) => ids.includes(item.id))
+
+    if (onMenuChange) onMenuChange(items)
+  }
 
   function handleDecreaseQuantity(detailIndex: number): void {
     if (onOrderChange) {
@@ -70,49 +85,27 @@ export default function OrderStep({
       <Typography sx={{ pb: 2 }}>
         Once an items has been added to the list, provide the number of times it was ordered .
       </Typography>
-      <Autocomplete
-        multiple
-        options={menuOptions}
-        disableCloseOnSelect
-        value={selectedItems ?? menuItems}
-        isOptionEqualToValue={(option, value) => option.id === value.id}
-        onClose={() => {
-          if (onMenuChange && selectedItems) {
-            onMenuChange(selectedItems)
-            setSelectedItems(null)
-          }
-        }}
-        onChange={(event, values) => {
-          setSelectedItems(values)
-        }}
-        renderOption={(props, option, { selected }) => {
-          return (
-            <li {...props} key={option.id}>
-              <Checkbox icon={icon} checkedIcon={checkedIcon} sx={{ mr: 1 }} checked={selected} />
-              {option.name} • {formatCurrency(option.price)}
-            </li>
-          )
-        }}
-        renderTags={(tagValue, getTagProps) => {
-          if (hideText) return null
-
-          return `${tagValue.length} Menu Items Selected`
-        }}
-        getOptionLabel={(option) => option.name}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label='Menu Items'
-            onFocus={() => {
-              setHideText(true)
-            }}
-            onBlur={() => {
-              setHideText(false)
-            }}
-            placeholder={hideText ? 'Search...' : ''}
-          />
-        )}
-      />
+      <FormControl fullWidth>
+        <Select
+          multiple
+          displayEmpty
+          value={selectedItems}
+          onChange={handleChange}
+          input={<OutlinedInput />}
+          renderValue={() => 'Pick Orders...'}
+          MenuProps={MenuProps}
+        >
+          <MenuItem disabled value=''>
+            <em>Pick Orders...</em>
+          </MenuItem>
+          {menuOptions.map((option) => (
+            <MenuItem key={option.id} value={option.id}>
+              <Checkbox checked={selectedItems.includes(option.id)} />
+              <ListItemText primary={`${option.name} • ${formatCurrency(option.price)}`} />
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       {!!menuOrders.length && (
         <Box sx={{ display: 'flex', px: 2, mt: 2 }}>
           <Typography sx={{ flexGrow: 1, fontSize: 24 }}>Items</Typography>
