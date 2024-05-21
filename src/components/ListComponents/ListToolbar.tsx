@@ -91,16 +91,16 @@ export default function ListToolbar({
         </Typography>
         {numSelected === 1 && !!onEditClick && (
           <Tooltip title='Edit'>
-            <IconButton onClick={onEditClick}>
-              <EditIcon />
-            </IconButton>
+            <Button onClick={onEditClick} startIcon={<EditIcon />} color='secondary'>
+              Edit
+            </Button>
           </Tooltip>
         )}
         {hasSelection && !!onDeleteClick && (
           <Tooltip title='Delete'>
-            <IconButton onClick={onDeleteClick}>
-              <DeleteIcon />
-            </IconButton>
+            <Button onClick={onDeleteClick} startIcon={<DeleteIcon />} color='secondary'>
+              Delete
+            </Button>
           </Tooltip>
         )}
         {!hasSelection && !hideSearch && !fullRowSearch && (
@@ -251,7 +251,6 @@ export default function ListToolbar({
                 </InputAdornment>
               ),
             }}
-            autoFocus
             fullWidth
           />
         </Box>

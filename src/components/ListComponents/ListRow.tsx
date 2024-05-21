@@ -13,7 +13,7 @@ import {
 import dayjs, { type Dayjs } from 'dayjs'
 
 import { LONG_TIME_FORMAT } from '@/util/constants'
-import { formatCurrency } from '@/util/functions'
+import { formatCurrency, getValueByPath } from '@/util/functions'
 
 import { type Row } from './EnhancedList'
 import { type ListColumns } from './ListHeader'
@@ -41,10 +41,10 @@ export default function ListRow<T extends Row<T>>({
   totalColumns,
 }: ListRowProps<T>): React.JSX.Element {
   const isExpandable = !!children
-  const columnKeys = useMemo<(keyof T)[]>(() => columns.map((c) => c.id), [columns])
+  const columnKeys = useMemo<string[]>(() => columns.map((c) => c.id), [columns])
 
-  function formatRowData(column: ListColumns<T>, row: T, key: keyof T): React.ReactNode {
-    const cellData: string | number | Dayjs = row[key]
+  function formatRowData(column: ListColumns<T>, row: T, path: string): React.ReactNode {
+    const cellData: string | number | Dayjs = getValueByPath(row, path)
 
     if (column.cellRender) {
       const cell = column.cellRender(row)
@@ -98,11 +98,16 @@ export default function ListRow<T extends Row<T>>({
               component='th'
               scope='row'
               padding={selection !== 'none' ? 'none' : undefined}
+              sx={{ py: 0, ...columns[colIndex].cellStyle }}
             >
               {formatRowData(columns[colIndex], row, key)}
             </TableCell>
           ) : (
-            <TableCell key={colIndex} align={columns[colIndex]?.align ?? 'right'}>
+            <TableCell
+              key={colIndex}
+              align={columns[colIndex]?.align ?? 'right'}
+              sx={{ py: 0, ...columns[colIndex].cellStyle }}
+            >
               {formatRowData(columns[colIndex], row, key)}
             </TableCell>
           )

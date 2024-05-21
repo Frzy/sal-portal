@@ -8,9 +8,6 @@ declare global {
   }
 
   type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
-  type StringKeys<T> = {
-    [P in keyof T]: P extends string ? P : never
-  }[keyof T]
 
   type RowCellData = string | number | boolean | Date
   type RawRowData = RowCellData[] | Record<string, RowCellData>
@@ -214,6 +211,7 @@ declare global {
       maxSeed: number
       modified: string
       name: string
+      paidJackpot?: number
       resetNumber: number
       resetOnTwoJokers: boolean
       seedPercent: number
@@ -223,12 +221,23 @@ declare global {
     }
 
     interface Item extends ServerItem {
-      startDate: Dayjs
-      lastResetDate?: Dayjs
-      endDate?: Dayjs
       created: Dayjs
+      endDate?: Dayjs
+      hasAllCards: boolean
+      hasAllPositions: boolean
+      isOldGame: boolean
+      lastResetDate?: Dayjs
       modified: Dayjs
-      entries: QoH.Entry.Item[]
+      startDate: Dayjs
+      totals: {
+        availableFund: number
+        jackpot: number
+        payout: number
+        profit: number
+        sales: number
+        seed: number
+      }
+      entries: QoH.Entry.GameItem[]
     }
 
     interface Payload {
@@ -270,15 +279,12 @@ declare global {
       created: string
       modified: string
       lastModifiedBy: string
-
       drawDate: string
-      cashIn: number
-      cardPayout: number
-      additionalPayouts: number
+      ticketSales: number
+      payout: number
       shuffel: number
-      cardPosition: number
-
-      cardDrawn?: Card.item
+      cardPosition?: number
+      cardDrawn?: Card.Item
     }
 
     interface Item extends ServerItem {
@@ -287,12 +293,28 @@ declare global {
       modified: Dayjs
     }
 
+    interface GameItem extends Item {
+      availableFund: number
+      jackpot: number
+      name: string
+      profit: number
+      seed: number
+      percentChange: number
+      totals: {
+        availableFund: number
+        jackpot: number
+        payout: number
+        profit: number
+        sales: number
+        seed: number
+      }
+    }
+
     interface Payload {
       gameId: string
       drawDate: string
       cashIn: number
-      cardPayout: number
-      additionalPayouts: number
+      payout: number
       shuffel: number
       cardPosition: number
       cardDrawn: string
@@ -313,8 +335,8 @@ declare global {
     interface IconProps extends PortalIconProps {
       suit: Suit
     }
-    type Suit = 'heart' | 'diamond' | 'club' | 'spade' | 'red' | 'black'
-    type Value = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A' | 'Jk'
+    type Suit = 'hearts' | 'diamonds' | 'clubs' | 'spades' | 'red' | 'black'
+    type Value = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A' | 'X'
   }
 }
 

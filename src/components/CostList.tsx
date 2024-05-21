@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
@@ -24,7 +24,7 @@ import { useSession } from 'next-auth/react'
 import TimeFrame, { type TimeFrameValue } from '@/components/TimeFrame'
 import { TIME_FRAME } from '@/util/constants'
 
-import EnhancedList from './ListComponents/EnhancedList'
+import EnhancedList, { type EnhancedListRef } from './ListComponents/EnhancedList'
 import { type ListColumns } from './ListComponents/ListHeader'
 
 interface Filters {
@@ -241,13 +241,17 @@ interface CostListProps {
   onEdit?: (item: Kitchen.Cost.Item) => void
   onCreate?: () => void
   onDelete?: (items: Kitchen.Cost.Item[]) => void
+  onSelectionChange?: (items: Kitchen.Cost.Item[]) => void
+  listRef?: React.MutableRefObject<EnhancedListRef | null>
 }
 export default function CostList({
   costItems,
-  title,
+  listRef,
   onCreate,
   onDelete,
   onEdit,
+  onSelectionChange,
+  title,
 }: CostListProps): React.JSX.Element {
   const { data: session } = useSession()
   const minDate = useMemo(() => {
@@ -293,9 +297,11 @@ export default function CostList({
 
     return { createdOptions, modifiedOptions }
   }, [isAdmin, costItems])
+  const thisRef = useRef<EnhancedListRef | null>(null)
 
   return (
     <EnhancedList
+      ref={listRef ?? thisRef}
       columns={tableColumns}
       hasFilters={!!filters}
       onCreate={onCreate}
@@ -306,7 +312,8 @@ export default function CostList({
       sortOrder='desc'
       title={title}
       totalRows={costItems.length}
-      selection='single'
+      selection='multiple'
+      onSelectionChange={onSelectionChange}
       filterComponent={
         <CostListFilters
           adminOptions={adminOptions}

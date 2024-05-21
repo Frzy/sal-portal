@@ -130,7 +130,6 @@ export default function EditCheckoutDialog({
                       </InputAdornment>
                     ) : undefined,
                 }}
-                autoFocus
                 fullWidth
               />
             </Grid>

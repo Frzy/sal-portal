@@ -17,7 +17,6 @@ export default function ExpenseStep({ value = 0, onChange }: ExpenseStepProps): 
         These are usally small purchases made right before service that are paid out of deposit.
       </Alert>
       <NumberInput
-        autoFocus
         fullWidth
         label='Additional Expenses'
         sx={{

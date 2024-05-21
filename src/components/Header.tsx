@@ -35,8 +35,7 @@ import { signOut, useSession } from 'next-auth/react'
 import DiagnosisIcon from '@/icons/Diagnosis'
 import HeartPlusIcon from '@/icons/HeartPlus'
 import PlayingCardsIcon from '@/icons/PlayingCards'
-
-const drawerWidth = 240
+import { DRAWER_WIDTH } from '@/util/constants'
 
 export default function Header(): React.JSX.Element {
   const { data: session } = useSession()
@@ -65,6 +64,7 @@ export default function Header(): React.JSX.Element {
     <header>
       <AppBar
         position='fixed'
+        component='div'
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
@@ -93,9 +93,9 @@ export default function Header(): React.JSX.Element {
           keepMounted: true,
         }}
         sx={{
-          width: drawerWidth,
+          width: DRAWER_WIDTH,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+          [`& .MuiDrawer-paper`]: { width: DRAWER_WIDTH, boxSizing: 'border-box' },
         }}
       >
         <Toolbar />
@@ -146,7 +146,7 @@ export default function Header(): React.JSX.Element {
             <Divider />
             {isAdminLoggedIn && (
               <ListItem disablePadding>
-                <ListItemButton href='/kitchen/analytics'>
+                <ListItemButton href='/kitchen/analytics' onClick={handleDrawerClose}>
                   <ListItemIcon>
                     <AnalyticsIcon />
                   </ListItemIcon>
@@ -156,7 +156,7 @@ export default function Header(): React.JSX.Element {
             )}
             {isAdminLoggedIn && (
               <ListItem disablePadding>
-                <ListItemButton href='/kitchen/menu-items'>
+                <ListItemButton href='/kitchen/menu-items' onClick={handleDrawerClose}>
                   <ListItemIcon>
                     <MenuIcon />
                   </ListItemIcon>
@@ -165,7 +165,7 @@ export default function Header(): React.JSX.Element {
               </ListItem>
             )}
             <ListItem disablePadding>
-              <ListItemButton href='/kitchen/checkouts'>
+              <ListItemButton href='/kitchen/checkouts' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <ReceiptIcon />
                 </ListItemIcon>
@@ -173,7 +173,7 @@ export default function Header(): React.JSX.Element {
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton href='/kitchen/costs'>
+              <ListItemButton href='/kitchen/costs' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <CostIcon />
                 </ListItemIcon>
@@ -181,7 +181,7 @@ export default function Header(): React.JSX.Element {
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton href='/kitchen/checkout-form'>
+              <ListItemButton href='/kitchen/checkout-form' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <CheckoutIcon />
                 </ListItemIcon>
@@ -235,7 +235,7 @@ export default function Header(): React.JSX.Element {
             </ListSubheader>
             <Divider />
             <ListItem disablePadding>
-              <ListItemButton href='/qoh/games'>
+              <ListItemButton href='/qoh/games' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <PlayingCardsIcon />
                 </ListItemIcon>
@@ -272,7 +272,7 @@ export default function Header(): React.JSX.Element {
                 </ListSubheader>
                 <Divider />
                 <ListItem disablePadding>
-                  <ListItemButton href='/users'>
+                  <ListItemButton href='/users' onClick={handleDrawerClose}>
                     <ListItemIcon>
                       <UsersIcon />
                     </ListItemIcon>

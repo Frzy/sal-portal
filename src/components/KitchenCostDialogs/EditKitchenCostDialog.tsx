@@ -83,7 +83,6 @@ export default function EditKitchenCostDialog({
                 ),
               }}
               required
-              autoFocus
               fullWidth
             />
           </Grid>

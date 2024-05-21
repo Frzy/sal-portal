@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react'
 
-import { Box, Card, CardContent, Paper, Typography } from '@mui/material'
+import SingleValueDisplay from '@c/SingleValueDisplay'
+import { Box, Paper, Typography } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
 import { formatCurrency, serverToCheckoutItem, serverToCostItem } from '@/util/functions'
@@ -61,118 +62,72 @@ export default function KitchenAnalyticsView({
       </Paper>
       <Grid container spacing={2}>
         <Grid xs={12} sm={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Typography variant='h5'>Overall Profit</Typography>
-              <Typography
-                variant='h4'
-                align='center'
-                sx={{
-                  fontWeight: 'fontWeightBold',
-                  color: (theme) =>
-                    stats.totalSales - stats.totalCost >= 0
-                      ? theme.vars.palette.success.main
-                      : theme.vars.palette.error.main,
-                }}
-              >
-                {formatCurrency(stats.totalSales - stats.totalCost)}
-              </Typography>
-            </CardContent>
-          </Card>
+          <SingleValueDisplay
+            label='Overall Profit'
+            value={formatCurrency(stats.totalSales - stats.totalCost)}
+            valueProps={{
+              sx: {
+                color: (theme) =>
+                  stats.totalSales - stats.totalCost >= 0
+                    ? theme.vars.palette.success.main
+                    : theme.vars.palette.error.main,
+              },
+            }}
+          />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Typography variant='h5'>Total Sales</Typography>
-              <Typography
-                variant='h4'
-                align='center'
-                sx={{
-                  fontWeight: 'fontWeightBold',
-                  color: (theme) => theme.vars.palette.success.main,
-                }}
-              >
-                {formatCurrency(stats.totalSales)}
-              </Typography>
-            </CardContent>
-          </Card>
+          <SingleValueDisplay
+            label='Total Sales'
+            value={formatCurrency(stats.totalSales)}
+            valueProps={{
+              sx: {
+                color: (theme) => theme.vars.palette.success.main,
+              },
+            }}
+          />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Typography variant='h5'>Total Costs</Typography>
-              <Typography
-                variant='h4'
-                align='center'
-                sx={{
-                  fontWeight: 'fontWeightBold',
-                  color: (theme) => theme.vars.palette.error.main,
-                }}
-              >
-                {formatCurrency(stats.totalCost)}
-              </Typography>
-            </CardContent>
-          </Card>
+          <SingleValueDisplay
+            label='Total Costs'
+            value={formatCurrency(stats.totalCost)}
+            valueProps={{
+              sx: {
+                color: (theme) => theme.vars.palette.error.main,
+              },
+            }}
+          />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Typography variant='h5'>Overall Profit %</Typography>
-              <Typography
-                variant='h4'
-                align='center'
-                sx={{
-                  fontWeight: 'fontWeightBold',
-                  color: (theme) =>
-                    stats.profitPercent >= 0
-                      ? theme.vars.palette.success.main
-                      : theme.vars.palette.error.main,
-                }}
-              >
-                {stats.profitPercent}%
-              </Typography>
-            </CardContent>
-          </Card>
+          <SingleValueDisplay
+            label='Overall Profit %'
+            value={`${stats.profitPercent}%`}
+            valueProps={{
+              sx: {
+                color: (theme) =>
+                  stats.profitPercent >= 0
+                    ? theme.vars.palette.success.main
+                    : theme.vars.palette.error.main,
+              },
+            }}
+          />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Typography variant='h5'>Total Services</Typography>
-              <Typography variant='h4' align='center' sx={{ fontWeight: 'fontWeightBold' }}>
-                {stats.totalServices}
-              </Typography>
-            </CardContent>
-          </Card>
+          <SingleValueDisplay label='Total Services' value={stats.totalServices} />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Typography variant='h5'>Total Orders</Typography>
-              <Typography variant='h4' align='center' sx={{ fontWeight: 'fontWeightBold' }}>
-                {stats.totalOrders}
-              </Typography>
-            </CardContent>
-          </Card>
+          <SingleValueDisplay label='Total Orders' value={stats.totalOrders} />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Typography variant='h5'>Average Sales</Typography>
-              <Typography variant='h4' align='center' sx={{ fontWeight: 'fontWeightBold' }}>
-                {formatCurrency(stats.totalSales / stats.totalServices)}
-              </Typography>
-            </CardContent>
-          </Card>
+          <SingleValueDisplay
+            label='Average Sales'
+            value={formatCurrency(stats.totalSales / stats.totalServices)}
+          />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Typography variant='h5'>Average Orders</Typography>
-              <Typography variant='h4' align='center' sx={{ fontWeight: 'fontWeightBold' }}>
-                {stats.totalOrders / stats.totalServices}
-              </Typography>
-            </CardContent>
-          </Card>
+          <SingleValueDisplay
+            label='Average Orders'
+            value={stats.totalOrders / stats.totalServices}
+          />
         </Grid>
       </Grid>
     </Box>

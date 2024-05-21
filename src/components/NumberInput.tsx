@@ -36,7 +36,8 @@ export default function NumberInput({
   precision = 2,
   thousandChar = ',',
   value,
-  ...inputProps
+  inputProps,
+  ...props
 }: NumberInputProps): React.JSX.Element {
   const defaultValue = value === null ? NaN : Number(value)
 
@@ -134,7 +135,11 @@ export default function NumberInput({
     <TextField
       defaultValue={inputDefaultValue}
       name={name}
-      {...inputProps}
+      {...props}
+      inputProps={{
+        ...inputProps,
+        inputMode: 'numeric',
+      }}
       onKeyDown={handleKeyDown}
       onChange={handleChange}
       value={inputValue}

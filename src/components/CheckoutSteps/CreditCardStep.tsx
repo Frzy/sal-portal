@@ -14,7 +14,6 @@ export default function CreditCardStep({
     <Box>
       <Typography sx={{ pb: 2 }}>Please enter the total credit card sales.</Typography>
       <NumberInput
-        autoFocus
         fullWidth
         label='Credit Card Sales'
         sx={{

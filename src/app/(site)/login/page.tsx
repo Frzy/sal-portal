@@ -131,7 +131,6 @@ export default function LoginView(): React.JSX.Element {
               value={formValues.username}
               onChange={handleChange}
               label='User Name'
-              autoFocus
               fullWidth
             />
             <TextField

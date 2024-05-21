@@ -12,6 +12,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 import theme from '@/theme'
+import { DRAWER_WIDTH } from '@/util/constants'
 
 import Header from './Header'
 import Notifier from './Notifier'
@@ -28,7 +29,11 @@ export default function App({ children, deviceType }: AppProps): React.JSX.Eleme
         <CssBaseline />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Header />
-          <Container component={'main'} maxWidth='xl' sx={{ pb: 1 }}>
+          <Container
+            component={'main'}
+            maxWidth='xl'
+            sx={{ pb: 1, width: { xs: '100%', md: `calc(100% - ${DRAWER_WIDTH}px)` } }}
+          >
             <Toolbar sx={{ mb: 1 }} />
             {children}
             <Notifier />

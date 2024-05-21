@@ -8,7 +8,7 @@ import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 type GoogleQohEntryRow = GoogleSpreadsheetRow<Omit<QoH.Entry.ServerItem, 'orders' | 'name'>>
 
 const BASE_QOH_ENTRY = {
-  cashIn: 0,
+  ticketSales: 0,
   cardPayout: 0,
   additionalPayouts: 0,
   shuffel: 1,
@@ -16,9 +16,10 @@ const BASE_QOH_ENTRY = {
 }
 
 function googleToServerQohEntry(row: GoogleQohEntryRow): QoH.Entry.ServerItem {
-  const cardDrawn = row.get('cardDrawn')
+  const cardDrawn = row.get('cardDrawn') ?? ''
   const [cardValue, cardSuit] = cardDrawn.split('_')
   const validCard = !!cardValue && !!cardSuit
+  const cardPosition = getNumber(row.get('cardPosition'))
 
   return {
     id: row.get('id'),
@@ -27,12 +28,10 @@ function googleToServerQohEntry(row: GoogleQohEntryRow): QoH.Entry.ServerItem {
     createdBy: row.get('createdBy'),
     lastModifiedBy: row.get('lastModifiedBy'),
     modified: row.get('modified'),
-
-    additionalPayouts: getNumber(row.get('additionalPayouts')),
     cardDrawn: validCard ? { suit: cardSuit, value: cardValue } : undefined,
-    cardPayout: getNumber(row.get('cardPayout')),
-    cardPosition: getNumber(row.get('cardPosition')),
-    cashIn: getNumber(row.get('cashIn')),
+    payout: getNumber(row.get('payout')),
+    cardPosition: cardPosition || undefined,
+    ticketSales: getNumber(row.get('ticketSales')),
     drawDate: row.get('drawDate'),
     shuffel: getNumber(row.get('shuffel')),
   }
@@ -100,7 +99,7 @@ export async function updateQohEntry(
   if (row) {
     const now = dayjs().format()
 
-    const updatedData: QoH.Entry.ServerItem = {
+    const updatedData: Omit<QoH.Entry.ServerItem, 'cardDrawn'> = {
       ...(row.toObject() as QoH.Entry.ServerItem),
       ...payload,
       modified: now,

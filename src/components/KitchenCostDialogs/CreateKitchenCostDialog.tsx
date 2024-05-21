@@ -83,7 +83,6 @@ export default function CreateKitchenCostDialog({
                 ),
               }}
               onChange={handleTextChange}
-              autoFocus
               required
               fullWidth
             />

@@ -13,7 +13,7 @@ export default function Card({ suit, value, ...props }: CardProps): React.JSX.El
             d='M381.2,504H130.8c-14.458,0-26.179-11.721-26.179-26.179V34.179C104.621,19.721,116.342,8,130.8,8 h250.4c14.458,0,26.179,11.721,26.179,26.179v443.642C407.379,492.279,395.658,504,381.2,504z'
           />
 
-          {value === 'Jk' && (suit === 'red' || suit === 'black') && (
+          {value === 'X' && (suit === 'red' || suit === 'black') && (
             <g
               fill={suit === 'black' ? '#2D2B29' : '#FF6464'}
               style={{ transform: 'scale(7) translate(22px, 21px)' }}
@@ -25,13 +25,13 @@ export default function Card({ suit, value, ...props }: CardProps): React.JSX.El
           )}
 
           {/* Spade */}
-          {suit === 'spade' && (
+          {suit === 'spades' && (
             <g fill='#2D2B29' style={{ transform: 'scale(12) translate(13.5px, 13px)' }}>
               <path d='M7.184 11.246A3.5 3.5 0 0 1 1 9c0-1.602 1.14-2.633 2.66-4.008C4.986 3.792 6.602 2.33 8 0c1.398 2.33 3.014 3.792 4.34 4.992C13.86 6.367 15 7.398 15 9a3.5 3.5 0 0 1-6.184 2.246 19.92 19.92 0 0 0 1.582 2.907c.231.35-.02.847-.438.847H6.04c-.419 0-.67-.497-.438-.847a19.919 19.919 0 0 0 1.582-2.907z' />
             </g>
           )}
           {/* Club */}
-          {suit === 'club' && (
+          {suit === 'clubs' && (
             <path
               style={{
                 transform: 'translate(160px, 160px) scale(0.75)',
@@ -42,7 +42,7 @@ export default function Card({ suit, value, ...props }: CardProps): React.JSX.El
             />
           )}
           {/* Diamond */}
-          {suit === 'diamond' && (
+          {suit === 'diamonds' && (
             <g
               fill='#2D2B29'
               stroke='#2D2B29'
@@ -58,7 +58,7 @@ export default function Card({ suit, value, ...props }: CardProps): React.JSX.El
             </g>
           )}
           {/* Heart */}
-          {suit === 'heart' && (
+          {suit === 'hearts' && (
             <path
               style={{ fill: '#FF6464' }}
               d='M183.667,238.229c0-21.161,17.759-38.315,39.666-38.315c10.858,0,20.689,4.221,27.848,11.05 c2.655,2.532,6.981,2.532,9.636,0c7.16-6.83,16.991-11.05,27.849-11.05c21.907,0,39.666,17.154,39.666,38.315l0,0 c0,39.572-53.059,75.572-68.29,85.09c-2.462,1.539-5.623,1.539-8.085,0C236.727,313.8,183.667,277.801,183.667,238.229'
@@ -66,7 +66,7 @@ export default function Card({ suit, value, ...props }: CardProps): React.JSX.El
           )}
           <g>
             {/* Heart Outline */}
-            {suit === 'heart' && (
+            {suit === 'hearts' && (
               <path
                 style={{ fill: '#2D2B29' }}
                 d='M256,204.893c-8.717-8.216-20.304-12.921-32.495-12.921c-26.168,0-47.458,21.341-47.458,47.572 c0,51.788,72.907,93.661,76.011,95.418c1.223,0.692,2.582,1.038,3.941,1.038c1.359,0,2.719-0.346,3.941-1.038 c3.104-1.757,76.011-43.63,76.011-95.418c0-26.231-21.29-47.572-47.458-47.572C276.304,191.972,264.717,196.677,256,204.893z M319.952,239.544c0,36.435-49.466,70.049-63.956,79.111c-14.499-9.051-63.948-42.603-63.948-79.111 c0-17.409,14.112-31.572,31.458-31.572c10.331,0,20.013,5.113,25.902,13.679c1.492,2.171,3.958,3.468,6.592,3.468 c2.634,0,5.1-1.297,6.592-3.468c5.889-8.565,15.572-13.679,25.902-13.679C305.84,207.972,319.952,222.135,319.952,239.544z'
@@ -99,7 +99,7 @@ export default function Card({ suit, value, ...props }: CardProps): React.JSX.El
             fill: '#2D2B29',
           }}
         >
-          {value === 'Jk' ? 'J' : value}
+          {value === 'X' ? 'J' : value}
         </text>
         <text
           style={{
@@ -114,7 +114,7 @@ export default function Card({ suit, value, ...props }: CardProps): React.JSX.El
             fill: '#2D2B29',
           }}
         >
-          {value === 'Jk' ? 'J' : value}
+          {value === 'X' ? 'J' : value}
         </text>
       </svg>
     </SvgIcon>

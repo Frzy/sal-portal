@@ -1,5 +1,7 @@
 'use client'
 
+import { forwardRef } from 'react'
+
 import {
   type CssVarsTheme,
   type Theme,
@@ -8,6 +10,7 @@ import {
 import type {} from '@mui/material/themeCssVarsAugmentation'
 import mediaQuery from 'css-mediaquery'
 import { Roboto } from 'next/font/google'
+import NextLink, { type LinkProps } from 'next/link'
 
 const SAL_BLUE = '#008bff'
 const SAL_YELLOW = '#FFD400'
@@ -22,6 +25,10 @@ const ssrMatchMedia = (deviceType: string) => (query: string) => ({
   matches: mediaQuery.match(query, {
     width: deviceType === 'mobile' ? '0px' : '1024px',
   }),
+})
+
+const LinkBehaviour = forwardRef<HTMLAnchorElement, LinkProps>(function LinkBehaviour(props, ref) {
+  return <NextLink ref={ref as React.LegacyRef<HTMLAnchorElement>} {...props} />
 })
 
 const theme = (deviceType: string): Omit<Theme, 'palette' | 'applyStyles'> & CssVarsTheme => {
@@ -41,6 +48,16 @@ const theme = (deviceType: string): Omit<Theme, 'palette' | 'applyStyles'> & Css
       },
     },
     components: {
+      MuiLink: {
+        defaultProps: {
+          component: LinkBehaviour,
+        },
+      },
+      MuiButtonBase: {
+        defaultProps: {
+          LinkComponent: LinkBehaviour,
+        },
+      },
       MuiUseMediaQuery: {
         defaultProps: {
           ssrMatchMedia: ssrMatchMedia(deviceType),

@@ -61,7 +61,9 @@ export async function getQohGames(): Promise<QoH.Game.ServerItem[]> {
 
   return allGames.map((game) => ({
     ...game,
-    orders: allEntries.filter((e) => e.gameId === game.id),
+    entries: allEntries
+      .filter((e) => e.gameId === game.id)
+      .sort((a, b) => new Date(a.drawDate).getTime() - new Date(b.drawDate).getTime()),
   }))
 }
 export async function getQohGamesBy(
