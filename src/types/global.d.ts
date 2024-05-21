@@ -116,16 +116,18 @@ declare global {
   namespace Kitchen.Checkout {
     interface ServerItem {
       id: string
-      creditCardSales: number
-      deposit: number
-      drinkChips: number
-      expenses: number
-      sales: number
       created: string
       createdBy: string
-      modified: string
+      creditCardSales: number
+      deposit: number
+      depositChange: number
+      drinkChips: number
+      expenses: number
       lastModifiedBy: string
+      modified: string
       name: string
+      sales: number
+      salesChange: number
       orders: Kitchen.Order.ServerItem[]
     }
     interface Item extends ServerItem {

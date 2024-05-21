@@ -21,19 +21,34 @@ const BASE_CHECKOUT_ITEM = {
   deposit: 0,
 }
 
-function googleToServerCheckout(row: GoogleCheckoutRow): Kitchen.Checkout.ServerItem {
+function googleToServerCheckout(
+  row: GoogleCheckoutRow,
+  index: number,
+  arr: GoogleCheckoutRow[],
+): Kitchen.Checkout.ServerItem {
+  const prevItem = arr[index - 1]
+
+  const prevSales = prevItem ? getNumber(prevItem.get('sales'), 0) : 0
+  const prevDeposit = prevItem ? getNumber(prevItem.get('deposit'), 0) : 0
+  const deposit = getNumber(row.get('deposit'), 0)
+  const sales = getNumber(row.get('sales'), 0)
+  const salesChange = prevSales ? (sales - prevSales) / prevSales : 0
+  const depositChange = prevDeposit ? (deposit - prevDeposit) / prevDeposit : 0
+
   return {
     id: row.get('id'),
     name: `Checkout #${(row.rowNumber - 1).toString().padStart(4, '0')}`,
     created: row.get('created'),
     createdBy: row.get('createdBy'),
     creditCardSales: getNumber(row.get('creditCardSales')),
-    deposit: getNumber(row.get('deposit')),
     drinkChips: getNumber(row.get('drinkChips')),
     expenses: getNumber(row.get('expenses')),
     lastModifiedBy: row.get('lastModifiedBy'),
     modified: row.get('modified'),
-    sales: getNumber(row.get('sales')),
+    deposit,
+    sales,
+    salesChange,
+    depositChange,
     orders: [],
   }
 }

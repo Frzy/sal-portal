@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { CheckoutDialog } from '@c/CheckoutDialog'
 import CheckoutList from '@c/CheckoutList'
+import { ControlPointSharp } from '@mui/icons-material'
 import { Box } from '@mui/material'
 import { useRouter } from 'next/navigation'
 
@@ -16,7 +17,9 @@ interface CheckoutViewProps {
 export default function CheckoutViewView({
   serverCheckouts,
 }: CheckoutViewProps): React.JSX.Element {
-  const [checkouts, setCheckouts] = useState(serverCheckouts.map(serverToCheckoutItem))
+  const [checkouts, setCheckouts] = useState<Kitchen.Checkout.Item[]>(
+    serverCheckouts.map(serverToCheckoutItem),
+  )
   const router = useRouter()
   const [toEdit, setToEdit] = useState<Kitchen.Checkout.Item>()
   const [toDelete, setToDelete] = useState<Kitchen.Checkout.Item[]>()
@@ -59,6 +62,8 @@ export default function CheckoutViewView({
   useEffect(() => {
     router.prefetch('/kitchen/checkout-form')
   }, [router])
+
+  console.log({ checkouts })
 
   return (
     <Box>

@@ -78,6 +78,7 @@ export function serverToMenuItem(item: Kitchen.Menu.ServerItem): Kitchen.Menu.It
 export function serverToCheckoutItem(item: Kitchen.Checkout.ServerItem): Kitchen.Checkout.Item {
   const { orders, ...checkout } = item
   const checkoutOrders = orders.map(serverToOrderItem)
+
   return {
     ...checkout,
     created: dayjs(item.created),

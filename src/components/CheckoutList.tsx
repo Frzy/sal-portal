@@ -4,6 +4,9 @@ import { useMemo, useState } from 'react'
 
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import TrendingDownIcon from '@mui/icons-material/TrendingDown'
+import TrendingFlatIcon from '@mui/icons-material/TrendingFlat'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import {
   Autocomplete,
   Badge,
@@ -49,23 +52,57 @@ const columns: ListColumns<Kitchen.Checkout.Item>[] = [
     id: 'deposit',
     label: 'Deposit',
     isCurrency: true,
+    cellRender: (row) => {
+      const percent = Math.round((row?.depositChange ?? 0) * 100)
+      const percentText = percent === 0 ? '0' : percent > 0 ? `+${percent}` : percent.toString()
+
+      return (
+        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', justifyContent: 'flex-end' }}>
+          <Typography sx={{ fontFamily: 'monospace' }}>{formatCurrency(row.deposit)}</Typography>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {percent === 0 ? (
+              <TrendingFlatIcon />
+            ) : percent > 0 ? (
+              <TrendingUpIcon color='success' />
+            ) : (
+              <TrendingDownIcon color='error' />
+            )}
+            <Typography variant='caption'>{percentText}%</Typography>
+          </Box>
+        </Box>
+      )
+    },
   },
   {
     id: 'sales',
     label: 'Sales',
     isCurrency: true,
     cellRender: (row) => {
-      if (row.calculated.sales !== row.sales) {
-        return (
+      const modified = row.calculated.sales !== row.sales
+      const percent = Math.round((row?.salesChange ?? 0) * 100)
+      const percentText = percent === 0 ? '0' : percent > 0 ? `+${percent}` : percent.toString()
+
+      return (
+        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', justifyContent: 'flex-end' }}>
           <Tooltip
-            title={`Calculated value of ${formatCurrency(row.calculated.sales)} has been overridden`}
+            title={
+              modified
+                ? `Calculated value of ${formatCurrency(row.calculated.sales)} has been overridden`
+                : undefined
+            }
           >
             <Badge
-              variant='dot'
+              variant={modified ? 'dot' : 'standard'}
               color='warning'
+              hidden={!modified}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
               sx={{
                 '& .MuiBadge-badge': {
-                  right: -6,
+                  left: -6,
                   top: 12,
                 },
               }}
@@ -73,8 +110,19 @@ const columns: ListColumns<Kitchen.Checkout.Item>[] = [
               <Typography sx={{ fontFamily: 'monospace' }}>{formatCurrency(row.sales)}</Typography>
             </Badge>
           </Tooltip>
-        )
-      }
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {percent === 0 ? (
+              <TrendingFlatIcon />
+            ) : percent > 0 ? (
+              <TrendingUpIcon color='success' />
+            ) : (
+              <TrendingDownIcon color='error' />
+            )}
+            <Typography variant='caption'>{percentText}%</Typography>
+          </Box>
+        </Box>
+      )
     },
   },
   {
@@ -94,9 +142,13 @@ const columns: ListColumns<Kitchen.Checkout.Item>[] = [
             <Badge
               variant='dot'
               color='warning'
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
               sx={{
                 '& .MuiBadge-badge': {
-                  right: -6,
+                  left: -6,
                   top: 12,
                 },
               }}
