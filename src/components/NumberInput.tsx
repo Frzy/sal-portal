@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 
-import { TextField, type TextFieldProps } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import { IconButton, InputAdornment, TextField, type TextFieldProps } from '@mui/material'
 
 export interface HTMLNumericElement extends Omit<HTMLInputElement, 'value' | 'name'> {
   value: number | null | ''
@@ -40,6 +41,7 @@ export default function NumberInput({
   ...props
 }: NumberInputProps): React.JSX.Element {
   const defaultValue = value === null ? NaN : Number(value)
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const formatter = useMemo(
     () =>
@@ -135,7 +137,32 @@ export default function NumberInput({
     <TextField
       defaultValue={inputDefaultValue}
       name={name}
+      inputRef={inputRef}
       {...props}
+      InputProps={{
+        endAdornment: !!value && (
+          <InputAdornment position='end'>
+            <IconButton
+              onClick={() => {
+                if (inputRef.current) {
+                  const input = inputRef.current
+                  const newValue = '0'
+                  const value = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')
+
+                  if (value?.set) {
+                    value.set.call(input, newValue)
+
+                    input.dispatchEvent(new Event('input', { bubbles: true }))
+                  }
+                }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </InputAdornment>
+        ),
+        ...props.InputProps,
+      }}
       inputProps={{
         ...inputProps,
         inputMode: 'numeric',
