@@ -25,7 +25,7 @@ import TimeFrame, { type TimeFrameValue } from '@/components/TimeFrame'
 import { TIME_FRAME } from '@/util/constants'
 
 import EnhancedList, { type EnhancedListRef } from './ListComponents/EnhancedList'
-import { type ListColumns } from './ListComponents/ListHeader'
+import { type ListColumn } from './ListComponents/ListHeader'
 
 interface Filters {
   timeframe?: TimeFrameValue
@@ -33,7 +33,7 @@ interface Filters {
   modifiedBy?: string[]
 }
 
-const columns: ListColumns<Kitchen.Cost.Item>[] = [
+const columns: ListColumn<Kitchen.Cost.Item>[] = [
   {
     id: 'name',
     label: 'Name',
@@ -63,7 +63,7 @@ const columns: ListColumns<Kitchen.Cost.Item>[] = [
     minWidth: 150,
   },
 ]
-const adminColumns: ListColumns<Kitchen.Cost.Item>[] = [
+const adminColumns: ListColumn<Kitchen.Cost.Item>[] = [
   {
     id: 'createdBy',
     label: 'Created By',

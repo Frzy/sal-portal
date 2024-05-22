@@ -10,7 +10,7 @@ import {
 import { visuallyHidden } from '@mui/utils'
 
 interface ListHeaderProps<T> {
-  columns: ListColumns<T>[]
+  columns: ListColumn<T>[]
   disableSorting?: boolean
   expandable?: boolean
   headerGroupRow?: React.ReactNode
@@ -23,7 +23,7 @@ interface ListHeaderProps<T> {
   selection: List.SelectionMode
 }
 
-export interface ListColumns<T> {
+export interface ListColumn<T> {
   align?: 'left' | 'center' | 'right'
   cellRender?: (row: T) => React.ReactNode
   disableSort?: boolean

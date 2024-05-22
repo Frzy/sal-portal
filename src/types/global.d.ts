@@ -213,7 +213,7 @@ declare global {
       maxSeed: number
       modified: string
       name: string
-      paidJackpot?: number
+      paidJackpot: number
       resetNumber: number
       resetOnTwoJokers: boolean
       seedPercent: number

@@ -34,6 +34,7 @@ function googleToServerQohGame(row: GoogleQohGameRow): QoH.Game.ServerItem {
     maxGameReset: getNumber(row.get('maxGameReset')),
     maxSeed: getNumber(row.get('maxSeed')),
     modified: row.get('modified'),
+    paidJackpot: getNumber(row.get('paidJackpot')),
     resetNumber: getNumber(row.get('resetNumber')),
     resetOnTwoJokers: row.get('resetOnTwoJokers') === 'TRUE',
     seedPercent: getNumber(row.get('seedPercent')),

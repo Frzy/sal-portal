@@ -135,7 +135,7 @@ export function serverToOldSchoolQoHEntryGameItem(
   game: QoH.Game.ServerItem,
   entries: QoH.Entry.ServerItem[],
 ): QoH.Entry.GameItem[] {
-  let totalFund = 0
+  let totalFund = game.initialJackpot
   let totalSeed = 0
   let totalJackpot = game.initialJackpot
   let totalPayout = 0
@@ -143,15 +143,18 @@ export function serverToOldSchoolQoHEntryGameItem(
 
   return entries.map((entry, index, arr) => {
     const item = serverToQoHEntryItem(entry)
-    const seed = game.createSeed ? Math.floor(item.ticketSales * game.seedPercent) : 0
-    const availableFund = item.ticketSales
     const hasMaxSeed = game.maxSeed > 0
+    const seed =
+      game.createSeed && (!hasMaxSeed || game.maxSeed > totalSeed)
+        ? Math.floor(item.ticketSales * game.seedPercent)
+        : 0
     const jackpotPercent =
       game.createSeed && (!hasMaxSeed || game.maxSeed > totalSeed)
         ? game.jackpotPercent - game.seedPercent
         : game.jackpotPercent
-    const jackpot = Math.ceil(availableFund * jackpotPercent - entry.payout)
+    const jackpot = Math.ceil(item.ticketSales * jackpotPercent - entry.payout)
     const profit = Math.floor(item.ticketSales * (1 - game.jackpotPercent))
+    const availableFund = jackpot
     let percentChange = 0
 
     totalFund += availableFund
@@ -160,9 +163,10 @@ export function serverToOldSchoolQoHEntryGameItem(
     totalPayout += item.payout
     totalSales += item.ticketSales
 
-    const prevEntry = arr[index - 1]
+    const searchArr = arr.slice(0, index).reverse()
+    const prevEntry = searchArr.find((e) => !!e.ticketSales)
 
-    if (prevEntry) {
+    if (prevEntry && !!entry.ticketSales) {
       percentChange = (entry.ticketSales - prevEntry.ticketSales) / prevEntry.ticketSales
     }
 
@@ -178,7 +182,7 @@ export function serverToOldSchoolQoHEntryGameItem(
         availableFund: totalFund,
         jackpot: totalJackpot,
         payout: totalPayout,
-        profit: Math.floor(totalFund * (1 - game.jackpotPercent)),
+        profit: Math.floor(totalSales * (1 - game.jackpotPercent)),
         sales: totalSales,
         seed: totalSeed,
       },

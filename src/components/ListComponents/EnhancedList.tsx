@@ -21,7 +21,7 @@ import minMax from 'dayjs/plugin/minMax'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
 import FabListButton from './FabButton'
-import ListHeader, { type ListColumns } from './ListHeader'
+import ListHeader, { type ListColumn } from './ListHeader'
 import ListRow from './ListRow'
 import ListToolbar from './ListToolbar'
 
@@ -57,7 +57,7 @@ export interface EnhancedListRef {
 }
 
 interface Props<T extends Row<T>> {
-  columns: ListColumns<T>[]
+  columns: ListColumn<T>[]
   disableSorting?: boolean
   filterComponent?: React.ReactNode
   hasFilters?: boolean

@@ -34,7 +34,7 @@ import { TIME_FRAME } from '@/util/constants'
 import { formatCurrency } from '@/util/functions'
 
 import EnhancedList from './ListComponents/EnhancedList'
-import { type ListColumns } from './ListComponents/ListHeader'
+import { type ListColumn } from './ListComponents/ListHeader'
 
 interface Filters {
   timeframe?: TimeFrameValue
@@ -42,7 +42,7 @@ interface Filters {
   modifiedBy?: string[]
 }
 
-const columns: ListColumns<Kitchen.Checkout.Item>[] = [
+const columns: ListColumn<Kitchen.Checkout.Item>[] = [
   {
     id: 'name',
     label: 'Name',
@@ -175,7 +175,7 @@ const columns: ListColumns<Kitchen.Checkout.Item>[] = [
     minWidth: 150,
   },
 ]
-const adminColumns: ListColumns<Kitchen.Checkout.Item>[] = [
+const adminColumns: ListColumn<Kitchen.Checkout.Item>[] = [
   {
     id: 'createdBy',
     label: 'Created By',

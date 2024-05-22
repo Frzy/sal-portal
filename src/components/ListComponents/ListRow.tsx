@@ -16,10 +16,10 @@ import { LONG_TIME_FORMAT } from '@/util/constants'
 import { formatCurrency, getValueByPath } from '@/util/functions'
 
 import { type Row } from './EnhancedList'
-import { type ListColumns } from './ListHeader'
+import { type ListColumn } from './ListHeader'
 
 interface ListRowProps<T extends Row<T>> {
-  columns: ListColumns<T>[]
+  columns: ListColumn<T>[]
   row: T
   totalColumns: number
   selection: List.SelectionMode
@@ -43,7 +43,7 @@ export default function ListRow<T extends Row<T>>({
   const isExpandable = !!children
   const columnKeys = useMemo<string[]>(() => columns.map((c) => c.id), [columns])
 
-  function formatRowData(column: ListColumns<T>, row: T, path: string): React.ReactNode {
+  function formatRowData(column: ListColumn<T>, row: T, path: string): React.ReactNode {
     const cellData: string | number | Dayjs = getValueByPath(row, path)
 
     if (column.cellRender) {

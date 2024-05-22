@@ -10,9 +10,9 @@ import { CARD_VALUE_MAP, DATE_FORMAT } from '@/util/constants'
 import { capitalize, formatCurrency } from '@/util/functions'
 
 import EnhancedList from './ListComponents/EnhancedList'
-import { type ListColumns } from './ListComponents/ListHeader'
+import { type ListColumn } from './ListComponents/ListHeader'
 
-const BaseColumns: ListColumns<QoH.Entry.GameItem>[] = [
+const BaseColumns: ListColumn<QoH.Entry.GameItem>[] = [
   {
     id: 'drawDate',
     label: 'Drawn',
@@ -49,7 +49,7 @@ const BaseColumns: ListColumns<QoH.Entry.GameItem>[] = [
   },
 ]
 
-const CardDrawnColumn: ListColumns<QoH.Entry.GameItem> = {
+const CardDrawnColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'cardDrawn',
   label: 'Card',
   align: 'center',
@@ -74,39 +74,39 @@ const CardDrawnColumn: ListColumns<QoH.Entry.GameItem> = {
     return '--'
   },
 }
-const PayoutColumn: ListColumns<QoH.Entry.GameItem> = {
+const PayoutColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'payout',
   label: 'Payouts',
   align: 'left',
   isCurrency: true,
 }
-const SeedColumn: ListColumns<QoH.Entry.GameItem> = {
+const SeedColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'seed',
   label: 'To Seed',
   align: 'left',
   isCurrency: true,
 }
-const AvailableFundColumn: ListColumns<QoH.Entry.GameItem> = {
+const AvailableFundColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'availableFund',
   label: 'To Funds',
   align: 'left',
   isCurrency: true,
 }
-const JackpotColumn: ListColumns<QoH.Entry.GameItem> = {
+const JackpotColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'jackpot',
   label: 'To Jackpot',
   align: 'left',
   isCurrency: true,
   sx: { minWidth: 105 },
 }
-const ProfitColumn: ListColumns<QoH.Entry.GameItem> = {
+const ProfitColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'profit',
   label: 'To Profit',
   align: 'left',
   isCurrency: true,
 }
 
-const OldGameFirstTotalsColumn: ListColumns<QoH.Entry.GameItem> = {
+const OldGameFirstTotalsColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'totals.sales',
   label: 'Sales',
   align: 'right',
@@ -114,7 +114,7 @@ const OldGameFirstTotalsColumn: ListColumns<QoH.Entry.GameItem> = {
   sx: { borderLeft: '1px solid', borderLeftColor: 'divider' },
   cellStyle: { borderLeft: '1px solid', borderLeftColor: 'divider' },
 }
-const NewGameFirstTotalsColumn: ListColumns<QoH.Entry.GameItem> = {
+const NewGameFirstTotalsColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'totals.sales',
   label: 'Sales',
   align: 'right',
@@ -122,31 +122,31 @@ const NewGameFirstTotalsColumn: ListColumns<QoH.Entry.GameItem> = {
   sx: { borderLeft: '1px solid', borderLeftColor: 'divider' },
   cellStyle: { borderLeft: '1px solid', borderLeftColor: 'divider' },
 }
-const TotalSeedColumn: ListColumns<QoH.Entry.GameItem> = {
+const TotalSeedColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'totals.seed',
   label: 'Seed',
   align: 'right',
   isCurrency: true,
 }
-const TotalPayoutColumn: ListColumns<QoH.Entry.GameItem> = {
+const TotalPayoutColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'totals.payout',
   label: 'Payouts',
   align: 'right',
   isCurrency: true,
 }
-const TotalJackpotColumn: ListColumns<QoH.Entry.GameItem> = {
+const TotalJackpotColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'totals.jackpot',
   label: 'Jackpot',
   align: 'right',
   isCurrency: true,
 }
-const TotalProfitColumn: ListColumns<QoH.Entry.GameItem> = {
+const TotalProfitColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'totals.profit',
   label: 'Profit',
   align: 'right',
   isCurrency: true,
 }
-const TotalAvailableFundsColumn: ListColumns<QoH.Entry.GameItem> = {
+const TotalAvailableFundsColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'totals.availableFund',
   label: 'Funds',
   align: 'right',
@@ -164,33 +164,33 @@ export default function QohEntryList({
   hideTotals,
 }: QohEntryListProps): React.JSX.Element {
   const columns = useMemo(() => {
-    let listColumns = [...BaseColumns]
+    let lColumns = [...BaseColumns]
 
-    if (game.hasAllCards) listColumns.push(CardDrawnColumn)
+    if (game.hasAllCards) lColumns.push(CardDrawnColumn)
 
     if (!hideDetails) {
-      listColumns.push(PayoutColumn)
+      lColumns.push(PayoutColumn)
 
-      if (game.createSeed) listColumns.push(SeedColumn)
+      if (game.createSeed) lColumns.push(SeedColumn)
 
       if (game.isOldGame) {
-        listColumns = [...listColumns, JackpotColumn, ProfitColumn]
+        lColumns = [...lColumns, JackpotColumn, ProfitColumn]
       } else {
-        listColumns = [...listColumns, AvailableFundColumn, JackpotColumn, ProfitColumn]
+        lColumns = [...lColumns, AvailableFundColumn, JackpotColumn, ProfitColumn]
       }
     }
 
     if (!hideTotals) {
-      listColumns.push(game.isOldGame ? OldGameFirstTotalsColumn : NewGameFirstTotalsColumn)
-      listColumns.push(TotalPayoutColumn)
-      if (game.createSeed) listColumns.push(TotalSeedColumn)
+      lColumns.push(game.isOldGame ? OldGameFirstTotalsColumn : NewGameFirstTotalsColumn)
+      lColumns.push(TotalPayoutColumn)
+      if (game.createSeed) lColumns.push(TotalSeedColumn)
 
-      if (!game.isOldGame) listColumns.push(TotalAvailableFundsColumn)
+      if (!game.isOldGame) lColumns.push(TotalAvailableFundsColumn)
 
-      listColumns = [...listColumns, TotalJackpotColumn, TotalProfitColumn]
+      lColumns = [...lColumns, TotalJackpotColumn, TotalProfitColumn]
     }
 
-    return listColumns
+    return lColumns
   }, [game, hideDetails, hideTotals])
   const { entryColSpan, runningColSpan } = useMemo(() => {
     let entryColSpan = BaseColumns.length + (game.hasAllCards ? 1 : 0)
@@ -216,9 +216,9 @@ export default function QohEntryList({
   return (
     <EnhancedList
       columns={columns}
-      disableSorting
       hideToolbar
       orderBy={'drawDate'}
+      sortOrder='desc'
       rows={entries}
       selection='none'
       totalRows={entries.length}
