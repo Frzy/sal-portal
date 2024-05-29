@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { Fragment, useMemo, useRef, useState } from 'react'
 
 import LinkIcon from '@mui/icons-material/Link'
 import {
@@ -11,12 +11,16 @@ import {
   FormGroup,
   FormLabel,
   IconButton,
+  Switch,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
+import { useSession } from 'next-auth/react'
 
 import { DATE_FORMAT } from '@/util/constants'
 
-import EnhancedList from './ListComponents/EnhancedList'
+import EnhancedList, { type EnhancedListRef } from './ListComponents/EnhancedList'
 import { type ListColumn } from './ListComponents/ListHeader'
 
 const NameColumn: ListColumn<QoH.Game.Item> = {
@@ -42,7 +46,12 @@ const LinkColumn: ListColumn<QoH.Game.Item> = {
     )
   },
 }
-const AllColumns: ListColumn<QoH.Game.Item>[] = [
+const PublicColumns: ListColumn<QoH.Game.Item>[] = [
+  {
+    id: 'totals.availableFund',
+    label: 'Public Jackpot',
+    isCurrency: true,
+  },
   {
     id: 'totals.sales',
     label: 'Sales',
@@ -59,38 +68,19 @@ const AllColumns: ListColumn<QoH.Game.Item>[] = [
     isCurrency: true,
   },
   {
-    id: 'totals.profit',
-    label: 'Profit',
+    id: 'totals.jackpot',
+    label: 'Actual Jackpot',
     isCurrency: true,
   },
   {
-    id: 'totals.jackpot',
-    label: 'Actual Jackpot',
+    id: 'totals.profit',
+    label: 'Profit',
     isCurrency: true,
   },
   {
     id: 'paidJackpot',
     label: 'Paid Out',
     isCurrency: true,
-  },
-  {
-    id: 'totals.availableFund',
-    label: 'Public Jackpot',
-    isCurrency: true,
-  },
-  {
-    id: 'startDate',
-    label: 'Started',
-    cellRender(row) {
-      return row.startDate.format(DATE_FORMAT)
-    },
-  },
-  {
-    id: 'endDate',
-    label: 'Ended',
-    cellRender(row) {
-      return row.endDate?.format(DATE_FORMAT) ?? '--'
-    },
   },
   {
     id: 'cardsLeft',
@@ -106,16 +96,59 @@ const AllColumns: ListColumn<QoH.Game.Item>[] = [
       return row.entries.length
     },
   },
+  {
+    id: 'startDate',
+    label: 'Started',
+    cellRender(row) {
+      return row.startDate.format(DATE_FORMAT)
+    },
+  },
+  {
+    id: 'endDate',
+    label: 'Ended',
+    cellRender(row) {
+      return row.endDate?.format(DATE_FORMAT) ?? '--'
+    },
+  },
+]
+const AdminColumns: ListColumn<QoH.Game.Item>[] = [
+  {
+    id: 'createdBy',
+    label: 'Created By',
+    minWidth: 130,
+  },
+  {
+    id: 'created',
+    label: 'Created',
+    minWidth: 130,
+  },
+  {
+    id: 'lastModifiedBy',
+    label: 'Modified By',
+    minWidth: 135,
+  },
+  {
+    id: 'modified',
+    label: 'Modified',
+    minWidth: 150,
+  },
 ]
 
 interface QohGameListFilterProps {
   columns: string[]
   onColumnChange?: (columns: string[]) => void
+  isAdmin?: boolean
 }
 function QohGameListFilters({
   columns,
   onColumnChange,
+  isAdmin,
 }: QohGameListFilterProps): React.JSX.Element {
+  const isAdminColumnsChecked = columns.includes('created')
+  const adminColumnIds = useMemo(() => {
+    return AdminColumns.map((c) => c.id)
+  }, [])
+
   function handleChange(event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
     const colId = event.target.name
     const newCols = [...columns]
@@ -129,17 +162,21 @@ function QohGameListFilters({
       newCols.push(colId)
     }
 
-    if (onColumnChange)
-      onColumnChange(AllColumns.filter((col) => newCols.includes(col.id)).map((c) => c.id))
+    if (onColumnChange) {
+      let orderedColumns = PublicColumns.filter((col) => newCols.includes(col.id)).map((c) => c.id)
+      if (isAdminColumnsChecked) orderedColumns = [...orderedColumns, ...adminColumnIds]
+
+      onColumnChange(orderedColumns)
+    }
   }
 
   return (
-    <Box>
+    <Box sx={{ p: 2 }}>
       <FormControl sx={{ m: 1 }} component='fieldset' variant='standard'>
         <FormLabel component='legend'>Column Visibility</FormLabel>
         <FormGroup>
           <Grid container spacing={1}>
-            {AllColumns.map((col) => (
+            {PublicColumns.map((col) => (
               <Grid key={col.id} xs={6} sm={3} lg={2}>
                 <FormControlLabel
                   control={
@@ -156,36 +193,96 @@ function QohGameListFilters({
           </Grid>
         </FormGroup>
       </FormControl>
+      {isAdmin && (
+        <Box>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isAdminColumnsChecked}
+                onChange={(event, checked) => {
+                  let newCols = [...columns]
+
+                  if (checked) {
+                    newCols = [...columns, ...adminColumnIds]
+                  } else {
+                    newCols = newCols.slice(0, -4)
+                  }
+
+                  if (onColumnChange) onColumnChange(newCols)
+                }}
+              />
+            }
+            label='Show Administrator Columns'
+          />
+        </Box>
+      )}
     </Box>
   )
 }
 
 interface QohGameListProps {
   games: QoH.Game.Item[]
+  listRef?: React.MutableRefObject<EnhancedListRef | null>
+  onCreate?: () => void
+  onDelete?: (items: QoH.Game.Item[]) => void
+  onEdit?: (item: QoH.Game.Item) => void
+  onSelectionChange?: (items: QoH.Game.Item[]) => void
+  title: string
 }
-export default function QohGameList({ games }: QohGameListProps): React.JSX.Element {
-  const [visibleColumns, setVisibleColumns] = useState(['totals.availableFund', 'totals.sales'])
+export default function QohGameList({
+  games,
+  listRef,
+  onCreate,
+  onDelete,
+  onEdit,
+  onSelectionChange,
+  title,
+}: QohGameListProps): React.JSX.Element {
+  const theme = useTheme()
+  const { data: session } = useSession()
+  const isSmall = useMediaQuery(theme.breakpoints.down('lg'))
+  const thisRef = useRef<EnhancedListRef | null>(null)
+  const isAdmin = useMemo(() => session?.user.isAdmin, [session])
+  const [visibleColumns, setVisibleColumns] = useState([
+    'totals.sales',
+    'totals.seed',
+    'totals.profit',
+    'totals.availableFund',
+    'cardsLeft',
+  ])
   const columns = useMemo<ListColumn<QoH.Game.Item>[]>(() => {
+    const allColumns = [...PublicColumns, ...AdminColumns]
     const cols = visibleColumns
       .map((colId) => {
-        return AllColumns.find((c) => c.id === colId)
+        return allColumns.find((c) => c.id === colId)
       })
       .filter((c) => c != null) as ListColumn<QoH.Game.Item>[]
 
-    return [LinkColumn, NameColumn, ...cols]
-  }, [visibleColumns])
+    return isSmall ? [LinkColumn, NameColumn, ...cols] : [NameColumn, ...cols, LinkColumn]
+  }, [visibleColumns, isSmall])
 
   return (
-    <EnhancedList
-      title='Queen of Heart Games'
-      columns={columns}
-      rows={games}
-      orderBy={'name'}
-      sortOrder='desc'
-      totalRows={games.length}
-      filterComponent={
-        <QohGameListFilters columns={visibleColumns} onColumnChange={setVisibleColumns} />
-      }
-    />
+    <Fragment>
+      <EnhancedList
+        ref={listRef ?? thisRef}
+        title={title}
+        columns={columns}
+        rows={games}
+        orderBy={'name'}
+        sortOrder='desc'
+        totalRows={games.length}
+        onCreate={onCreate}
+        onDelete={isAdmin ? onDelete : undefined}
+        onEdit={onEdit}
+        onSelectionChange={onSelectionChange}
+        filterComponent={
+          <QohGameListFilters
+            columns={visibleColumns}
+            onColumnChange={setVisibleColumns}
+            isAdmin={isAdmin}
+          />
+        }
+      />
+    </Fragment>
   )
 }

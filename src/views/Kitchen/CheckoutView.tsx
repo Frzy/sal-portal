@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation'
 import { DIALOG_TYPES } from '@/util/constants'
 import { serverToCheckoutItem } from '@/util/functions'
 
+const CREATE_GAME_URL = '/kitchen/checkouts/create'
+
 interface CheckoutViewProps {
   serverCheckouts: Kitchen.Checkout.ServerItem[]
 }
@@ -59,7 +61,7 @@ export default function CheckoutViewView({
   }
 
   useEffect(() => {
-    router.prefetch('/kitchen/checkout-form')
+    router.prefetch('/kitchen/checkouts/create')
   }, [router])
 
   return (
@@ -68,7 +70,10 @@ export default function CheckoutViewView({
         title='Checkouts'
         checkouts={checkouts}
         onCreate={() => {
-          router.push('/kitchen/checkout-form')
+          const url = new URL(CREATE_GAME_URL)
+
+          url.searchParams.append('callbackUrl', '/kitchen/checkouts')
+          router.push('/kitchen/checkouts/create')
         }}
         onDelete={handleDeleteClick}
         onEdit={handleEditClick}

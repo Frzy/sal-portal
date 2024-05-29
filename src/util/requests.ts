@@ -110,6 +110,12 @@ export async function createQohGame(payload: QoH.Game.Payload): Promise<QoH.Game
 
   return item ? serverToQoHGameItem(item) : undefined
 }
+export async function deleteQohGames(items: QoH.Game.Item[]): Promise<boolean> {
+  return await deletedAll(
+    '/api/qoh/games',
+    items.map((i) => i.id),
+  )
+}
 
 async function create<D = unknown, P = unknown>(url: string, payload: P): Promise<D | undefined> {
   try {

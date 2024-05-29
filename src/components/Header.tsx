@@ -181,7 +181,7 @@ export default function Header(): React.JSX.Element {
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton href='/kitchen/checkout-form' onClick={handleDrawerClose}>
+              <ListItemButton href='/kitchen/checkouts/create' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <CheckoutIcon />
                 </ListItemIcon>

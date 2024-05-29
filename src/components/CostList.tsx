@@ -236,13 +236,13 @@ function CostListFilters({
 }
 
 interface CostListProps {
-  title: string
   costItems: Kitchen.Cost.Item[]
-  onEdit?: (item: Kitchen.Cost.Item) => void
+  listRef?: React.MutableRefObject<EnhancedListRef | null>
   onCreate?: () => void
   onDelete?: (items: Kitchen.Cost.Item[]) => void
+  onEdit?: (item: Kitchen.Cost.Item) => void
   onSelectionChange?: (items: Kitchen.Cost.Item[]) => void
-  listRef?: React.MutableRefObject<EnhancedListRef | null>
+  title: string
 }
 export default function CostList({
   costItems,
