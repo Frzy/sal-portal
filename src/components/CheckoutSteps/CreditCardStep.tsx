@@ -5,10 +5,12 @@ import { Box, InputAdornment, Typography } from '@mui/material'
 interface CreditCardStepProps {
   value?: number
   onChange?: (event: React.ChangeEvent<HTMLNumericElement>) => void
+  onSubmit?: () => void
 }
 export default function CreditCardStep({
   value = 0,
   onChange,
+  onSubmit,
 }: CreditCardStepProps): React.JSX.Element {
   return (
     <Box>
@@ -24,6 +26,9 @@ export default function CreditCardStep({
         }}
         value={value}
         onChange={onChange}
+        onKeyUp={(event) => {
+          if (onSubmit && event.key === 'Enter') onSubmit()
+        }}
         InputProps={{
           startAdornment: (
             <InputAdornment position='start'>

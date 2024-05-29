@@ -5,8 +5,13 @@ import { Alert, Box, InputAdornment, Typography } from '@mui/material'
 interface ExpenseStepProps {
   value?: number
   onChange?: (event: React.ChangeEvent<HTMLNumericElement>) => void
+  onSubmit?: () => void
 }
-export default function ExpenseStep({ value = 0, onChange }: ExpenseStepProps): React.JSX.Element {
+export default function ExpenseStep({
+  value = 0,
+  onChange,
+  onSubmit,
+}: ExpenseStepProps): React.JSX.Element {
   return (
     <Box>
       <Typography sx={{ pb: 2 }}>
@@ -30,6 +35,9 @@ export default function ExpenseStep({ value = 0, onChange }: ExpenseStepProps): 
         }}
         value={value}
         onChange={onChange}
+        onKeyUp={(event) => {
+          if (onSubmit && event.key === 'Enter') onSubmit()
+        }}
         InputProps={{
           startAdornment: (
             <InputAdornment position='start'>

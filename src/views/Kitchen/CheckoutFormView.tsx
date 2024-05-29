@@ -82,6 +82,9 @@ export default function CheckoutFormView({
   )
   const [rememberMenu, setRememberMenu] = useState(false)
 
+  function nextStep(): void {
+    handleStepChange(activeStep + 1)
+  }
   function handleStepChange(step: number): void {
     setActiveStep(step)
   }
@@ -203,10 +206,18 @@ export default function CheckoutFormView({
           />
         )}
         {activeStep === Steps.Credit && (
-          <CreditCardStep value={payload.creditCardSales} onChange={handleCreditCardChange} />
+          <CreditCardStep
+            value={payload.creditCardSales}
+            onChange={handleCreditCardChange}
+            onSubmit={nextStep}
+          />
         )}
         {activeStep === Steps.Expenses && (
-          <ExpenseStep value={payload.expenses} onChange={handleExpenseChange} />
+          <ExpenseStep
+            value={payload.expenses}
+            onChange={handleExpenseChange}
+            onSubmit={nextStep}
+          />
         )}
         {activeStep === Steps.Details && (
           <DetailStep data={payload} isCreated={isCreated} onChange={updatePayload} />
