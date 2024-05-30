@@ -72,10 +72,24 @@ export default function SummaryStep({
   const [drinkOverride, setDrinkOverride] = useState(data.drinkChips)
   const [salesOverride, setSalesOverride] = useState(data.sales)
 
+  function submitSalesChange(): void {
+    if (data.sales !== salesOverride && onChange) {
+      onChange({ sales: salesOverride })
+    }
+
+    closeSalesDialog()
+  }
   function closeSalesDialog(): void {
     setShowSaleEdit(false)
   }
 
+  function submitDrinkChange(): void {
+    if (data.drinkChips !== drinkOverride && onChange) {
+      onChange({ drinkChips: drinkOverride })
+    }
+
+    closeDrinkDialog()
+  }
   function closeDrinkDialog(): void {
     setShowDrinkEdit(false)
   }
@@ -367,23 +381,16 @@ export default function SummaryStep({
 
               setDrinkOverride(value)
             }}
+            onKeyUp={(event) => {
+              if (event.key === 'Enter') submitDrinkChange()
+            }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={closeDrinkDialog} color='inherit'>
             Cancel
           </Button>
-          <Button
-            onClick={() => {
-              if (data.drinkChips !== drinkOverride && onChange) {
-                onChange({ drinkChips: drinkOverride })
-              }
-
-              closeDrinkDialog()
-            }}
-          >
-            Update
-          </Button>
+          <Button onClick={submitDrinkChange}>Update</Button>
         </DialogActions>
       </Dialog>
       <Dialog open={showSaleEdit} onClose={closeSalesDialog}>
@@ -422,23 +429,16 @@ export default function SummaryStep({
 
               setSalesOverride(value)
             }}
+            onKeyUp={(event) => {
+              if (event.key === 'Enter') submitSalesChange()
+            }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={closeSalesDialog} color='inherit'>
             Cancel
           </Button>
-          <Button
-            onClick={() => {
-              if (data.sales !== salesOverride && onChange) {
-                onChange({ sales: salesOverride })
-              }
-
-              closeSalesDialog()
-            }}
-          >
-            Update
-          </Button>
+          <Button onClick={submitSalesChange}>Update</Button>
         </DialogActions>
       </Dialog>
     </Box>
