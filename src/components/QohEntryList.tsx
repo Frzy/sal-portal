@@ -1,16 +1,34 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import TrendingDownIcon from '@mui/icons-material/TrendingDown'
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import { Box, TableCell, TableRow, Tooltip, Typography } from '@mui/material'
+import {
+  Box,
+  FormControlLabel,
+  Switch,
+  TableCell,
+  TableRow,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
 import Card from '@/icons/Card'
-import { CARD_VALUE_MAP, DATE_FORMAT } from '@/util/constants'
-import { capitalize, formatCurrency } from '@/util/functions'
+import { DATE_FORMAT } from '@/util/constants'
+import { formatCurrency } from '@/util/functions'
+import { getFromStorage, saveToStorage } from '@/util/storage'
 
-import EnhancedList from './ListComponents/EnhancedList'
+import EnhancedList, {
+  type EnhancedListProps,
+  type EnhancedListRef,
+} from './ListComponents/EnhancedList'
 import { type ListColumn } from './ListComponents/ListHeader'
+
+interface VibibleColumnOptions {
+  details: boolean
+  running: boolean
+}
 
 const BaseColumns: ListColumn<QoH.Entry.GameItem>[] = [
   {
@@ -48,7 +66,6 @@ const BaseColumns: ListColumn<QoH.Entry.GameItem>[] = [
     },
   },
 ]
-
 const CardDrawnColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'cardDrawn',
   label: 'Card',
@@ -57,14 +74,11 @@ const CardDrawnColumn: ListColumn<QoH.Entry.GameItem> = {
   cellRender(row) {
     const suit = row.cardDrawn?.suit
     const value = row.cardDrawn?.value
+    const label = row.cardDrawn?.label
 
-    if (suit && value)
+    if (suit && value && label)
       return (
-        <Tooltip
-          title={`${CARD_VALUE_MAP[value]} of ${capitalize(suit)}`}
-          sx={{ cursor: 'defualt' }}
-          placement='right'
-        >
+        <Tooltip title={label} sx={{ cursor: 'defualt' }} placement='right'>
           <Box sx={{ pt: 0.5 }}>
             <Card sx={{ fontSize: 48 }} suit={suit} value={value} />
           </Box>
@@ -74,6 +88,12 @@ const CardDrawnColumn: ListColumn<QoH.Entry.GameItem> = {
     return '--'
   },
 }
+const ShuffleColumn: ListColumn<QoH.Entry.GameItem> = {
+  id: 'shuffle',
+  label: 'Shuffle',
+  align: 'left',
+  sx: { maxWidth: 75 },
+}
 const PayoutColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'payout',
   label: 'Payouts',
@@ -82,30 +102,29 @@ const PayoutColumn: ListColumn<QoH.Entry.GameItem> = {
 }
 const SeedColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'seed',
-  label: 'To Seed',
+  label: 'Seed',
   align: 'left',
   isCurrency: true,
 }
 const AvailableFundColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'availableFund',
-  label: 'To Funds',
+  label: 'Funds',
   align: 'left',
   isCurrency: true,
 }
 const JackpotColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'jackpot',
-  label: 'To Jackpot',
+  label: 'Jackpot',
   align: 'left',
   isCurrency: true,
   sx: { minWidth: 105 },
 }
 const ProfitColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'profit',
-  label: 'To Profit',
+  label: 'Profit',
   align: 'left',
   isCurrency: true,
 }
-
 const OldGameFirstTotalsColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'totals.sales',
   label: 'Sales',
@@ -153,21 +172,35 @@ const TotalAvailableFundsColumn: ListColumn<QoH.Entry.GameItem> = {
   isCurrency: true,
 }
 
-interface QohEntryListProps {
+interface QohEntryListProps
+  extends Omit<
+    EnhancedListProps<QoH.Entry.GameItem>,
+    'ref' | 'columns' | 'rows' | 'totalRows' | 'orderBy'
+  > {
   game: QoH.Game.Item
-  hideDetails?: boolean
-  hideTotals?: boolean
+  listRef?: React.MutableRefObject<EnhancedListRef | null>
+  title?: string
 }
 export default function QohEntryList({
   game,
-  hideDetails,
-  hideTotals,
+  listRef,
+  title = 'Entries',
+  ...listProps
 }: QohEntryListProps): React.JSX.Element {
+  const thisRef = useRef<EnhancedListRef | null>(null)
+  const [visibleColumns, setVisibleColumns] = useState<VibibleColumnOptions>(
+    getFromStorage<VibibleColumnOptions>('qohVisibileColumns', {
+      details: false,
+      running: false,
+    }),
+  )
   const columns = useMemo(() => {
     let lColumns = [...BaseColumns]
+    const hideDetails = !visibleColumns.details
+    const hideTotals = !visibleColumns.running
 
     if (game.hasAllCards) lColumns.push(CardDrawnColumn)
-
+    if (game.resetOnTwoJokers) lColumns.push(ShuffleColumn)
     if (!hideDetails) {
       lColumns.push(PayoutColumn)
 
@@ -191,10 +224,15 @@ export default function QohEntryList({
     }
 
     return lColumns
-  }, [game, hideDetails, hideTotals])
+  }, [game, visibleColumns])
   const { entryColSpan, runningColSpan } = useMemo(() => {
-    let entryColSpan = BaseColumns.length + (game.hasAllCards ? 1 : 0)
+    const hideDetails = !visibleColumns.details
+    const hideTotals = !visibleColumns.running
+    let entryColSpan = BaseColumns.length + 1
     let runningColSpan = 0
+
+    if (game.hasAllCards) entryColSpan += 1
+    if (game.resetOnTwoJokers) entryColSpan += 1
 
     if (!hideDetails) {
       entryColSpan += 3
@@ -210,22 +248,36 @@ export default function QohEntryList({
     }
 
     return { entryColSpan, runningColSpan }
-  }, [game, hideDetails, hideTotals])
+  }, [game, visibleColumns])
   const { entries } = game
+
+  function handleColumnVisibilityChange(options: Partial<VibibleColumnOptions>): void {
+    const newState = { ...visibleColumns, ...options }
+    setVisibleColumns(newState)
+    saveToStorage('qohVisibileColumns', newState)
+  }
 
   return (
     <EnhancedList
-      columns={columns}
-      hideToolbar
-      orderBy={'drawDate'}
+      title={title}
       sortOrder='desc'
-      rows={entries}
-      selection='none'
-      totalRows={entries.length}
+      selection='multiple'
       variant='outlined'
       rowsPerPage={10}
+      {...listProps}
+      orderBy={'drawDate'}
+      columns={columns}
+      ref={listRef ?? thisRef}
+      rows={entries}
+      totalRows={entries.length}
+      filterComponent={
+        <QohEntryListFilters
+          vibibleColumnOptions={visibleColumns}
+          onColumnChange={handleColumnVisibilityChange}
+        />
+      }
       headerGroupRow={
-        !hideTotals && (
+        visibleColumns.running && (
           <TableRow>
             <TableCell align='center' colSpan={entryColSpan}>
               Entry
@@ -241,5 +293,59 @@ export default function QohEntryList({
         )
       }
     />
+  )
+}
+
+interface QohEntryListFiltersProps {
+  vibibleColumnOptions: VibibleColumnOptions
+  onColumnChange?: (options: Partial<VibibleColumnOptions>) => void
+}
+function QohEntryListFilters({
+  vibibleColumnOptions,
+
+  onColumnChange,
+}: QohEntryListFiltersProps): React.JSX.Element {
+  function handleVisiblityColumnChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    const { name, checked } = event.target
+    if (onColumnChange) onColumnChange({ [name]: checked })
+  }
+
+  return (
+    <Box
+      sx={{
+        py: 2,
+        px: 1,
+        backgroundColor: (theme) => theme.vars.palette.background.paper,
+        borderRight: (theme) => `1px solid ${theme.vars.palette.divider}`,
+        borderLeft: (theme) => `1px solid ${theme.vars.palette.divider}`,
+      }}
+    >
+      <Grid container spacing={1}>
+        <Grid xs={12} md={6}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={vibibleColumnOptions.details}
+                onChange={handleVisiblityColumnChange}
+                name='details'
+              />
+            }
+            label='Show Detail Breakdown'
+          />
+        </Grid>
+        <Grid xs={12} md={6}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={vibibleColumnOptions.running}
+                onChange={handleVisiblityColumnChange}
+                name='running'
+              />
+            }
+            label='Show Running Totals'
+          />
+        </Grid>
+      </Grid>
+    </Box>
   )
 }

@@ -5,11 +5,12 @@ import { formatCurrency } from '@/util/functions'
 
 interface SummaryStepProps {
   game: QoH.Game.UiPayload
+  hideTopText?: boolean
 }
-export default function SummaryStep({ game }: SummaryStepProps): React.JSX.Element {
+export default function SummaryStep({ game, hideTopText }: SummaryStepProps): React.JSX.Element {
   return (
     <Stack spacing={2}>
-      <Typography>Please make sure the information below is correct.</Typography>
+      {!hideTopText && <Typography>Please make sure the information below is correct.</Typography>}
       <Alert severity='info'>
         Note that the seed and jackpot are calculated values off of the total sales. Adjusting games
         rules will lead to different totals.
@@ -28,7 +29,7 @@ export default function SummaryStep({ game }: SummaryStepProps): React.JSX.Eleme
           Ticket price: {formatCurrency(game.ticketPrice)}
         </Grid>
         <Grid xs={12} md={6} lg={4}>
-          Reset board on two drawn joker: {`${game.resetOnTwoJokers}`.toUpperCase()}
+          Two Joker Reset: {`${game.resetOnTwoJokers}`.toUpperCase()}
         </Grid>
         {game.resetOnTwoJokers && (
           <Grid xs={12} md={6} lg={4}>

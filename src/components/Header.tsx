@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from 'react'
 
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
 import AnalyticsIcon from '@mui/icons-material/Analytics'
 import CostIcon from '@mui/icons-material/AttachMoney'
 import MenuIcon from '@mui/icons-material/Fastfood'
@@ -212,7 +213,23 @@ export default function Header(): React.JSX.Element {
                 <ListItemIcon>
                   <PullTabIcon />
                 </ListItemIcon>
-                <ListItemText primary='Daily Payouts' />
+                <ListItemText primary='Pull Tab Payouts' />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  <CheckoutIcon />
+                </ListItemIcon>
+                <ListItemText primary='Bar Paybacks' />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  <AccountBalanceIcon />
+                </ListItemIcon>
+                <ListItemText primary='Deposits' />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>

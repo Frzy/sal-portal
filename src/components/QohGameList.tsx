@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Fragment, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 
 import LinkIcon from '@mui/icons-material/Link'
 import {
@@ -11,9 +11,8 @@ import {
   FormGroup,
   FormLabel,
   IconButton,
+  Link,
   Switch,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 import { useSession } from 'next-auth/react'
@@ -28,6 +27,19 @@ const NameColumn: ListColumn<QoH.Game.Item> = {
   label: 'Name',
   align: 'left',
   sx: { minWidth: 105 },
+  cellRender(row) {
+    return (
+      <Link
+        underline='hover'
+        href={`/qoh/game/${row.id}`}
+        onClick={(event) => {
+          event.stopPropagation()
+        }}
+      >
+        {row.name}
+      </Link>
+    )
+  },
 }
 const LinkColumn: ListColumn<QoH.Game.Item> = {
   id: 'link',
@@ -238,9 +250,7 @@ export default function QohGameList({
   onSelectionChange,
   title,
 }: QohGameListProps): React.JSX.Element {
-  const theme = useTheme()
   const { data: session } = useSession()
-  const isSmall = useMediaQuery(theme.breakpoints.down('lg'))
   const thisRef = useRef<EnhancedListRef | null>(null)
   const isAdmin = useMemo(() => session?.user.isAdmin, [session])
   const [visibleColumns, setVisibleColumns] = useState([
@@ -258,31 +268,31 @@ export default function QohGameList({
       })
       .filter((c) => c != null) as ListColumn<QoH.Game.Item>[]
 
-    return isSmall ? [LinkColumn, NameColumn, ...cols] : [NameColumn, ...cols, LinkColumn]
-  }, [visibleColumns, isSmall])
+    return [NameColumn, ...cols, LinkColumn]
+  }, [visibleColumns])
 
   return (
-    <Fragment>
-      <EnhancedList
-        ref={listRef ?? thisRef}
-        title={title}
-        columns={columns}
-        rows={games}
-        orderBy={'name'}
-        sortOrder='desc'
-        totalRows={games.length}
-        onCreate={onCreate}
-        onDelete={isAdmin ? onDelete : undefined}
-        onEdit={onEdit}
-        onSelectionChange={onSelectionChange}
-        filterComponent={
-          <QohGameListFilters
-            columns={visibleColumns}
-            onColumnChange={setVisibleColumns}
-            isAdmin={isAdmin}
-          />
-        }
-      />
-    </Fragment>
+    <EnhancedList
+      ref={listRef ?? thisRef}
+      createText='New Game'
+      title={title}
+      columns={columns}
+      rows={games}
+      orderBy={'name'}
+      sortOrder='desc'
+      totalRows={games.length}
+      onCreate={onCreate}
+      onDelete={isAdmin ? onDelete : undefined}
+      onEdit={onEdit}
+      onSelectionChange={onSelectionChange}
+      selection='multiple'
+      filterComponent={
+        <QohGameListFilters
+          columns={visibleColumns}
+          onColumnChange={setVisibleColumns}
+          isAdmin={isAdmin}
+        />
+      }
+    />
   )
 }

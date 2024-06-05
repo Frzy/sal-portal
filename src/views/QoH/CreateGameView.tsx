@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import GeneralStep from '@c/QohGameSteps/GeneralStep'
 import PayoutsStep from '@c/QohGameSteps/PayoutStep'
@@ -9,12 +9,24 @@ import SummaryStep from '@c/QohGameSteps/SummaryStep'
 import ResponsiveStepper, { type Step } from '@c/Stepper'
 import BankIcon from '@mui/icons-material/AccountBalance'
 import SettingsIcon from '@mui/icons-material/Settings'
-import { Box } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Stack,
+  Typography,
+} from '@mui/material'
 import dayjs from 'dayjs'
 import { useRouter } from 'next/navigation'
 
 import PlayingCardsIcon from '@/icons/PlayingCards'
 import PottedPlantIcon from '@/icons/PottedPlant'
+import { serverToQoHGameItem } from '@/util/functions'
 import { createQohGame } from '@/util/requests'
 
 enum Steps {
@@ -43,24 +55,34 @@ const steps: Step[] = [
   },
 ]
 
-export default function QohCreateGameView(): React.JSX.Element {
+interface QohCreateGameViewProps {
+  currentGame?: QoH.Game.ServerItem
+}
+export default function QohCreateGameView({
+  currentGame,
+}: QohCreateGameViewProps): React.JSX.Element {
   const router = useRouter()
+  const activeGame = useMemo(
+    () => (currentGame ? serverToQoHGameItem(currentGame) : undefined),
+    [currentGame],
+  )
   const [activeStep, setActiveStep] = useState(Steps.General)
   const [loading, setLoading] = useState(false)
   const [isCreated, setIsCreated] = useState(false)
+  const [showActiveGameWarning, setShowActiveGameWarning] = useState(false)
   const [payload, setPayload] = useState<QoH.Game.UiPayload>({
     createSeed: true,
+    name: 'Game #',
     jackpotPercent: 0.7,
     maxGameReset: 2,
     maxSeed: 1000,
     initialJackpot: 0,
-
-    resetNumber: 0,
+    shuffle: 1,
     resetOnTwoJokers: true,
-
     seedPercent: 0.1,
     startDate: dayjs(),
     ticketPrice: 1,
+    paidJackpot: 0,
   })
 
   function handleStepChange(step: number): void {
@@ -73,7 +95,16 @@ export default function QohCreateGameView(): React.JSX.Element {
     setPayload({ ...newPayload })
   }
 
-  async function handleComplete(): Promise<void> {
+  function handleComplete(): void {
+    setLoading(true)
+    if (activeGame) {
+      setShowActiveGameWarning(true)
+    } else {
+      void createQoHGame()
+    }
+  }
+
+  async function createQoHGame(): Promise<void> {
     setLoading(true)
 
     const response = await createQohGame({
@@ -125,11 +156,61 @@ export default function QohCreateGameView(): React.JSX.Element {
         loading={loading}
         isComplete={isCreated}
       >
-        {activeStep === Steps.General && <GeneralStep game={payload} onChange={updatePayload} />}
-        {activeStep === Steps.Seed && <SeedStep game={payload} onChange={updatePayload} />}
-        {activeStep === Steps.Payouts && <PayoutsStep game={payload} onChange={updatePayload} />}
+        {activeStep === Steps.General && (
+          <GeneralStep game={payload} onChange={updatePayload} disabled={loading} />
+        )}
+        {activeStep === Steps.Seed && (
+          <SeedStep game={payload} onChange={updatePayload} disabled={loading} />
+        )}
+        {activeStep === Steps.Payouts && (
+          <PayoutsStep game={payload} onChange={updatePayload} disabled={loading} />
+        )}
         {activeStep === Steps.Summary && <SummaryStep game={payload} />}
       </ResponsiveStepper>
+      {activeGame && (
+        <Dialog open={showActiveGameWarning}>
+          <DialogTitle>Active Game Warning</DialogTitle>
+          <DialogContent>
+            <Stack spacing={2}>
+              <DialogContentText>
+                There is currently an ongoing Queen of Hearts game (
+                <Typography component='span' sx={{ fontWeight: 'fontWeightBold' }}>
+                  {activeGame.name}
+                </Typography>
+                ). Creating a new game will deactivate{' '}
+                <Typography component='span' sx={{ fontWeight: 'fontWeightBold' }}>
+                  {activeGame.name}
+                </Typography>
+                .
+              </DialogContentText>
+              <Alert severity='warning'>
+                Closing a game can not be reactivated within the SAL portal. To reactivate a Queen
+                of Hearts game please contact the portal administrator.
+              </Alert>
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color='inherit'
+              onClick={() => {
+                setLoading(false)
+                setShowActiveGameWarning(false)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              color='error'
+              onClick={() => {
+                setShowActiveGameWarning(false)
+                void createQoHGame()
+              }}
+            >
+              Deactivate
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </Box>
   )
 }

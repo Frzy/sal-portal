@@ -56,9 +56,11 @@ export interface EnhancedListRef {
   openFilters: () => void
 }
 
-interface Props<T extends Row<T>> {
+export interface EnhancedListProps<T extends Row<T>> {
   columns: ListColumn<T>[]
+  createText?: string
   disableSorting?: boolean
+  disabled?: boolean
   filterComponent?: React.ReactNode
   hasFilters?: boolean
   hideFab?: boolean
@@ -86,11 +88,17 @@ interface Props<T extends Row<T>> {
   totalRows: number
   variant?: PaperProps['variant']
 }
-type PropsWithForwardRef<T extends Row<T>> = Props<T> & { forwardedRef: React.Ref<EnhancedListRef> }
-type PropsWithStandardRef<T extends Row<T>> = Props<T> & { ref?: React.Ref<EnhancedListRef> }
+type PropsWithForwardRef<T extends Row<T>> = EnhancedListProps<T> & {
+  forwardedRef: React.Ref<EnhancedListRef>
+}
+type PropsWithStandardRef<T extends Row<T>> = EnhancedListProps<T> & {
+  ref?: React.Ref<EnhancedListRef>
+}
 
 function ListComponent<T extends Row<T>>({
   columns,
+  createText,
+  disabled = false,
   disableSorting,
   filterComponent,
   forwardedRef,
@@ -107,11 +115,11 @@ function ListComponent<T extends Row<T>>({
   orderBy: initOrderBy,
   renderExpandable,
   rows,
+  rowsPerPage: initRowsPerPage = 10,
   selection = 'single',
   sortOrder: initSortOrder = 'asc',
   title = 'List',
   variant,
-  rowsPerPage: initRowsPerPage = 10,
 }: PropsWithForwardRef<T>): React.JSX.Element {
   const theme = useTheme()
   const isSmall = useMediaQuery(theme.breakpoints.down('md'))
@@ -238,16 +246,17 @@ function ListComponent<T extends Row<T>>({
       <Paper sx={{ width: '100%', mb: 2 }} variant={variant}>
         {!hideToolbar && (
           <ListToolbar
-            title={title}
-            numSelected={selected.length}
-            hideFilterButton={!filterComponent}
-            hideCreateButton={isFabEnabled || !onCreate}
-            hideSearch={!onSearch}
+            createText={createText}
             hasFilter={hasFilters}
+            hideCreateButton={disabled || isFabEnabled || !onCreate}
+            hideFilterButton={disabled || !filterComponent}
+            hideSearch={disabled || !onSearch}
+            numSelected={selected.length}
             onCreateClick={onCreate}
-            onEditClick={!isFabEnabled && onEdit ? handleEditClick : undefined}
             onDeleteClick={!isFabEnabled && onDelete ? handleDeleteClick : undefined}
+            onEditClick={!isFabEnabled && onEdit ? handleEditClick : undefined}
             onSearchChange={onSearch}
+            title={title}
             onFilterClick={() => {
               setShowFilters(!showFilters)
             }}
@@ -266,7 +275,7 @@ function ListComponent<T extends Row<T>>({
               rowCount={rows.length}
               selection={selection}
               expandable={!!renderExpandable}
-              disableSorting={disableSorting}
+              disableSorting={disabled || disableSorting}
               headerGroupRow={headerGroupRow}
             />
             <TableBody>
@@ -281,9 +290,10 @@ function ListComponent<T extends Row<T>>({
                     selection={selection}
                     selected={selected}
                     expanded={expanded}
+                    disabled={disabled}
                     totalColumns={totalColumns}
-                    onSelectionChange={handleSelectionChange}
-                    onExpandChange={handleExpandChange}
+                    onSelectionChange={!disabled ? handleSelectionChange : undefined}
+                    onExpandChange={!disabled ? handleExpandChange : undefined}
                   >
                     {!!renderExpandable && renderExpandable(row, { selected, expanded })}
                   </ListRow>

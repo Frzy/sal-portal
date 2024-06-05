@@ -1,6 +1,7 @@
 import AdminAccessOnly from '@c/AdminAccessOnly'
 import UnauthorizedAlert from '@c/UnauthorizedAlert'
 
+import { findQohGame } from '@/lib/qohGames'
 import { getServerAuthSession } from '@/util/auth'
 import QohCreateGameView from '@/views/QoH/CreateGameView'
 
@@ -11,5 +12,7 @@ export default async function QohGamesPage(): Promise<React.JSX.Element> {
   if (!session?.user) return <UnauthorizedAlert />
   if (!isAdmin) return <AdminAccessOnly />
 
-  return <QohCreateGameView />
+  const currentGame = await findQohGame((item) => !!item.startDate && !item.endDate)
+
+  return <QohCreateGameView currentGame={currentGame} />
 }

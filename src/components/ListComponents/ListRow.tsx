@@ -28,15 +28,17 @@ interface ListRowProps<T extends Row<T>> {
   selected?: boolean
   expanded?: boolean
   children?: React.ReactNode
+  disabled?: boolean
 }
 export default function ListRow<T extends Row<T>>({
   children,
   columns,
-  expanded,
+  disabled = false,
+  expanded = false,
   onExpandChange,
   onSelectionChange,
   row,
-  selected,
+  selected = false,
   selection,
   totalColumns,
 }: ListRowProps<T>): React.JSX.Element {
@@ -47,7 +49,11 @@ export default function ListRow<T extends Row<T>>({
     const cellData: string | number | Dayjs = getValueByPath(row, path)
 
     if (column.cellRender) {
-      const cell = column.cellRender(row)
+      const cell = column.cellRender(row, {
+        disabled,
+        selected,
+        expanded,
+      })
 
       if (cell) return cell
     }
@@ -83,11 +89,11 @@ export default function ListRow<T extends Row<T>>({
         aria-checked={selected}
         tabIndex={-1}
         selected={selected}
-        sx={{ cursor: selection !== 'none' ? 'pointer' : 'default' }}
+        sx={{ cursor: selection !== 'none' && !disabled ? 'pointer' : 'default' }}
       >
         {selection !== 'none' && (
           <TableCell padding='checkbox'>
-            <Checkbox color='primary' checked={selected} />
+            <Checkbox color='primary' checked={selected} disabled={disabled} />
           </TableCell>
         )}
         {columnKeys.map((key, colIndex) => {

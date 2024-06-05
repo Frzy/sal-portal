@@ -1,4 +1,6 @@
-import { createQohGame, deleteQohGame, getQohGames } from '@/lib/qohGames'
+import dayjs from 'dayjs'
+
+import { createQohGame, deleteQohGame, findGoogleQohGameRows, getQohGames } from '@/lib/qohGames'
 import { getServerAuthSession } from '@/util/auth'
 
 export async function GET(): Promise<Response> {
@@ -18,6 +20,15 @@ export async function POST(request: Request): Promise<Response> {
   const user = session?.user.username
 
   try {
+    const activeGame = await findGoogleQohGameRows((item) => {
+      return !!item.get('startDate') && !item.get('endDate')
+    })
+
+    if (activeGame) {
+      activeGame.set('endDate', dayjs().format())
+      await activeGame.save()
+    }
+
     const response = await createQohGame({ ...payload, createdBy: user })
 
     return Response.json(response, { status: 201 })

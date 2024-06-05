@@ -1,7 +1,14 @@
 import { SvgIcon, type SvgIconProps, useTheme } from '@mui/material'
 
-interface CardProps extends SvgIconProps, Card.Item {}
-export default function Card({ suit, value, ...props }: CardProps): React.JSX.Element {
+interface CardProps extends SvgIconProps, Omit<Card.Item, 'id' | 'label'> {
+  disabled?: boolean
+}
+export default function Card({
+  suit,
+  value,
+  disabled = false,
+  ...props
+}: CardProps): React.JSX.Element {
   const theme = useTheme()
 
   return (
@@ -9,7 +16,7 @@ export default function Card({ suit, value, ...props }: CardProps): React.JSX.El
       <svg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'>
         <g id='SVGRepo_iconCarrier'>
           <path
-            style={{ fill: '#EFF2FA' }}
+            style={{ fill: disabled ? theme.palette.text.disabled : '#EFF2FA' }}
             d='M381.2,504H130.8c-14.458,0-26.179-11.721-26.179-26.179V34.179C104.621,19.721,116.342,8,130.8,8 h250.4c14.458,0,26.179,11.721,26.179,26.179v443.642C407.379,492.279,395.658,504,381.2,504z'
           />
 

@@ -25,7 +25,10 @@ interface ListHeaderProps<T> {
 
 export interface ListColumn<T> {
   align?: 'left' | 'center' | 'right'
-  cellRender?: (row: T) => React.ReactNode
+  cellRender?: (
+    row: T,
+    state: { disabled: boolean; selected: boolean; expanded: boolean },
+  ) => React.ReactNode
   disableSort?: boolean
   id: string
   isCurrency?: boolean

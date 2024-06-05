@@ -1,8 +1,9 @@
 import dayjs from 'dayjs'
 import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 
-import { getNumber } from '@/util/functions'
+import { getCardLabel, getNumber } from '@/util/functions'
 
+import { findGoogleQohGameRows } from './qohGames'
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
 type GoogleQohEntryRow = GoogleSpreadsheetRow<Omit<QoH.Entry.ServerItem, 'orders' | 'name'>>
@@ -11,13 +12,13 @@ const BASE_QOH_ENTRY = {
   ticketSales: 0,
   cardPayout: 0,
   additionalPayouts: 0,
-  shuffel: 1,
+  shuffle: 1,
   cardPosition: 0,
 }
 
 function googleToServerQohEntry(row: GoogleQohEntryRow): QoH.Entry.ServerItem {
   const cardDrawn = row.get('cardDrawn') ?? ''
-  const [cardValue, cardSuit] = cardDrawn.split('_')
+  const [cardValue, cardSuit]: [Card.Value, Card.Suit] = cardDrawn.split('_')
   const validCard = !!cardValue && !!cardSuit
   const cardPosition = getNumber(row.get('cardPosition'))
 
@@ -28,12 +29,19 @@ function googleToServerQohEntry(row: GoogleQohEntryRow): QoH.Entry.ServerItem {
     createdBy: row.get('createdBy'),
     lastModifiedBy: row.get('lastModifiedBy'),
     modified: row.get('modified'),
-    cardDrawn: validCard ? { suit: cardSuit, value: cardValue } : undefined,
+    cardDrawn: validCard
+      ? {
+          suit: cardSuit,
+          value: cardValue,
+          id: cardDrawn,
+          label: getCardLabel(cardValue, cardSuit),
+        }
+      : undefined,
     payout: getNumber(row.get('payout')),
     cardPosition: cardPosition || undefined,
     ticketSales: getNumber(row.get('ticketSales')),
     drawDate: row.get('drawDate'),
-    shuffel: getNumber(row.get('shuffel')),
+    shuffle: getNumber(row.get('shuffle')),
   }
 }
 
@@ -95,9 +103,16 @@ export async function updateQohEntry(
     const isValid = validator ? validator(r) : true
     return r.get('id') === id && isValid
   })
+  const game = row
+    ? await findGoogleQohGameRows((r) => r.get('id') === row.get('gameId'))
+    : undefined
 
-  if (row) {
+  if (row && game) {
     const now = dayjs().format()
+    const drawDate = dayjs(payload.drawDate)
+    const jokerReset = !!game.get('resetOnTwoJokers')
+    const maxResets = getNumber(game.get('maxGameReset'), 0)
+    const originalCard = row.get('cardDrawn') ?? ''
 
     const updatedData: Omit<QoH.Entry.ServerItem, 'cardDrawn'> = {
       ...(row.toObject() as QoH.Entry.ServerItem),
@@ -106,10 +121,68 @@ export async function updateQohEntry(
     }
 
     row.assign(updatedData)
+
+    if (payload.cardDrawn === 'Q_hearts') {
+      // Get all game entries after items drawn date
+      const toDelete = (
+        await getQohEntriesBy(
+          (r) => r.gameId === row.get('gameId') && dayjs(r.drawDate).isAfter(drawDate),
+        )
+      ).map((r) => r.id)
+
+      if (toDelete.length) await deleteQohEntries(toDelete)
+
+      game.set('endDate', drawDate.format())
+      await game.save()
+    } else if (jokerReset && (payload.cardDrawn.includes('X') || originalCard.includes('X'))) {
+      // Handle changing normal card to joker
+      const gameEntries = (await getGoogleQohEntryRows())
+        .filter((r) => r.get('gameId') === row.get('gameId'))
+        .sort((a, b) =>
+          dayjs(a.get('drawDate') as string).isAfter(dayjs(b.get('drawDate') as string)) ? 1 : -1,
+        )
+
+      const rowsToBeSaved: GoogleQohEntryRow[] = []
+      let gameShuffle = 1
+      let jokerCount = 0
+      gameEntries.forEach((e) => {
+        const item = e.get('id') === row.get('id') ? row : e
+        const eShuffel = getNumber(item.get('shuffle'), 1)
+        const card: string = item.get('cardDrawn') ?? ''
+        const isJoker = card.includes('X')
+
+        if (eShuffel !== gameShuffle) {
+          item.set('shuffle', gameShuffle)
+
+          if (item !== row) rowsToBeSaved.push(item)
+        }
+
+        if (isJoker) jokerCount += 1
+        if (jokerCount === 2 && gameShuffle <= maxResets) {
+          gameShuffle += 1
+          jokerCount = 0
+          game.set('lastResetDate', item.get('drawDate') as string)
+        }
+      })
+
+      await rowsToBeSaved.reduce(async (p, row) => {
+        await p.then(async () => {
+          await row.save()
+        })
+      }, Promise.resolve())
+
+      if (gameShuffle === 1) game.set('lastResetDate', '')
+
+      game.set('shuffle', gameShuffle)
+      await game.save()
+    }
+
     await row.save()
 
-    return await findQohEntry((r) => r.id === id)
+    return googleToServerQohEntry(row)
   }
+
+  return undefined
 }
 export async function deleteQohEntries(
   itemIds: string[],

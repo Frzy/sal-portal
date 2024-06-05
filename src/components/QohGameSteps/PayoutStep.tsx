@@ -11,17 +11,24 @@ import Grid from '@mui/material/Unstable_Grid2/Grid2'
 interface Help {
   seedPercent: string
   jackpotPercent: string
+  paidJackpot: string
 }
-const HelpInfo: Help = {
+export const HelpInfo: Help = {
   seedPercent: 'The percent to take out each drawings ticket sales.',
   jackpotPercent: 'The percent to give away from the total availible games funds',
+  paidJackpot: 'The dollar amount paid for winning the jackpot',
 }
 
 interface PayoutsStepProps {
+  disabled?: boolean
   game: QoH.Game.UiPayload
   onChange: (partialPayload: Partial<QoH.Game.UiPayload>) => void
 }
-export default function PayoutsStep({ game, onChange }: PayoutsStepProps): React.JSX.Element {
+export default function PayoutsStep({
+  disabled,
+  game,
+  onChange,
+}: PayoutsStepProps): React.JSX.Element {
   const [anchor, setAnchor] = useState<{
     element: HTMLElement
     key: keyof typeof HelpInfo
@@ -64,21 +71,22 @@ export default function PayoutsStep({ game, onChange }: PayoutsStepProps): React
               value={game.seedPercent * 100}
               onChange={handleNumberChange}
               label='Seed Percent'
+              disabled={disabled}
               fullWidth
               InputProps={{
                 endAdornment: (
                   <InputAdornment position='end'>
                     <Box sx={{ display: 'flex', gap: 2 }}>
-                      <PercentIcon />
+                      <PercentIcon color={disabled ? 'disabled' : undefined} />
                       <Box
                         component='span'
                         sx={{ height: 24, cursor: 'default' }}
                         onMouseEnter={(event) => {
-                          handlePopoverOpen(event, 'seedPercent')
+                          if (!disabled) handlePopoverOpen(event, 'seedPercent')
                         }}
                         onMouseLeave={handlePopoverClose}
                       >
-                        <HelpIcon />
+                        <HelpIcon color={disabled ? 'disabled' : undefined} />
                       </Box>
                     </Box>
                   </InputAdornment>
@@ -94,21 +102,22 @@ export default function PayoutsStep({ game, onChange }: PayoutsStepProps): React
             value={game.jackpotPercent * 100}
             onChange={handleNumberChange}
             label='Jackpot Percent'
+            disabled={disabled}
             fullWidth
             InputProps={{
               endAdornment: (
                 <InputAdornment position='end'>
                   <Box sx={{ display: 'flex', gap: 2 }}>
-                    <PercentIcon />
+                    <PercentIcon color={disabled ? 'disabled' : undefined} />
                     <Box
                       component='span'
                       sx={{ height: 24, cursor: 'default' }}
                       onMouseEnter={(event) => {
-                        handlePopoverOpen(event, 'jackpotPercent')
+                        if (!disabled) handlePopoverOpen(event, 'jackpotPercent')
                       }}
                       onMouseLeave={handlePopoverClose}
                     >
-                      <HelpIcon />
+                      <HelpIcon color={disabled ? 'disabled' : undefined} />
                     </Box>
                   </Box>
                 </InputAdornment>

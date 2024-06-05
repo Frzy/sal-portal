@@ -1,6 +1,8 @@
 import { type SvgIconProps } from '@mui/material'
 import { type Dayjs } from 'dayjs'
 
+import { type DIALOG_TYPES } from '@/util/constants'
+
 declare global {
   interface WindowEventMap {
     // Notification
@@ -18,6 +20,11 @@ declare global {
   }
   interface PortalIconProps extends SvgIconProps {
     variant?: 'filled' | 'outlined'
+  }
+
+  interface DialogProperties<T> {
+    type: DIALOG_TYPES
+    items?: T[]
   }
 
   namespace List {
@@ -213,8 +220,9 @@ declare global {
       maxSeed: number
       modified: string
       name: string
+      name: string
       paidJackpot: number
-      resetNumber: number
+      shuffle: number
       resetOnTwoJokers: boolean
       seedPercent: number
       startDate: string
@@ -227,6 +235,7 @@ declare global {
       endDate?: Dayjs
       hasAllCards: boolean
       hasAllPositions: boolean
+      isActive: boolean
       isOldGame: boolean
       lastResetDate?: Dayjs
       modified: Dayjs
@@ -244,16 +253,18 @@ declare global {
 
     interface Payload {
       createSeed: boolean
-      maxSeed: number
-      jackpotPercent: number
-      resetNumber: number
-      seedPercent: number
-      initialJackpot: number
-      startDate: string
       endDate?: string
+      initialJackpot: number
+      jackpotPercent: number
       lastResetDate?: string
       maxGameReset: number
+      maxSeed: number
+      name: string
+      paidJackpot: number
+      shuffle: number
       resetOnTwoJokers: boolean
+      seedPercent: number
+      startDate: string
       ticketPrice: number
 
       entries?: Omit<QoH.Entry.CreatePayload, 'gameId'>[]
@@ -284,7 +295,7 @@ declare global {
       drawDate: string
       ticketSales: number
       payout: number
-      shuffel: number
+      shuffle: number
       cardPosition?: number
       cardDrawn?: Card.Item
     }
@@ -313,15 +324,19 @@ declare global {
     }
 
     interface Payload {
-      gameId: string
       drawDate: string
-      cashIn: number
+      ticketSales: number
       payout: number
-      shuffel: number
+      shuffle: number
       cardPosition: number
       cardDrawn: string
     }
+
+    interface UiPayload extends Payload {
+      drawDate: Dayjs
+    }
     interface CreatePayload extends Payload {
+      gameId: string
       createdBy: string
     }
     interface EditPayload extends Payload {
@@ -331,6 +346,8 @@ declare global {
 
   namespace Card {
     interface Item {
+      id: string
+      label: string
       suit: Suit
       value: Value
     }

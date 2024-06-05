@@ -2,6 +2,7 @@ import {
   serverToCheckoutItem,
   serverToCostItem,
   serverToMenuItem,
+  serverToQoHEntryItem,
   serverToQoHGameItem,
 } from './functions'
 
@@ -110,13 +111,74 @@ export async function createQohGame(payload: QoH.Game.Payload): Promise<QoH.Game
 
   return item ? serverToQoHGameItem(item) : undefined
 }
+export async function editQohGame(
+  id: string,
+  payload: QoH.Game.UiPayload,
+): Promise<QoH.Game.Item | undefined> {
+  const item = await edit<QoH.Game.ServerItem, QoH.Game.UiPayload>(`/api/qoh/game/${id}`, payload)
+
+  return item ? serverToQoHGameItem(item) : undefined
+}
 export async function deleteQohGames(items: QoH.Game.Item[]): Promise<boolean> {
   return await deletedAll(
     '/api/qoh/games',
     items.map((i) => i.id),
   )
 }
+export async function getQohGameById(gameId: string): Promise<QoH.Game.Item | undefined> {
+  const url = `/api/qoh/game/${gameId}`
 
+  const game = await get<QoH.Game.ServerItem>(url)
+
+  return game ? serverToQoHGameItem(game) : undefined
+}
+
+export async function createQohEntry(
+  gameId: string,
+  payload: QoH.Entry.Payload,
+): Promise<QoH.Entry.Item | undefined> {
+  const item = await create<QoH.Entry.ServerItem, QoH.Entry.Payload>(
+    `/api/qoh/game/${gameId}/entries`,
+    payload,
+  )
+
+  return item ? serverToQoHEntryItem(item) : undefined
+}
+export async function editQohEntry(
+  id: string,
+  payload: QoH.Entry.UiPayload,
+): Promise<QoH.Entry.Item | undefined> {
+  const item = await edit<QoH.Entry.ServerItem, QoH.Entry.UiPayload>(
+    `/api/qoh/entry/${id}`,
+    payload,
+  )
+
+  return item ? serverToQoHEntryItem(item) : undefined
+}
+export async function deleteQohEntries(items: QoH.Entry.Item[]): Promise<boolean> {
+  return await deletedAll(
+    '/api/qoh/entries',
+    items.map((i) => i.id),
+  )
+}
+
+async function get<D = unknown>(url: string): Promise<D | undefined> {
+  const response = await fetch(url, {
+    method: 'get',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (response.ok) {
+    const data = (await response.json()) as D
+
+    return data
+  }
+
+  return undefined
+}
 async function create<D = unknown, P = unknown>(url: string, payload: P): Promise<D | undefined> {
   try {
     const response = await fetch(url, {

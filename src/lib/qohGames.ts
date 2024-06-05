@@ -6,14 +6,14 @@ import { getNumber } from '@/util/functions'
 import { createQohEntries, getGoogleQohEntryRows, getQohEntries } from './qohEntries'
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
-type GoogleQohGameRow = GoogleSpreadsheetRow<Omit<QoH.Game.ServerItem, 'name' | 'entries'>>
+type GoogleQohGameRow = GoogleSpreadsheetRow<Omit<QoH.Game.ServerItem, 'entries'>>
 
 const BASE_QOH_GAME = {
   createSeed: false,
   jackpotPercent: 0,
   maxGameReset: 0,
   maxSeed: 0,
-  resetNumber: 0,
+  shuffle: 1,
   resetOnTwoJokers: false,
   seedPercent: 0,
   ticketPrice: 0,
@@ -22,7 +22,7 @@ const BASE_QOH_GAME = {
 function googleToServerQohGame(row: GoogleQohGameRow): QoH.Game.ServerItem {
   return {
     id: row.get('id'),
-    name: `Game #${(row.rowNumber - 1).toString().padStart(3, '0')}`,
+    name: row.get('name'),
     created: row.get('created'),
     createdBy: row.get('createdBy'),
     createSeed: row.get('createSeed') === 'TRUE',
@@ -35,7 +35,7 @@ function googleToServerQohGame(row: GoogleQohGameRow): QoH.Game.ServerItem {
     maxSeed: getNumber(row.get('maxSeed')),
     modified: row.get('modified'),
     paidJackpot: getNumber(row.get('paidJackpot')),
-    resetNumber: getNumber(row.get('resetNumber')),
+    shuffle: getNumber(row.get('shuffle')),
     resetOnTwoJokers: row.get('resetOnTwoJokers') === 'TRUE',
     seedPercent: getNumber(row.get('seedPercent')),
     startDate: row.get('startDate'),
@@ -140,7 +140,7 @@ export async function updateQohGame(
   if (row) {
     const now = dayjs().format()
 
-    const updatedData: Omit<QoH.Game.ServerItem, 'entries' | 'name'> = {
+    const updatedData: Omit<QoH.Game.ServerItem, 'entries'> = {
       ...(row.toObject() as QoH.Game.ServerItem),
       ...payload,
       modified: now,

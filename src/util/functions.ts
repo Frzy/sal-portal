@@ -1,7 +1,7 @@
 import { type CalculatedCheckoutValues } from '@c/CheckoutSteps/DetailStep'
 import dayjs, { type Dayjs } from 'dayjs'
 
-import { LEGION_MONTH_START, OLD_SCHOOL_QOH } from './constants'
+import { CARD_VALUE_MAP, LEGION_MONTH_START, OLD_SCHOOL_QOH } from './constants'
 
 export function isPasswordValid(password: string): boolean {
   if (password.length < 4) return false
@@ -64,9 +64,52 @@ export function getValueByPath<T extends Record<string, any>>(obj: T, path: stri
   }
   return current
 }
-
 export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+export function toCardString(item: Card.Item | undefined): string {
+  if (!item) return ''
+
+  return `${item.value}_${item.suit}`
+}
+export function getCardLabel(value: Card.Value, suit: Card.Suit): string {
+  if (value === 'X') {
+    return `${capitalize(suit)} Joker`
+  }
+
+  return `${CARD_VALUE_MAP[value]} of ${capitalize(suit)}`
+}
+export function getAllCards(): Card.Item[] {
+  const values = Object.keys(CARD_VALUE_MAP).filter((v) => v !== 'X') as unknown as Card.Value[]
+  const suits = ['hearts', 'diamonds', 'clubs', 'spades'] as unknown as Card.Suit[]
+
+  const mainCards: Card.Item[] = [
+    {
+      id: 'X_black',
+      label: 'Black Joker',
+      suit: 'black',
+      value: 'X',
+    },
+    {
+      id: 'X_red',
+      label: 'Red Joker',
+      suit: 'red',
+      value: 'X',
+    },
+  ]
+
+  suits.forEach((suit) => {
+    values.forEach((value) => {
+      mainCards.push({
+        id: `${value}_${suit}`,
+        label: getCardLabel(value, suit),
+        suit,
+        value,
+      })
+    })
+  })
+
+  return mainCards
 }
 
 export function serverToCostItem(item: Kitchen.Cost.ServerItem): Kitchen.Cost.Item {
@@ -119,6 +162,7 @@ export function serverToQoHGameItem(item: QoH.Game.ServerItem): QoH.Game.Item {
     hasAllCards,
     hasAllPositions,
     entries,
+    isActive: !item.endDate,
     totals: lastEntry
       ? { ...lastEntry.totals }
       : {
@@ -202,7 +246,11 @@ export function serverToQoHEntryGameItem(
 
   return entries.map((entry, index, arr) => {
     const item = serverToQoHEntryItem(entry)
-    const seed = game.createSeed ? Math.floor(item.ticketSales * game.seedPercent) : 0
+    const hasMaxSeed = game.maxSeed > 0
+    const seed =
+      game.createSeed && (!hasMaxSeed || game.maxSeed > totalSeed)
+        ? Math.floor(item.ticketSales * game.seedPercent)
+        : 0
     const availableFund = item.ticketSales - item.payout - seed
     const jackpot = Math.floor(availableFund * game.jackpotPercent)
     const profit = Math.ceil(availableFund * (1 - game.jackpotPercent))

@@ -25,6 +25,7 @@ import {
 } from '@mui/material'
 
 interface ListToolbarProps {
+  createText?: string
   hasFilter?: boolean
   numSelected: number
   onDeleteClick?: () => void
@@ -49,6 +50,7 @@ export default function ListToolbar({
   hideSearch,
   hideCreateButton,
   hideFilterButton,
+  createText = 'add',
   title,
 }: ListToolbarProps): React.JSX.Element {
   const theme = useTheme()
@@ -178,14 +180,19 @@ export default function ListToolbar({
           </Box>
         )}
         {!hasSelection && !hideCreateButton && (
-          <Tooltip title='Add Item'>
+          <Tooltip title={`${createText} Item`}>
             {isSmall ? (
               <IconButton onClick={onCreateClick} size='small'>
                 <AddIcon />
               </IconButton>
             ) : (
-              <Button color='secondary' startIcon={<AddIcon />} onClick={onCreateClick}>
-                Add
+              <Button
+                color='secondary'
+                startIcon={<AddIcon />}
+                onClick={onCreateClick}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                {createText}
               </Button>
             )}
           </Tooltip>

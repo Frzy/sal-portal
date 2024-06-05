@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { LoadingButton } from '@mui/lab'
 import {
-  Alert,
   Box,
   Button,
   Dialog,
@@ -14,27 +13,24 @@ import {
   Typography,
 } from '@mui/material'
 
-import { deleteQohGames } from '@/util/requests'
+import { deleteQohEntries } from '@/util/requests'
 
-interface DeleteQohGameDialogProps extends Omit<DialogProps, 'onClose'> {
+interface DeleteQohEntryDialogProps extends Omit<DialogProps, 'onClose'> {
   onClose?: () => void
-  onDeleted?: (items: QoH.Game.Item[]) => void
-  items: QoH.Game.Item[]
+  onDeleted?: (items: QoH.Entry.Item[]) => void
+  items: QoH.Entry.GameItem[]
 }
-export default function DeleteQohGameDialog({
+export default function DeleteQohEntryDialog({
   onDeleted,
   onClose,
   items,
   ...other
-}: DeleteQohGameDialogProps): React.JSX.Element {
+}: DeleteQohEntryDialogProps): React.JSX.Element {
   const [loading, setLoading] = useState(false)
-  const entries = useMemo(() => {
-    return items.reduce((prev, curr) => prev + curr.entries.length, 0)
-  }, [items])
 
   async function handleDeleteItem(): Promise<void> {
     setLoading(true)
-    const deletedItem = await deleteQohGames(items)
+    const deletedItem = await deleteQohEntries(items)
 
     if (!deletedItem) {
       const event = new CustomEvent<INotification>('notify', {
@@ -59,10 +55,13 @@ export default function DeleteQohGameDialog({
 
   return (
     <Dialog onClose={onClose} {...other}>
-      <DialogTitle>Delete QoH {items.length > 1 ? 'Games' : 'Game'}</DialogTitle>
+      <DialogTitle>Delete Kitchen Costs</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={1}>
-          <Typography>Are you sure you want to delete the following games:</Typography>
+          <Typography>
+            Are you sure you want to delete the following game{' '}
+            {items.length > 1 ? 'entries' : 'entry'}:
+          </Typography>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             {items.map((i) => (
               <Typography
@@ -75,12 +74,6 @@ export default function DeleteQohGameDialog({
               </Typography>
             ))}
           </Box>
-          {!!entries && (
-            <Alert severity='warning'>
-              This will also delete the {entries} {entries > 1 ? 'entries' : 'entry'} associated
-              with the {items.length > 1 ? 'games' : 'game'} listed above.
-            </Alert>
-          )}
         </Stack>
       </DialogContent>
       <DialogActions>

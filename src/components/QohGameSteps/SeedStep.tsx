@@ -19,17 +19,18 @@ interface Help {
   createSeed: string
   maxSeed: string
 }
-const HelpInfo: Help = {
+export const HelpInfo: Help = {
   createSeed:
     'This setting will take part of the ticket sales and hold it for seeding the next game.',
   maxSeed:
-    'Once the seed passes this threshold, the game will stop adding funds to the next games seed. Setting this to zero mean the seed will never stop.',
+    'Once the seed passes this threshold, the game will stop adding funds to the next games seed. Setting this to zero means the seed will never stop.',
 }
 interface SeedStepProps {
+  disabled?: boolean
   game: QoH.Game.UiPayload
   onChange: (partialPayload: Partial<QoH.Game.UiPayload>) => void
 }
-export default function SeedStep({ game, onChange }: SeedStepProps): React.JSX.Element {
+export default function SeedStep({ disabled, game, onChange }: SeedStepProps): React.JSX.Element {
   const [anchor, setAnchor] = useState<{
     element: HTMLElement
     key: keyof typeof HelpInfo
@@ -76,6 +77,7 @@ export default function SeedStep({ game, onChange }: SeedStepProps): React.JSX.E
         <Grid xs={12} md={6} sx={{ display: 'flex', alignItems: 'center', minHeight: 72 }}>
           <FormControlLabel
             sx={{ mr: 1 }}
+            disabled={disabled}
             control={
               <Switch checked={game.createSeed} onChange={handleSwitchChange} name='createSeed' />
             }
@@ -84,26 +86,27 @@ export default function SeedStep({ game, onChange }: SeedStepProps): React.JSX.E
           <Box
             sx={{ cursor: 'default', height: 24 }}
             onMouseEnter={(event) => {
-              handlePopoverOpen(event, 'createSeed')
+              if (!disabled) handlePopoverOpen(event, 'createSeed')
             }}
             onMouseLeave={handlePopoverClose}
           >
-            <HelpIcon />
+            <HelpIcon color={disabled ? 'disabled' : undefined} />
           </Box>
         </Grid>
         {game.createSeed && (
           <Grid xs={12} md={6}>
             <NumberInput
               name='maxSeed'
-              precision={2}
+              precision={0}
               value={game.maxSeed}
               onChange={handleNumberChange}
               label='Max Seed'
+              disabled={disabled}
               fullWidth
               InputProps={{
                 startAdornment: (
                   <InputAdornment position='start'>
-                    <MoneyIcon />
+                    <MoneyIcon color={disabled ? 'disabled' : undefined} />
                   </InputAdornment>
                 ),
                 endAdornment: (
@@ -112,11 +115,11 @@ export default function SeedStep({ game, onChange }: SeedStepProps): React.JSX.E
                       component='span'
                       sx={{ height: 24 }}
                       onMouseEnter={(event) => {
-                        handlePopoverOpen(event, 'maxSeed')
+                        if (!disabled) handlePopoverOpen(event, 'maxSeed')
                       }}
                       onMouseLeave={handlePopoverClose}
                     >
-                      <HelpIcon />
+                      <HelpIcon color={disabled ? 'disabled' : undefined} />
                     </Box>
                   </InputAdornment>
                 ),

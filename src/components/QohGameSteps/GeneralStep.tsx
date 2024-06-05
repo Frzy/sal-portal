@@ -13,6 +13,7 @@ import {
   Popover,
   Stack,
   Switch,
+  TextField,
   Typography,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
@@ -31,7 +32,7 @@ interface Help {
   initialJackpot: string
 }
 
-const HelpInfo: Help = {
+export const HelpInfo: Help = {
   resetOnTwoJokers:
     'This setting will enable the game to be reset if and only if there are two jokers drawn before the queen of hearts is drawn.',
   maxGameReset:
@@ -45,8 +46,13 @@ const HelpInfo: Help = {
 interface GeneralStepsProps {
   game: QoH.Game.UiPayload
   onChange: (partialPayload: Partial<QoH.Game.UiPayload>) => void
+  disabled?: boolean
 }
-export default function GeneralStep({ game, onChange }: GeneralStepsProps): React.JSX.Element {
+export default function GeneralStep({
+  disabled,
+  game,
+  onChange,
+}: GeneralStepsProps): React.JSX.Element {
   const [anchor, setAnchor] = useState<{
     element: HTMLElement
     key: keyof typeof HelpInfo
@@ -78,6 +84,13 @@ export default function GeneralStep({ game, onChange }: GeneralStepsProps): Reac
       onChange({ [name]: typeof value === 'number' ? Math.max(value, 0) : 0 })
     }
   }
+  function handleTextChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    const { value, name } = event.target
+
+    if (name) {
+      onChange({ [name]: value })
+    }
+  }
   function handleSwitchChange(event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
     const { name } = event.target
 
@@ -93,17 +106,30 @@ export default function GeneralStep({ game, onChange }: GeneralStepsProps): Reac
         <Typography component='span'>
           Use the{' '}
           <Box component='span' sx={{ position: 'relative', px: '14px' }}>
-            <HelpIcon sx={{ position: 'absolute', top: -2, left: 0 }} />
+            <HelpIcon
+              color={disabled ? 'disabled' : undefined}
+              sx={{ position: 'absolute', top: -2, left: 0 }}
+            />
           </Box>{' '}
           for more information about what the setting does.
         </Typography>
       </Alert>
       <Grid container spacing={2}>
+        <Grid xs={12}>
+          <TextField
+            label='Name'
+            value={game.name}
+            onChange={handleTextChange}
+            name='name'
+            fullWidth
+          />
+        </Grid>
         <Grid xs={12} md={4}>
           <DatePicker
             label='Start Date'
             value={game.startDate}
             onChange={handleDateChange}
+            disabled={disabled}
             sx={{ width: '100%' }}
           />
         </Grid>
@@ -114,24 +140,25 @@ export default function GeneralStep({ game, onChange }: GeneralStepsProps): Reac
             value={game.initialJackpot}
             onChange={handleNumberChange}
             label='Starting Jackpot'
+            disabled={disabled}
             fullWidth
             InputProps={{
               startAdornment: (
                 <InputAdornment position='start'>
-                  <MoneyIcon />
+                  <MoneyIcon color={disabled ? 'disabled' : undefined} />
                 </InputAdornment>
               ),
               endAdornment: (
-                <InputAdornment position='end' sx={{ cursor: 'pointer' }}>
+                <InputAdornment position='end' sx={{ cursor: 'default' }}>
                   <Box
                     component='span'
                     sx={{ height: 24 }}
                     onMouseEnter={(event) => {
-                      handlePopoverOpen(event, 'initialJackpot')
+                      if (!disabled) handlePopoverOpen(event, 'initialJackpot')
                     }}
                     onMouseLeave={handlePopoverClose}
                   >
-                    <HelpIcon />
+                    <HelpIcon color={disabled ? 'disabled' : undefined} />
                   </Box>
                 </InputAdornment>
               ),
@@ -145,24 +172,25 @@ export default function GeneralStep({ game, onChange }: GeneralStepsProps): Reac
             value={game.ticketPrice}
             onChange={handleNumberChange}
             label='Ticket Price'
+            disabled={disabled}
             fullWidth
             InputProps={{
               startAdornment: (
                 <InputAdornment position='start'>
-                  <MoneyIcon />
+                  <MoneyIcon color={disabled ? 'disabled' : undefined} />
                 </InputAdornment>
               ),
               endAdornment: (
-                <InputAdornment position='end' sx={{ cursor: 'pointer' }}>
+                <InputAdornment position='end' sx={{ cursor: 'default' }}>
                   <Box
                     component='span'
                     sx={{ height: 24 }}
                     onMouseEnter={(event) => {
-                      handlePopoverOpen(event, 'ticketPrice')
+                      if (!disabled) handlePopoverOpen(event, 'ticketPrice')
                     }}
                     onMouseLeave={handlePopoverClose}
                   >
-                    <HelpIcon />
+                    <HelpIcon color={disabled ? 'disabled' : undefined} />
                   </Box>
                 </InputAdornment>
               ),
@@ -173,6 +201,7 @@ export default function GeneralStep({ game, onChange }: GeneralStepsProps): Reac
         <Grid xs={12} md={6} sx={{ display: 'flex', alignItems: 'center', minHeight: 72 }}>
           <FormControlLabel
             sx={{ mr: 1 }}
+            disabled={disabled}
             control={
               <Switch
                 checked={game.resetOnTwoJokers}
@@ -183,14 +212,14 @@ export default function GeneralStep({ game, onChange }: GeneralStepsProps): Reac
             label='Reset Board after 2nd joker drawn'
           />
           <Box
-            sx={{ cursor: 'pointer', height: 24 }}
+            sx={{ cursor: 'default', height: 24 }}
             component='span'
             onMouseEnter={(event) => {
-              handlePopoverOpen(event, 'resetOnTwoJokers')
+              if (!disabled) handlePopoverOpen(event, 'resetOnTwoJokers')
             }}
             onMouseLeave={handlePopoverClose}
           >
-            <HelpIcon />
+            <HelpIcon color={disabled ? 'disabled' : undefined} />
           </Box>
         </Grid>
         {game.resetOnTwoJokers && (
@@ -201,19 +230,20 @@ export default function GeneralStep({ game, onChange }: GeneralStepsProps): Reac
               value={game.maxGameReset}
               onChange={handleNumberChange}
               label='Max Game Resets'
+              disabled={disabled}
               fullWidth
               InputProps={{
                 endAdornment: (
-                  <InputAdornment position='end' sx={{ cursor: 'pointer' }}>
+                  <InputAdornment position='end' sx={{ cursor: 'default' }}>
                     <Box
                       component='span'
                       sx={{ height: 24 }}
                       onMouseEnter={(event) => {
-                        handlePopoverOpen(event, 'maxGameReset')
+                        if (!disabled) handlePopoverOpen(event, 'maxGameReset')
                       }}
                       onMouseLeave={handlePopoverClose}
                     >
-                      <HelpIcon />
+                      <HelpIcon color={disabled ? 'disabled' : undefined} />
                     </Box>
                   </InputAdornment>
                 ),

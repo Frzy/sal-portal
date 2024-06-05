@@ -8,7 +8,7 @@ export function getFromStorage<D extends unknown | undefined>(
   defaultValue?: D,
 ): D | (undefined extends D ? undefined : never) {
   if (typeof window !== 'undefined' && localStorage?.getItem) {
-    const value = localStorage.getItem(key === 'UhaulNative' ? key : `_${key}`)
+    const value = localStorage.getItem(`_${key}`)
 
     if (value === null) return defaultValue as undefined extends D ? undefined : never
 
