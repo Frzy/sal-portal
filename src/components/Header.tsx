@@ -260,7 +260,7 @@ export default function Header(): React.JSX.Element {
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton href='/qoh/game/current' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <DiagnosisIcon />
                 </ListItemIcon>
@@ -268,7 +268,7 @@ export default function Header(): React.JSX.Element {
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton href='/qoh/game/current/add-entry' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <HeartPlusIcon />
                 </ListItemIcon>

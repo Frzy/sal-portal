@@ -71,28 +71,79 @@ export async function findQohEntry(
   return (await getQohEntries()).find(filter)
 }
 
-export async function createQohEntries(
-  payload: QoH.Entry.CreatePayload | QoH.Entry.CreatePayload[],
-): Promise<QoH.Entry.ServerItem[]> {
-  const now = dayjs().format()
+export async function createQohEntry(
+  payload: QoH.Entry.CreatePayload,
+): Promise<QoH.Entry.ServerItem | undefined> {
   const workSheet = await getGoogleSheetWorkSheet(
     process.env.SPREADSHEET_KEY,
-    process.env.KITCHEN_CHECKOUT_SHEET_KEY,
+    process.env.QUEEN_OF_HEARTS_ENTRY_SHEET_KEY,
   )
-  const payloads: QoH.Entry.CreatePayload[] = Array.isArray(payload) ? [...payload] : [payload]
+  const game = await findGoogleQohGameRows((r) => r.get('id') === payload.gameId)
 
-  const rows: RawRowData[] = payloads.map((p) => {
-    return {
+  if (game) {
+    const now = dayjs().format()
+    const drawDate = dayjs(payload.drawDate)
+    const jokerReset = !!game.get('resetOnTwoJokers')
+    const maxResets = getNumber(game.get('maxGameReset'), 0)
+    const RowData = {
       ...BASE_QOH_ENTRY,
-      ...p,
+      ...payload,
       id: crypto.randomUUID(),
       created: now,
       modified: now,
-      lastModifiedBy: p.createdBy,
+      lastModifiedBy: payload.createdBy,
     } satisfies RawRowData
-  })
+    const row = (await workSheet.addRow(RowData)) as GoogleQohEntryRow
 
-  return (await workSheet.addRows(rows)).map(googleToServerQohEntry)
+    // Queen of Hearts Drawn
+    if (payload.cardDrawn === 'Q_hearts') {
+      game.set('endDate', drawDate.format())
+      await game.save()
+    } else if (jokerReset && payload.cardDrawn.includes('X')) {
+      // Handle changing normal card to joker
+      const gameEntries = (await getGoogleQohEntryRows())
+        .filter((r) => r.get('gameId') === game.get('id'))
+        .sort((a, b) =>
+          dayjs(a.get('drawDate') as string).isAfter(dayjs(b.get('drawDate') as string)) ? 1 : -1,
+        )
+
+      const rowsToBeSaved: GoogleQohEntryRow[] = []
+      let gameShuffle = 1
+      let jokerCount = 0
+      gameEntries.forEach((e) => {
+        const item = e.get('id') === row.get('id') ? row : e
+        const eShuffel = getNumber(item.get('shuffle'), 1)
+        const card: string = item.get('cardDrawn') ?? ''
+        const isJoker = card.includes('X')
+
+        if (eShuffel !== gameShuffle) {
+          item.set('shuffle', gameShuffle)
+
+          if (item !== row) rowsToBeSaved.push(item)
+        }
+
+        if (isJoker) jokerCount += 1
+        if (jokerCount === 2 && gameShuffle <= maxResets) {
+          gameShuffle += 1
+          jokerCount = 0
+          game.set('lastResetDate', item.get('drawDate') as string)
+        }
+      })
+
+      await rowsToBeSaved.reduce(async (p, row) => {
+        await p.then(async () => {
+          await row.save()
+        })
+      }, Promise.resolve())
+
+      if (gameShuffle === 1) game.set('lastResetDate', '')
+
+      game.set('shuffle', gameShuffle)
+      await game.save()
+    }
+
+    return googleToServerQohEntry(row)
+  }
 }
 export async function updateQohEntry(
   id: string,

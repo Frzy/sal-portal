@@ -1,4 +1,4 @@
-import { createQohEntries, findQohEntry } from '@/lib/qohEntries'
+import { createQohEntry, getQohEntriesBy } from '@/lib/qohEntries'
 import { findQohGame } from '@/lib/qohGames'
 import { getServerAuthSession } from '@/util/auth'
 
@@ -11,9 +11,7 @@ export async function GET(
 
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const item = await findQohEntry((item) => item.gameId === gameId)
-
-  if (!item) return Response.json({ message: 'Game Entry Not Found' }, { status: 404 })
+  const item = await getQohEntriesBy((item) => item.gameId === gameId)
 
   return Response.json(item)
 }
@@ -32,9 +30,9 @@ export async function POST(
   try {
     const game = await findQohGame((item) => item.id === gameId)
 
-    if (!game) return Response.json({ message: 'Game Not Found' }, { status: 404 })
+    if (!game) return Response.json({ message: 'Queen of Hearts Game Not Found' }, { status: 404 })
 
-    const response = await createQohEntries({ ...payload, gameId, createdBy: user })
+    const response = await createQohEntry({ ...payload, gameId, createdBy: user })
 
     return Response.json(response, { status: 201 })
   } catch (error) {

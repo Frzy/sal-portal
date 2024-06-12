@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 
 import { type EnhancedListRef } from '@c/ListComponents/EnhancedList'
 import { QohEntryDialog } from '@c/QoHEntryDialog'
@@ -53,9 +53,11 @@ const FAB_ACTIONS = [
 
 interface QohGameDetailsProps {
   game: QoH.Game.ServerItem
+  title?: string
 }
 export default function QohGameDetailsView({
   game: serverGame,
+  title,
 }: QohGameDetailsProps): React.JSX.Element {
   const theme = useTheme()
   const router = useRouter()
@@ -147,6 +149,10 @@ export default function QohGameDetailsView({
     setEntryCrudAction({ type: DIALOG_TYPES.VIEW, items: [] })
   }
 
+  useEffect(() => {
+    router.prefetch('/qoh/game/current/add-entry')
+  }, [router])
+
   return (
     <Fragment>
       <AppBar position='relative' component='div'>
@@ -155,7 +161,7 @@ export default function QohGameDetailsView({
             backgroundColor: (theme) => `rgba(${theme.vars.palette.primary.mainChannel} / 0.50)`,
           }}
         >
-          <Typography variant='h3'>{game.name}</Typography>
+          <Typography variant='h3'>{title ?? game.name}</Typography>
           {!isSmall && !revalidate && (
             <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
               <Button color='secondary' startIcon={<EditIcon />} onClick={handleGameEdit}>
@@ -386,14 +392,14 @@ export default function QohGameDetailsView({
                   onCreate={
                     game.isActive && !isSmall
                       ? () => {
-                          setEntryCrudAction({ type: DIALOG_TYPES.CREATE, items: undefined })
+                          router.push('/qoh/game/current/add-entry')
                         }
                       : undefined
                   }
                   onDelete={
                     !isSmall
                       ? (items) => {
-                          setEntryCrudAction({ type: DIALOG_TYPES.EDIT, items })
+                          setEntryCrudAction({ type: DIALOG_TYPES.DELETE, items })
                         }
                       : undefined
                   }

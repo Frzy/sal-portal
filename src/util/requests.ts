@@ -135,9 +135,9 @@ export async function getQohGameById(gameId: string): Promise<QoH.Game.Item | un
 
 export async function createQohEntry(
   gameId: string,
-  payload: QoH.Entry.Payload,
+  payload: QoH.Entry.UiPayload,
 ): Promise<QoH.Entry.Item | undefined> {
-  const item = await create<QoH.Entry.ServerItem, QoH.Entry.Payload>(
+  const item = await create<QoH.Entry.ServerItem, QoH.Entry.UiPayload>(
     `/api/qoh/game/${gameId}/entries`,
     payload,
   )

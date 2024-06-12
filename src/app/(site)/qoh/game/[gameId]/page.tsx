@@ -17,7 +17,7 @@ export default async function QohDetailPage({
 
   const game = await findQohGame((g) => g.id === gameId)
 
-  if (!game) redirect('/error')
+  if (game) return <QohGameDetailsView game={game} />
 
-  return <QohGameDetailsView game={game} />
+  redirect('/error')
 }

@@ -123,7 +123,7 @@ export default function NumberInput({
 
   if (hasValue) {
     if (isNaN(defaultValue) || value === '') {
-      inputValue = null
+      inputValue = ''
     } else {
       inputValue = format(defaultValue)
     }

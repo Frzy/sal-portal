@@ -25,7 +25,7 @@ export interface Step {
 interface StepperProps {
   activeStep: number
   children: React.ReactNode
-  invalidStep?: boolean
+  disableNext?: boolean
   isComplete?: boolean
   loading?: boolean
   onStepChange?: (step: number) => void
@@ -34,59 +34,27 @@ interface StepperProps {
   title?: string
 }
 
-interface ResponsiveStepperProps {
-  activeStep: number
-  steps: Step[]
-  onStepChange?: (step: number) => void
-  onStepperComplete?: () => void
-  loading?: boolean
-  isComplete?: boolean
+interface ResponsiveStepperProps extends StepperProps {
   children: React.ReactNode
 }
 export default function ResponsiveStepper({
-  activeStep,
-  steps,
-  onStepChange,
-  onStepperComplete,
-  loading,
-  isComplete,
   children,
+  ...props
 }: ResponsiveStepperProps): React.JSX.Element {
   const theme = useTheme()
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'))
 
-  if (isSmall)
-    return (
-      <MobileStepper
-        activeStep={activeStep}
-        steps={steps}
-        onStepChange={onStepChange}
-        onStepperComplete={onStepperComplete}
-        loading={loading}
-        isComplete={isComplete}
-      >
-        {children}
-      </MobileStepper>
-    )
-
-  return (
-    <DesktopStepper
-      activeStep={activeStep}
-      steps={steps}
-      onStepChange={onStepChange}
-      onStepperComplete={onStepperComplete}
-      loading={loading}
-      isComplete={isComplete}
-    >
-      {children}
-    </DesktopStepper>
+  return isSmall ? (
+    <MobileStepper {...props}>{children}</MobileStepper>
+  ) : (
+    <DesktopStepper {...props}>{children}</DesktopStepper>
   )
 }
 
 export function MobileStepper({
   activeStep,
   children,
-  invalidStep,
+  disableNext,
   isComplete,
   loading,
   onStepChange,
@@ -137,7 +105,7 @@ export function MobileStepper({
               size='small'
               onClick={isLastStep ? handleComplete : handleNext}
               loading={loading}
-              disabled={invalidStep}
+              disabled={disableNext}
             >
               {isLastStep ? 'Submit' : 'Next'}
               {!isLastStep && <KeyboardArrowRight />}
@@ -157,7 +125,7 @@ export function MobileStepper({
 export function DesktopStepper({
   activeStep,
   children,
-  invalidStep,
+  disableNext,
   isComplete,
   loading,
   onStepChange,
@@ -213,7 +181,7 @@ export function DesktopStepper({
           <LoadingButton
             onClick={isLastStep ? handleComplete : handleNext}
             loading={loading}
-            disabled={invalidStep}
+            disabled={disableNext}
             color='primary'
           >
             {isLastStep ? 'Submit' : 'Next'}

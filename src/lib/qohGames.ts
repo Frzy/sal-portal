@@ -3,7 +3,7 @@ import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 
 import { getNumber } from '@/util/functions'
 
-import { createQohEntries, getGoogleQohEntryRows, getQohEntries } from './qohEntries'
+import { getGoogleQohEntryRows, getQohEntries } from './qohEntries'
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
 type GoogleQohGameRow = GoogleSpreadsheetRow<Omit<QoH.Game.ServerItem, 'entries'>>
@@ -89,10 +89,9 @@ export async function createQohGame(
   const payloads: QoH.Game.CreatePayload[] = Array.isArray(payload) ? [...payload] : [payload]
 
   let gameRows: RawRowData[] = []
-  let entryPayloads: QoH.Entry.CreatePayload[] = []
 
   payloads.forEach((p) => {
-    const { entries, ...other } = p
+    const { ...other } = p
     const id = crypto.randomUUID()
     const gamePayload = {
       ...BASE_QOH_GAME,
@@ -104,32 +103,15 @@ export async function createQohGame(
     } satisfies RawRowData
 
     gameRows = [...gameRows, gamePayload]
-
-    if (entries?.length) {
-      entryPayloads = [
-        ...entryPayloads,
-        ...entries.map((e) => ({
-          ...e,
-          gameId: id,
-          createdBy: other.createdBy,
-        })),
-      ]
-    }
   })
 
-  const createdEntries = entryPayloads.length ? await createQohEntries(entryPayloads) : undefined
   const createdGames = (await workSheet.addRows(gameRows)).map(googleToServerQohGame)
 
-  return createdEntries
-    ? createdGames.map((g) => ({
-        ...g,
-        entries: createdEntries.filter((e) => e.gameId === g.id),
-      }))
-    : createdGames
+  return createdGames
 }
 export async function updateQohGame(
   gameId: string,
-  payload: QoH.Game.EditPayload,
+  payload: Partial<QoH.Game.EditPayload>,
   validator?: (item: GoogleQohGameRow) => boolean,
 ): Promise<QoH.Game.ServerItem | undefined> {
   const row = await findGoogleQohGameRows((r) => {

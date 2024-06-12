@@ -111,6 +111,15 @@ export function getAllCards(): Card.Item[] {
 
   return mainCards
 }
+export function getGamesDisabledCards(game: QoH.Game.Item, cardShuffle?: number): Card.Item[] {
+  const shuffle = cardShuffle ? Math.min(Math.max(cardShuffle, 1), game.shuffle) : game.shuffle
+
+  const cards = game.entries
+    .filter((e) => e.shuffle === shuffle && e.cardDrawn)
+    .map((e) => e.cardDrawn)
+
+  return cards as Card.Item[]
+}
 
 export function serverToCostItem(item: Kitchen.Cost.ServerItem): Kitchen.Cost.Item {
   return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
@@ -253,7 +262,13 @@ export function serverToQoHEntryGameItem(
         : 0
     const availableFund = item.ticketSales - item.payout - seed
     const jackpot = Math.floor(availableFund * game.jackpotPercent)
-    const profit = Math.ceil(availableFund * (1 - game.jackpotPercent))
+    let profit = Math.ceil(availableFund * (1 - game.jackpotPercent))
+
+    // Need this to correct rounding erros that can pop up
+    if (jackpot + profit !== availableFund) {
+      profit += availableFund - (jackpot + profit)
+    }
+
     let percentChange = 0
 
     totalFund += availableFund

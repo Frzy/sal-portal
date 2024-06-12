@@ -266,8 +266,6 @@ declare global {
       seedPercent: number
       startDate: string
       ticketPrice: number
-
-      entries?: Omit<QoH.Entry.CreatePayload, 'gameId'>[]
     }
 
     interface UiPayload extends Payload {

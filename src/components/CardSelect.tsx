@@ -9,6 +9,8 @@ import {
   MenuItem,
   Select,
   type SelectChangeEvent,
+  type SelectProps,
+  Typography,
 } from '@mui/material'
 
 import Card from '@/icons/Card'
@@ -19,7 +21,10 @@ interface CardSelectProps extends Omit<FormControlProps, 'onChange'> {
   label?: string
   value?: string
   initialValue?: string
+  cardSize?: number
+  fontSize?: number
   onChange?: (value: string) => void
+  selectProps?: Omit<SelectProps, 'onChange'>
 }
 export default function CardSelect({
   disabledCards = [],
@@ -27,7 +32,10 @@ export default function CardSelect({
   onChange,
   value,
   initialValue = '',
+  cardSize = 32,
+  fontSize = 20,
   disabled,
+  selectProps,
   ...props
 }: CardSelectProps): React.JSX.Element {
   const { clubs, diamonds, hearts, spades, jokers } = useMemo(() => {
@@ -63,11 +71,14 @@ export default function CardSelect({
     <FormControl disabled={disabled} {...props}>
       <InputLabel htmlFor='playing-card-select'>{label}</InputLabel>
       <Select
+        {...selectProps}
         id='playing-card-select'
         label={label}
         value={value ?? ''}
+        // @ts-expect-error Not sure how else to do this
         onChange={handleChange}
         sx={{
+          ...selectProps?.sx,
           '& .MuiSelect-select': value ? { display: 'flex', alignItems: 'center', p: '12px' } : {},
         }}
       >
@@ -82,9 +93,14 @@ export default function CardSelect({
             disabled={card.id !== initialValue && disabledCards.includes(card.id)}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
-              <Card suit={card.suit} value={card.value} sx={{ fontSize: 32 }} disabled={disabled} />
+              <Card
+                suit={card.suit}
+                value={card.value}
+                sx={{ fontSize: cardSize }}
+                disabled={disabled}
+              />
             </ListItemIcon>
-            {card.label}
+            <Typography sx={{ fontSize }}>{card.label}</Typography>
           </MenuItem>
         ))}
 
@@ -96,9 +112,14 @@ export default function CardSelect({
             disabled={card.id !== initialValue && disabledCards.includes(card.id)}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
-              <Card suit={card.suit} value={card.value} sx={{ fontSize: 32 }} disabled={disabled} />
+              <Card
+                suit={card.suit}
+                value={card.value}
+                sx={{ fontSize: cardSize }}
+                disabled={disabled}
+              />
             </ListItemIcon>
-            {card.label}
+            <Typography sx={{ fontSize }}>{card.label}</Typography>
           </MenuItem>
         ))}
         <ListSubheader>Hearts</ListSubheader>
@@ -109,9 +130,14 @@ export default function CardSelect({
             disabled={card.id !== initialValue && disabledCards.includes(card.id)}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
-              <Card suit={card.suit} value={card.value} sx={{ fontSize: 32 }} disabled={disabled} />
+              <Card
+                suit={card.suit}
+                value={card.value}
+                sx={{ fontSize: cardSize }}
+                disabled={disabled}
+              />
             </ListItemIcon>
-            {card.label}
+            <Typography sx={{ fontSize }}>{card.label}</Typography>
           </MenuItem>
         ))}
         <ListSubheader>Spades</ListSubheader>
@@ -122,9 +148,14 @@ export default function CardSelect({
             disabled={card.id !== initialValue && disabledCards.includes(card.id)}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
-              <Card suit={card.suit} value={card.value} sx={{ fontSize: 32 }} disabled={disabled} />
+              <Card
+                suit={card.suit}
+                value={card.value}
+                sx={{ fontSize: cardSize }}
+                disabled={disabled}
+              />
             </ListItemIcon>
-            {card.label}
+            <Typography sx={{ fontSize }}>{card.label}</Typography>
           </MenuItem>
         ))}
         <ListSubheader>Jokers</ListSubheader>
@@ -135,9 +166,14 @@ export default function CardSelect({
             disabled={card.id !== initialValue && disabledCards.includes(card.id)}
           >
             <ListItemIcon sx={{ minWidth: 40 }}>
-              <Card suit={card.suit} value={card.value} sx={{ fontSize: 32 }} disabled={disabled} />
+              <Card
+                suit={card.suit}
+                value={card.value}
+                sx={{ fontSize: cardSize }}
+                disabled={disabled}
+              />
             </ListItemIcon>
-            {card.label}
+            <Typography sx={{ fontSize }}>{card.label}</Typography>
           </MenuItem>
         ))}
       </Select>

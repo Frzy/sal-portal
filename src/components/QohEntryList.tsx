@@ -94,6 +94,12 @@ const ShuffleColumn: ListColumn<QoH.Entry.GameItem> = {
   align: 'left',
   sx: { maxWidth: 75 },
 }
+const PositionColumn: ListColumn<QoH.Entry.GameItem> = {
+  id: 'cardPosition',
+  label: 'Position',
+  align: 'left',
+  sx: { maxWidth: 75 },
+}
 const PayoutColumn: ListColumn<QoH.Entry.GameItem> = {
   id: 'payout',
   label: 'Payouts',
@@ -188,6 +194,7 @@ export default function QohEntryList({
   ...listProps
 }: QohEntryListProps): React.JSX.Element {
   const thisRef = useRef<EnhancedListRef | null>(null)
+  const showPositions = useMemo(() => game.entries.some((e) => !!e.cardPosition), [game])
   const [visibleColumns, setVisibleColumns] = useState<VibibleColumnOptions>(
     getFromStorage<VibibleColumnOptions>('qohVisibileColumns', {
       details: false,
@@ -201,6 +208,7 @@ export default function QohEntryList({
 
     if (game.hasAllCards) lColumns.push(CardDrawnColumn)
     if (game.resetOnTwoJokers) lColumns.push(ShuffleColumn)
+    if (showPositions) lColumns.push(PositionColumn)
     if (!hideDetails) {
       lColumns.push(PayoutColumn)
 
@@ -224,7 +232,7 @@ export default function QohEntryList({
     }
 
     return lColumns
-  }, [game, visibleColumns])
+  }, [game, visibleColumns, showPositions])
   const { entryColSpan, runningColSpan } = useMemo(() => {
     const hideDetails = !visibleColumns.details
     const hideTotals = !visibleColumns.running
@@ -233,6 +241,7 @@ export default function QohEntryList({
 
     if (game.hasAllCards) entryColSpan += 1
     if (game.resetOnTwoJokers) entryColSpan += 1
+    if (showPositions) entryColSpan += 1
 
     if (!hideDetails) {
       entryColSpan += 3
@@ -248,7 +257,7 @@ export default function QohEntryList({
     }
 
     return { entryColSpan, runningColSpan }
-  }, [game, visibleColumns])
+  }, [game, visibleColumns, showPositions])
   const { entries } = game
 
   function handleColumnVisibilityChange(options: Partial<VibibleColumnOptions>): void {
