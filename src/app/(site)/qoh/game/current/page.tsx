@@ -1,6 +1,5 @@
 import UnauthorizedAlert from '@c/UnauthorizedAlert'
 import { Alert, AlertTitle, Box, Button, Stack, Typography } from '@mui/material'
-import { redirect } from 'next/navigation'
 
 import { findQohGame } from '@/lib/qohGames'
 import { getServerAuthSession } from '@/util/auth'
