@@ -355,6 +355,58 @@ declare global {
     type Suit = 'hearts' | 'diamonds' | 'clubs' | 'spades' | 'red' | 'black'
     type Value = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A' | 'X'
   }
+
+  namespace PullTab.Transaction {
+    type Type = 'TabPayout' | 'BankDeposit' | 'BarPayback' | 'BagDeposit'
+    interface ServerItem {
+      id: string
+      type: Type
+      amount: number
+      created: string
+      createdBy: string
+      lastModifiedBy: string
+      modified: string
+    }
+    interface Item extends ServerItem {
+      created: Dayjs
+      modified: Dayjs
+    }
+    interface Payload {
+      amount: number
+      type: Type
+    }
+    interface CreatePayload extends Payload {
+      createdBy: string
+    }
+    interface EditPayload extends Payload {
+      lastModifiedBy: string
+    }
+  }
+  namespace PullTab.Cost {
+    interface ServerItem {
+      id: string
+      tabPrice: number
+      boxPrice: number
+      created: string
+      createdBy: string
+      lastModifiedBy: string
+      modified: string
+    }
+    interface Item extends ServerItem {
+      created: Dayjs
+      modified: Dayjs
+    }
+    interface Payload {
+      tabPrice: number
+      boxPrice: number
+    }
+    interface CreatePayload extends Payload {
+      createdBy: string
+    }
+    interface EditPayload extends Payload {
+      lastModifiedBy: string
+    }
+  }
 }
 
 export {}

@@ -11,6 +11,8 @@ declare global {
       MENU_ITEM_SHEET_KEY: number
       QUEEN_OF_HEARTS_ENTRY_SHEET_KEY: number
       QUEEN_OF_HEARTS_GAME_SHEET_KEY: number
+      PULLTAB_TRANSACTION_SHEET_KEY: number
+      PULLTAB_COST_SHEET_KEY: number
       SPREADSHEET_KEY: string
       USER_SHEET_KEY: number
     }
