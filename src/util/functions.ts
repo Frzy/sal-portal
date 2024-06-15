@@ -311,3 +311,11 @@ export function serverToQoHEntryItem(item: QoH.Entry.ServerItem): QoH.Entry.Item
     modified: dayjs(item.modified),
   }
 }
+export function serverToPullTabTransactionItem(
+  item: PullTab.Transaction.ServerItem,
+): PullTab.Transaction.Item {
+  return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
+}
+export function serverToPullTabCostItem(item: PullTab.Cost.ServerItem): PullTab.Cost.Item {
+  return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
+}

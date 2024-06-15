@@ -6,10 +6,6 @@ import { getNumber } from '@/util/functions'
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
 type GoogleTransactionRow = GoogleSpreadsheetRow<PullTab.Transaction.ServerItem>
-const BASE_TRANSACTION_ITEM = {
-  type: 'TabPayout',
-  amount: 0,
-}
 
 function googleToServer(row: GoogleTransactionRow): PullTab.Transaction.ServerItem {
   return {
@@ -35,7 +31,14 @@ export async function findGoogleTransactionRows(
   return (await getGoogleTransactionRows()).find(filter)
 }
 export async function getTransaction(): Promise<PullTab.Transaction.ServerItem[]> {
-  return (await getGoogleTransactionRows()).map(googleToServer)
+  let runningTotal = 0
+  return (await getGoogleTransactionRows()).map((row) => {
+    const item = googleToServer(row)
+    runningTotal +=
+      item.type === 'MachineWithdrawal' || item.type === 'BankDeposit' ? 0 : item.amount
+
+    return { ...item, runningTotal }
+  })
 }
 export async function getTransactionBy(
   filter: (item: PullTab.Transaction.ServerItem) => boolean,
@@ -49,30 +52,51 @@ export async function findTransactionItem(
 }
 
 export async function createTransactionItem(
-  payload: PullTab.Transaction.CreatePayload | PullTab.Transaction.CreatePayload[],
+  payload: PullTab.Transaction.CreatePayload,
 ): Promise<PullTab.Transaction.ServerItem[]> {
   const workSheet = await getGoogleSheetWorkSheet(
     process.env.SPREADSHEET_KEY,
     process.env.PULLTAB_TRANSACTION_SHEET_KEY,
   )
-  const payloads: PullTab.Transaction.CreatePayload[] = Array.isArray(payload)
-    ? [...payload]
-    : [payload]
+  const payloads: PullTab.Transaction.ItemPayload[] = []
+
+  if (payload.machine) {
+    payloads.push({ type: 'MachineWithdrawal', amount: payload.machine })
+  }
+  if (payload.bar) {
+    payloads.push({ type: 'BarPayback', amount: payload.bar })
+  }
+  if (payload.bag) {
+    payloads.push({ type: 'BagPayback', amount: payload.bag })
+  }
+  if (payload.bagWithdrawal) {
+    payloads.push({ type: 'BagWithdrawal', amount: Math.abs(payload.bagWithdrawal) * -1 })
+  }
+  if (payload.bank) {
+    payloads.push({ type: 'BankDeposit', amount: payload.bank })
+  }
+  if (payload.payout) {
+    payloads.push({ type: 'TabPayout', amount: Math.abs(payload.payout) * -1 })
+  }
 
   const newRows: RawRowData[] = payloads.map((data) => {
     const now = dayjs().format()
 
     return {
-      ...BASE_TRANSACTION_ITEM,
       ...data,
       id: crypto.randomUUID(),
-      lastModifiedBy: data.createdBy,
+      createdBy: payload.createdBy,
+      lastModifiedBy: payload.createdBy,
       created: now,
       modified: now,
     }
   })
 
-  return (await workSheet.addRows(newRows)).map(googleToServer)
+  if (newRows.length) {
+    return (await workSheet.addRows(newRows)).map(googleToServer)
+  }
+
+  return []
 }
 export async function updateTransactionItem(
   transactionId: string,

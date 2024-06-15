@@ -357,11 +357,18 @@ declare global {
   }
 
   namespace PullTab.Transaction {
-    type Type = 'TabPayout' | 'BankDeposit' | 'BarPayback' | 'BagDeposit'
+    type Type =
+      | 'TabPayout'
+      | 'BankDeposit'
+      | 'BarPayback'
+      | 'BagPayback'
+      | 'MachineWithdrawal'
+      | 'BagWithdrawal'
     interface ServerItem {
       id: string
       type: Type
       amount: number
+      runningTotal?: number
       created: string
       createdBy: string
       lastModifiedBy: string
@@ -372,6 +379,15 @@ declare global {
       modified: Dayjs
     }
     interface Payload {
+      machine?: number
+      bar?: number
+      bag?: number
+      bagWithdrawal?: number
+      bank?: number
+      payout?: number
+    }
+
+    interface ItemPayload {
       amount: number
       type: Type
     }

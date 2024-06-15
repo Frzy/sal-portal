@@ -17,11 +17,20 @@ export async function POST(request: Request): Promise<Response> {
   const session = await getServerAuthSession()
   if (!session) return Response.json({ message: 'Not Authenticated' }, { status: 401 })
 
-  const payload = (await request.json()) as PullTab.Cost.CreatePayload
+  const payload = (await request.json()) as
+    | PullTab.Cost.CreatePayload
+    | PullTab.Cost.CreatePayload[]
   const user = session?.user.username
+  let costPayload: PullTab.Cost.CreatePayload[] = []
+
+  if (Array.isArray(payload)) {
+    costPayload = payload.map((p) => ({ ...p, createdBy: user }))
+  } else {
+    costPayload = [{ ...payload, createdBy: user }]
+  }
 
   try {
-    const response = await createCostItem({ ...payload, createdBy: user })
+    const response = await createCostItem(costPayload)
 
     return Response.json(response, { status: 201 })
   } catch (error) {

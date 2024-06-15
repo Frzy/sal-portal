@@ -2,18 +2,19 @@
 
 import { Fragment, useState } from 'react'
 
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import AddCardIcon from '@mui/icons-material/AddCard'
 import AnalyticsIcon from '@mui/icons-material/Analytics'
 import CostIcon from '@mui/icons-material/AttachMoney'
 import MenuIcon from '@mui/icons-material/Fastfood'
 import UsersIcon from '@mui/icons-material/Group'
+import InsightsIcon from '@mui/icons-material/Insights'
 import PullTabIcon from '@mui/icons-material/LocalActivity'
 import LogoutIcon from '@mui/icons-material/Logout'
 import DrawerMenuIcon from '@mui/icons-material/Menu'
 import ProfileIcon from '@mui/icons-material/Person'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import CheckoutIcon from '@mui/icons-material/PointOfSale'
 import ReceiptIcon from '@mui/icons-material/Receipt'
-import BankIcon from '@mui/icons-material/Savings'
 import {
   AppBar,
   Box,
@@ -203,33 +204,17 @@ export default function Header(): React.JSX.Element {
             <ListItem disablePadding>
               <ListItemButton>
                 <ListItemIcon>
-                  <BankIcon />
+                  <InsightsIcon />
                 </ListItemIcon>
-                <ListItemText primary='Account Summary' />
+                <ListItemText primary='Summary' />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton href='/pull-tabs/transactions' onClick={handleDrawerClose}>
                 <ListItemIcon>
-                  <PullTabIcon />
+                  <ReceiptIcon />
                 </ListItemIcon>
-                <ListItemText primary='Pull Tab Payouts' />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  <CheckoutIcon />
-                </ListItemIcon>
-                <ListItemText primary='Bar Paybacks' />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  <AccountBalanceIcon />
-                </ListItemIcon>
-                <ListItemText primary='Deposits' />
+                <ListItemText primary='Transactions' />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
@@ -238,6 +223,30 @@ export default function Header(): React.JSX.Element {
                   <CostIcon />
                 </ListItemIcon>
                 <ListItemText primary='Costs' />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton href='/pull-tabs/create/payout' onClick={handleDrawerClose}>
+                <ListItemIcon>
+                  <PullTabIcon />
+                </ListItemIcon>
+                <ListItemText primary='Payout Form' />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton href='/pull-tabs/create/cost' onClick={handleDrawerClose}>
+                <ListItemIcon>
+                  <AddCardIcon />
+                </ListItemIcon>
+                <ListItemText primary='Cost Form' />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton href='/pull-tabs/create/transaction' onClick={handleDrawerClose}>
+                <ListItemIcon>
+                  <PlaylistAddIcon />
+                </ListItemIcon>
+                <ListItemText primary='Transaction Form' />
               </ListItemButton>
             </ListItem>
             <Divider />
@@ -272,7 +281,7 @@ export default function Header(): React.JSX.Element {
                 <ListItemIcon>
                   <HeartPlusIcon />
                 </ListItemIcon>
-                <ListItemText primary='Add Entry' />
+                <ListItemText primary='Game Entry Form' />
               </ListItemButton>
             </ListItem>
             {isAdminLoggedIn && (

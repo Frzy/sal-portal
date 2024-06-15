@@ -2,6 +2,8 @@ import {
   serverToCheckoutItem,
   serverToCostItem,
   serverToMenuItem,
+  serverToPullTabCostItem,
+  serverToPullTabTransactionItem,
   serverToQoHEntryItem,
   serverToQoHGameItem,
 } from './functions'
@@ -158,6 +160,92 @@ export async function editQohEntry(
 export async function deleteQohEntries(items: QoH.Entry.Item[]): Promise<boolean> {
   return await deletedAll(
     '/api/qoh/entries',
+    items.map((i) => i.id),
+  )
+}
+
+export async function createPullTabTransaction(
+  payload: PullTab.Transaction.Payload,
+): Promise<PullTab.Transaction.Item[] | undefined> {
+  try {
+    const response = await fetch('/api/pull-tabs/transactions/', {
+      method: 'post',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (response.ok) {
+      const data = (await response.json()) as PullTab.Transaction.ServerItem[]
+
+      return data.map(serverToPullTabTransactionItem)
+    }
+
+    return undefined
+  } catch (error) {
+    return undefined
+  }
+}
+export async function editPullTabTransaction(
+  id: string,
+  payload: PullTab.Transaction.Payload,
+): Promise<PullTab.Transaction.Item | undefined> {
+  const item = await edit<PullTab.Transaction.ServerItem, PullTab.Transaction.Payload>(
+    `/api/pull-tabs/transaction/${id}`,
+    payload,
+  )
+
+  return item ? serverToPullTabTransactionItem(item) : undefined
+}
+export async function deletePulltabTransactions(
+  items: PullTab.Transaction.Item[],
+): Promise<boolean> {
+  return await deletedAll(
+    '/api/pull-tabs/transactions',
+    items.map((i) => i.id),
+  )
+}
+
+export async function createPullTabCosts(
+  payloads: PullTab.Cost.Payload[],
+): Promise<PullTab.Cost.Item[] | undefined> {
+  try {
+    const response = await fetch('/api/pull-tabs/costs/', {
+      method: 'post',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payloads),
+    })
+
+    if (response.ok) {
+      const data = (await response.json()) as PullTab.Cost.ServerItem[]
+
+      return data.map(serverToPullTabCostItem)
+    }
+
+    return undefined
+  } catch (error) {
+    return undefined
+  }
+}
+export async function editPullTabCost(
+  id: string,
+  payload: PullTab.Cost.Payload,
+): Promise<PullTab.Cost.Item | undefined> {
+  const item = await edit<PullTab.Cost.ServerItem, PullTab.Cost.Payload>(
+    `/api/pull-tabs/cost/${id}`,
+    payload,
+  )
+
+  return item ? serverToPullTabCostItem(item) : undefined
+}
+export async function deletePulltabCosts(items: PullTab.Cost.Item[]): Promise<boolean> {
+  return await deletedAll(
+    '/api/pull-tabs/transactions',
     items.map((i) => i.id),
   )
 }
