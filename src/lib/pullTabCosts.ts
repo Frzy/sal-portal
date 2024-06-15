@@ -14,6 +14,7 @@ const BASE_COST_ITEM = {
 function googleToServer(row: GoogleCostRow): PullTab.Cost.ServerItem {
   return {
     id: row.get('id'),
+    name: `Cost #${(row.rowNumber - 1).toString().padStart(4, '0')}`,
     tabPrice: getNumber(row.get('tabPrice')),
     boxPrice: getNumber(row.get('boxPrice')),
     created: row.get('created'),

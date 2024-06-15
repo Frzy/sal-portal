@@ -401,6 +401,7 @@ declare global {
   namespace PullTab.Cost {
     interface ServerItem {
       id: string
+      name: string
       tabPrice: number
       boxPrice: number
       created: string

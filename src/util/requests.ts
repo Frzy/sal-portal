@@ -245,7 +245,7 @@ export async function editPullTabCost(
 }
 export async function deletePulltabCosts(items: PullTab.Cost.Item[]): Promise<boolean> {
   return await deletedAll(
-    '/api/pull-tabs/transactions',
+    '/api/pull-tabs/costs',
     items.map((i) => i.id),
   )
 }

@@ -218,7 +218,7 @@ export default function Header(): React.JSX.Element {
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton href='/pull-tabs/costs' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <CostIcon />
                 </ListItemIcon>

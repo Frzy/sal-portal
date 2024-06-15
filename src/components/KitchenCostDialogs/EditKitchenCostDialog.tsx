@@ -47,7 +47,7 @@ export default function EditKitchenCostDialog({
 
     if (!editedItem) {
       const event = new CustomEvent<INotification>('notify', {
-        detail: { message: `Failed to edit menu item: ${initItem.name}`, severity: 'error' },
+        detail: { message: `Failed to edit cost item: ${initItem.name}`, severity: 'error' },
       })
 
       window.dispatchEvent(event)
