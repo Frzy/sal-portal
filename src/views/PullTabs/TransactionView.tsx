@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { Alert, Box, Button, Typography } from '@mui/material'
 
@@ -12,8 +12,9 @@ interface TransactionViewProps {
 export default function TransactionView({
   transactions: serverTransactions,
 }: TransactionViewProps): React.JSX.Element {
-  const [transactions, setTransactions] = useState(
-    serverTransactions.map(serverToPullTabTransactionItem),
+  const transactions = useMemo(
+    () => serverTransactions.map(serverToPullTabTransactionItem),
+    [serverTransactions],
   )
   const createPayoutUrl = useMemo(() => {
     const url = new URL('/pull-tabs/create/payout', window.location.origin)

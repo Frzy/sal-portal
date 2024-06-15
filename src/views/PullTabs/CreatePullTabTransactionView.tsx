@@ -117,6 +117,7 @@ export default function CreatePullTabTransactionView({
 
     updatePayload({ maxBag })
     setRememberMe(remember)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
