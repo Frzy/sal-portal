@@ -204,6 +204,17 @@ declare global {
       lastModifiedBy: string
     }
   }
+  namespace Kitchen {
+    interface Stats {
+      totalDeposits: number
+      totalSales: number
+      totalDrinkChips: number
+      totalOrders: number
+      totalCost: number
+      profitPercent: number
+      totalServices: number
+    }
+  }
 
   namespace QoH.Game {
     interface ServerItem {
@@ -356,6 +367,15 @@ declare global {
     type Value = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A' | 'X'
   }
 
+  namespace PullTab {
+    interface Stats {
+      bag: number
+      cost: number
+      deposit: number
+      machine: number
+      payout: number
+    }
+  }
   namespace PullTab.Transaction {
     type Type =
       | 'TabPayout'

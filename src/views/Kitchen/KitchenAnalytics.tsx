@@ -8,16 +8,6 @@ import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
 import { formatCurrency, serverToCheckoutItem, serverToCostItem } from '@/util/functions'
 
-interface KitchenStats {
-  totalDeposits: number
-  totalSales: number
-  totalDrinkChips: number
-  totalOrders: number
-  totalCost: number
-  profitPercent: number
-  totalServices: number
-}
-
 interface KitchenAnalyticsViewProps {
   costs: Kitchen.Cost.ServerItem[]
   checkouts: Kitchen.Checkout.ServerItem[]
@@ -28,7 +18,7 @@ export default function KitchenAnalyticsView({
 }: KitchenAnalyticsViewProps): React.JSX.Element {
   const [costs] = useState(serverCosts.map(serverToCostItem))
   const [checkouts] = useState(serverCheckouts.map(serverToCheckoutItem))
-  const stats = useMemo<KitchenStats>(() => {
+  const stats = useMemo<Kitchen.Stats>(() => {
     const checkoutStats = checkouts.reduce(
       (stats, c) => {
         return {

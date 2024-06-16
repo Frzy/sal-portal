@@ -115,7 +115,7 @@ export default function Header(): React.JSX.Element {
             </ListSubheader>
             <Divider />
             <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton href='/' onClick={handleDrawerClose}>
                 <ListItemIcon>
                   <ProfileIcon />
                 </ListItemIcon>
