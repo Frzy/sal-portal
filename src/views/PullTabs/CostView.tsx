@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from 'react'
 import { type EnhancedListRef } from '@c/ListComponents/EnhancedList'
 import CostList from '@c/PullTabCostList'
 import { PulltabCostDialog } from '@c/PulltabCostDialog'
-import { Box } from '@mui/material'
+import { Alert, Box, Button, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
 
 import { DIALOG_TYPES } from '@/util/constants'
@@ -39,6 +39,12 @@ export default function CostView({
 
     return { type, items, dialogOpen: !!toEdit || !!toDelete }
   }, [toEdit, toDelete])
+  const createCostUrl = useMemo(() => {
+    const url = new URL('/pull-tabs/create/cost', window.location.origin)
+    url.searchParams.set('callbackUrl', '/pull-tabs/co')
+
+    return url
+  }, [])
   const listRef = useRef<EnhancedListRef | null>(null)
 
   function handleCreateClick(): void {
@@ -67,6 +73,21 @@ export default function CostView({
   function handleDialogClose(): void {
     setToDelete(undefined)
     setToEdit(undefined)
+  }
+
+  if (costItems.length === 0) {
+    return (
+      <Alert severity='info'>
+        <Typography paragraph>
+          No Pull Tab Costs found. Use the actions below to create some.
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button href={createCostUrl.toString()} variant='outlined' sx={{ textAlign: 'center' }}>
+            Create Pull Tab Cost
+          </Button>
+        </Box>
+      </Alert>
+    )
   }
 
   return (
