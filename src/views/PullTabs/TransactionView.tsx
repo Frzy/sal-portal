@@ -51,5 +51,5 @@ export default function TransactionView({
     )
   }
 
-  return <h1>Transaction View</h1>
+  return <h1>Under Construction</h1>
 }
