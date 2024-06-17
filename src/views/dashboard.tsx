@@ -124,6 +124,13 @@ export default function DashboardView({
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
+                      label='Profit'
+                      value={formatCurrency(pullTabStats.deposit - pullTabStats.cost)}
+                    />
+                  </Grid>
+                  <Grid xs={12} md={6} lg={3}>
+                    <SingleValueDisplay
+                      variant='outlined'
                       label='Machine'
                       value={formatCurrency(pullTabStats.machine)}
                     />
