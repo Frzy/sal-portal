@@ -211,8 +211,10 @@ declare global {
       totalDrinkChips: number
       totalOrders: number
       totalCost: number
-      profitPercent: number
       totalServices: number
+      netProfit: number
+      netProfitMargin: number
+      profitPercent: number
     }
   }
 

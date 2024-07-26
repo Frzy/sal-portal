@@ -20,6 +20,7 @@ function getKitchenStats(
         totalSales: stats.totalSales + c.sales,
         totalDrinkChips: stats.totalDrinkChips + c.drinkChips,
         totalOrders: stats.totalOrders + c.orders.reduce((sum, o) => sum + o.menuItemQuantity, 0),
+        totalServices: stats.totalServices + 1,
       }
     },
     {
@@ -27,14 +28,20 @@ function getKitchenStats(
       totalSales: 0,
       totalDrinkChips: 0,
       totalOrders: 0,
-      totalServices: checkouts.length,
+      totalServices: 0,
     },
   )
   const totalCost = costs.reduce((sum, c) => sum + c.amount, 0)
+  const netProfit = checkoutStats.totalSales - totalCost
+  const netProfitMargin = checkoutStats.totalSales ? netProfit / checkoutStats.totalSales : 0
+  const profitPercent = totalCost ? netProfit / totalCost : 0
+
   return {
     ...checkoutStats,
     totalCost,
-    profitPercent: Math.round(((checkoutStats.totalSales - totalCost) / totalCost) * 100),
+    profitPercent,
+    netProfit,
+    netProfitMargin,
   }
 }
 function getPullTabStats(

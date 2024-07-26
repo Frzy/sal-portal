@@ -29,7 +29,10 @@ export default function CreateEntryDrawingStep({
   const newJackpot = game.totals.availableFund + breakdown.availableFund
   const lastEntry = game.entries.length ? game.entries[game.entries.length - 1] : null
   const positionError = payload.cardPosition
-    ? payload.cardPosition > 54 || game.entries.some((e) => e.cardPosition === payload.cardPosition)
+    ? payload.cardPosition > 54 ||
+      game.entries.some(
+        (e) => e.cardPosition === payload.cardPosition && e.shuffle === payload.shuffle,
+      )
     : false
 
   function handleNumericChange(event: React.ChangeEvent<HTMLNumericElement>): void {
@@ -97,7 +100,7 @@ export default function CreateEntryDrawingStep({
               positionError && payload.cardPosition > 54
                 ? 'Can not be greater than 54'
                 : positionError
-                  ? `Position ${payload.cardPosition} has been already taken.`
+                  ? `Position ${payload.cardPosition} has already been taken.`
                   : undefined
             }
             precision={0}

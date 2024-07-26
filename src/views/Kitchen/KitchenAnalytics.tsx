@@ -6,7 +6,12 @@ import SingleValueDisplay from '@c/SingleValueDisplay'
 import { Box, Paper, Typography } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
-import { formatCurrency, serverToCheckoutItem, serverToCostItem } from '@/util/functions'
+import {
+  formatCurrency,
+  formatPercent,
+  serverToCheckoutItem,
+  serverToCostItem,
+} from '@/util/functions'
 
 interface KitchenAnalyticsViewProps {
   costs: Kitchen.Cost.ServerItem[]
@@ -27,6 +32,7 @@ export default function KitchenAnalyticsView({
           totalSales: stats.totalSales + c.sales,
           totalDrinkChips: stats.totalDrinkChips + c.drinkChips,
           totalOrders: stats.totalOrders + c.totalOrders,
+          totalServices: stats.totalServices + 1,
         }
       },
       {
@@ -34,14 +40,20 @@ export default function KitchenAnalyticsView({
         totalSales: 0,
         totalDrinkChips: 0,
         totalOrders: 0,
-        totalServices: checkouts.length,
+        totalServices: 0,
       },
     )
     const totalCost = costs.reduce((sum, c) => sum + c.amount, 0)
+    const netProfit = checkoutStats.totalSales - totalCost
+    const netProfitMargin = checkoutStats.totalSales ? netProfit / checkoutStats.totalSales : 0
+    const profitPercent = totalCost ? netProfit / totalCost : 0
+
     return {
       ...checkoutStats,
       totalCost,
-      profitPercent: Math.round(((checkoutStats.totalSales - totalCost) / totalCost) * 100),
+      profitPercent,
+      netProfit,
+      netProfitMargin,
     }
   }, [costs, checkouts])
 
@@ -53,7 +65,7 @@ export default function KitchenAnalyticsView({
       <Grid container spacing={2}>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
-            label='Overall Profit'
+            label='Net Profit'
             value={formatCurrency(stats.totalSales - stats.totalCost)}
             valueProps={{
               sx: {
@@ -67,7 +79,7 @@ export default function KitchenAnalyticsView({
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
-            label='Total Sales'
+            label='Revenue'
             value={formatCurrency(stats.totalSales)}
             valueProps={{
               sx: {
@@ -78,7 +90,7 @@ export default function KitchenAnalyticsView({
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
-            label='Total Costs'
+            label='Costs'
             value={formatCurrency(stats.totalCost)}
             valueProps={{
               sx: {
@@ -89,8 +101,8 @@ export default function KitchenAnalyticsView({
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
-            label='Overall Profit %'
-            value={`${stats.profitPercent}%`}
+            label='Net Profit %'
+            value={formatPercent(stats.profitPercent)}
             valueProps={{
               sx: {
                 color: (theme) =>
@@ -102,21 +114,38 @@ export default function KitchenAnalyticsView({
           />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <SingleValueDisplay label='Total Services' value={stats.totalServices} />
+          <SingleValueDisplay
+            label='Net Profit Margin'
+            value={formatPercent(stats.netProfitMargin)}
+          />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
-          <SingleValueDisplay label='Total Orders' value={stats.totalOrders} />
+          <SingleValueDisplay label='Services' value={stats.totalServices} />
+        </Grid>
+        <Grid xs={12} sm={6} lg={3}>
+          <SingleValueDisplay label='Orders' value={stats.totalOrders} />
+        </Grid>
+        <Grid xs={12}>
+          <Paper sx={{ p: 1 }}>
+            <Typography variant='h4'>Service</Typography>
+          </Paper>
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
-            label='Average Sales'
+            label='Revenue'
             value={formatCurrency(stats.totalSales / stats.totalServices)}
           />
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
-            label='Average Orders'
-            value={stats.totalOrders / stats.totalServices}
+            label='Costs'
+            value={formatCurrency(stats.totalCost / stats.totalServices)}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} lg={3}>
+          <SingleValueDisplay
+            label='Orders'
+            value={Math.round(stats.totalOrders / stats.totalServices)}
           />
         </Grid>
       </Grid>

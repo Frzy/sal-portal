@@ -14,6 +14,9 @@ export function formatCurrency(currency: number): string {
     style: 'currency',
   }).format(currency)
 }
+export function formatPercent(percent: number, decimal = 0): string {
+  return `${(percent * 100).toFixed(decimal)}%`
+}
 export function arrayFill<D = unknown>(n: number, filler: (index: number) => D): D[]
 export function arrayFill<D = unknown>(n: number, filler: any): D[]
 export function arrayFill<D = unknown>(n: number, filler: any): D[] {

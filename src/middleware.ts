@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server'
 
 const LOGIN_PATH = '/login'
 
-// This function can be marked `async` if using `await` inside
 export default async function middleware(req: NextRequest): Promise<NextResponse<unknown>> {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
   const path = req.nextUrl.pathname

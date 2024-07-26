@@ -27,15 +27,28 @@ export default function SingleValueDisplay({
   valueProps,
   trendingIconSize = 24,
   trendingFontSize = 16,
+  sx,
   ...other
 }: SingleValueDisplayProps): React.JSX.Element {
   return (
-    <Card {...other}>
-      <CardContent>
-        <Typography variant='h5' {...labelProps}>
+    <Card {...other} sx={{ minHeight: 125, ...sx }}>
+      <CardContent sx={{ '&:last-child': { pb: growth ? 2 : 3 } }}>
+        <Typography
+          variant='h5'
+          {...labelProps}
+          sx={{ ...labelProps?.sx, ...{ pb: growth ? 0.25 : 1 } }}
+        >
           {label}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexGrow: 1,
+          }}
+        >
           <Typography
             variant='h4'
             align='center'

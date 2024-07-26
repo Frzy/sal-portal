@@ -10,7 +10,12 @@ import { Alert, Box, Paper, Tab, Typography, useMediaQuery, useTheme } from '@mu
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
 import PlayingCardsIcon from '@/icons/PlayingCards'
-import { formatCurrency, serverToCheckoutItem, serverToQoHGameItem } from '@/util/functions'
+import {
+  formatCurrency,
+  formatPercent,
+  serverToCheckoutItem,
+  serverToQoHGameItem,
+} from '@/util/functions'
 
 interface DashboardViewProps {
   qohGame?: QoH.Game.ServerItem
@@ -62,28 +67,42 @@ export default function DashboardView({
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Profit %'
-                      value={`${Math.round(kitchenStats.profitPercent)}%`}
+                      label='Net Profit'
+                      value={formatCurrency(kitchenStats.netProfit)}
                     />
                   </Grid>
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Profit'
-                      value={formatCurrency(kitchenStats.totalSales - kitchenStats.totalCost)}
+                      label='Net Profit %'
+                      value={formatPercent(kitchenStats.profitPercent)}
                     />
                   </Grid>
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Sales'
+                      label='Net Profit Margin'
+                      value={formatPercent(kitchenStats.netProfitMargin)}
+                    />
+                  </Grid>
+                  <Grid xs={12} md={6} lg={3}>
+                    <SingleValueDisplay
+                      variant='outlined'
+                      label='Revenue'
                       value={formatCurrency(kitchenStats.totalSales)}
                     />
                   </Grid>
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Avg Sales'
+                      label='Costs'
+                      value={formatCurrency(kitchenStats.totalCost)}
+                    />
+                  </Grid>
+                  <Grid xs={12} md={6} lg={3}>
+                    <SingleValueDisplay
+                      variant='outlined'
+                      label='Avg Revenue'
                       value={formatCurrency(kitchenStats.totalSales / kitchenStats.totalServices)}
                     />
                   </Grid>
@@ -91,7 +110,7 @@ export default function DashboardView({
                     <Grid xs={12} md={6} lg={3}>
                       <SingleValueDisplay
                         variant='outlined'
-                        label='Last Service Sales'
+                        label='Last Service Revenue'
                         value={formatCurrency(lastService.sales)}
                         growth={Math.round(lastService.salesChange * 100)}
                       />
@@ -131,21 +150,21 @@ export default function DashboardView({
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Machine'
+                      label='Machine Revenue'
                       value={formatCurrency(pullTabStats.machine)}
                     />
                   </Grid>
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Payouts'
+                      label='Winner Payouts'
                       value={formatCurrency(Math.abs(pullTabStats.payout))}
                     />
                   </Grid>
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Box Costs'
+                      label='Costs'
                       value={formatCurrency(pullTabStats.cost)}
                     />
                   </Grid>
@@ -206,7 +225,7 @@ export default function DashboardView({
                   {!!qohGame.entries[qohGame.entries.length - 1] && (
                     <Grid xs={12} md={6} lg={3}>
                       <SingleValueDisplay
-                        label='Last Drawing Sales'
+                        label='Last Drawing Revenue'
                         value={formatCurrency(
                           qohGame.entries[qohGame.entries.length - 1].ticketSales,
                         )}
