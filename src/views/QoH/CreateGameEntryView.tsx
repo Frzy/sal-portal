@@ -88,9 +88,10 @@ export default function CreateQohGameEntryView({
         return (
           !!payload.cardDrawn &&
           !!payload.cardPosition &&
-          !(
-            payload.cardPosition > 54 ||
-            game.entries.some((e) => e.cardPosition === payload.cardPosition)
+          payload.cardPosition > 0 &&
+          payload.cardPosition <= 54 &&
+          !game.entries.some(
+            (e) => e.cardPosition === payload.cardPosition && e.shuffle === payload.shuffle,
           )
         )
       }
