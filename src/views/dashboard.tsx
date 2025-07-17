@@ -13,6 +13,7 @@ import PlayingCardsIcon from '@/icons/PlayingCards'
 import {
   formatCurrency,
   formatPercent,
+  getCurrentLegionYear,
   serverToCheckoutItem,
   serverToQoHGameItem,
 } from '@/util/functions'
@@ -30,6 +31,7 @@ export default function DashboardView({
   pullTabStats,
 }: DashboardViewProps): React.JSX.Element {
   const theme = useTheme()
+  const legionDates = getCurrentLegionYear()
   const isSmall = useMediaQuery(theme.breakpoints.down('md'))
   const [tabValue, setTabValue] = useState('kitchen')
   const qohGame = useMemo(() => {
@@ -56,6 +58,12 @@ export default function DashboardView({
           <Tab icon={<PullTabIcon />} label='Pull Tabs' value='pullTabs' />
           <Tab icon={<PlayingCardsIcon />} label='Queen' value='queen' />
         </TabList>
+        <Alert severity='info'>
+          <Typography>
+            Data calculated from data between {legionDates.startDate.format('MMMM YYYY')} to{' '}
+            {legionDates.endDate.format('MMMM YYYY')}
+          </Typography>
+        </Alert>
         <TabPanel value='kitchen' sx={{ p: 0 }}>
           <Paper sx={{ p: 1 }}>
             <Grid container spacing={1}>
