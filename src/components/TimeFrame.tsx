@@ -9,6 +9,7 @@ import {
   MenuItem,
   Select,
   type SelectChangeEvent,
+  Stack,
 } from '@mui/material'
 import {
   DatePicker,
@@ -120,7 +121,7 @@ export default function TimeFrame({
   }
 
   return (
-    <Box>
+    <Stack spacing={1}>
       <FormControl fullWidth size={size} sx={{ pb: showCustomDates ? 1 : 0 }}>
         <InputLabel id={`${id}-label`}>{label}</InputLabel>
         <Select id={id} label={label} labelId={`${id}-label`} onChange={handleChange} value={value}>
@@ -151,6 +152,6 @@ export default function TimeFrame({
           />
         </Box>
       </Collapse>
-    </Box>
+    </Stack>
   )
 }
