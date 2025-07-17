@@ -1,6 +1,6 @@
 import UnauthorizedAlert from '@c/UnauthorizedAlert'
 
-import { getCosts, getCostsBy } from '@/lib/pullTabCosts'
+import { getCosts } from '@/lib/pullTabCosts'
 import { getServerAuthSession } from '@/util/auth'
 import CreatePulltabCostView from '@/views/PullTabs/CreatePulltabCostView'
 
@@ -9,10 +9,8 @@ export default async function UserPage(): Promise<React.JSX.Element> {
 
   if (!session?.user) return <UnauthorizedAlert />
 
-  const isAdmin = session.user.isAdmin
-  const costs = isAdmin
-    ? await getCosts()
-    : await getCostsBy((c) => c.createdBy === session.user.username)
+  let costs = await getCosts()
+  costs = costs.slice(-5)
 
-  return <CreatePulltabCostView costs={costs.reverse().slice(0, 5)} />
+  return <CreatePulltabCostView costs={costs} />
 }
