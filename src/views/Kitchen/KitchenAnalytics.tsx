@@ -191,6 +191,29 @@ export default function KitchenAnalyticsView({
             value={Math.round(stats.totalOrders / stats.totalServices)}
           />
         </Grid>
+        <Grid xs={12}>
+          <Paper sx={{ p: 1 }}>
+            <Typography variant='h4'>Average Per Order</Typography>
+          </Paper>
+        </Grid>
+        <Grid xs={12} sm={6} lg={4}>
+          <SingleValueDisplay
+            label='Sales'
+            value={formatCurrency(stats.totalSales / stats.totalOrders)}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} lg={4}>
+          <SingleValueDisplay
+            label='Profit'
+            value={formatCurrency(stats.netProfit / stats.totalOrders)}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} lg={4}>
+          <SingleValueDisplay
+            label='Costs'
+            value={formatCurrency(stats.totalCost / stats.totalOrders)}
+          />
+        </Grid>
       </Grid>
     </Box>
   )
