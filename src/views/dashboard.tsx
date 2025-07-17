@@ -88,7 +88,7 @@ export default function DashboardView({
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Revenue'
+                      label='Sales'
                       value={formatCurrency(kitchenStats.totalSales)}
                     />
                   </Grid>
@@ -102,7 +102,7 @@ export default function DashboardView({
                   <Grid xs={12} md={6} lg={3}>
                     <SingleValueDisplay
                       variant='outlined'
-                      label='Avg Revenue'
+                      label='Avg Sales'
                       value={formatCurrency(kitchenStats.totalSales / kitchenStats.totalServices)}
                     />
                   </Grid>
@@ -110,7 +110,7 @@ export default function DashboardView({
                     <Grid xs={12} md={6} lg={3}>
                       <SingleValueDisplay
                         variant='outlined'
-                        label='Last Service Revenue'
+                        label='Last Service Sales'
                         value={formatCurrency(lastService.sales)}
                         growth={Math.round(lastService.salesChange * 100)}
                       />
