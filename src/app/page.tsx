@@ -1,9 +1,9 @@
 import UnauthorizedAlert from '@c/UnauthorizedAlert'
 
-import { getCheckouts } from '@/lib/checkouts'
-import { getCosts } from '@/lib/costs'
-import { getCosts as getPullTabCosts } from '@/lib/pullTabCosts'
-import { getTransaction } from '@/lib/pullTabTransactions'
+import { getCurrentYearCheckouts } from '@/lib/checkouts'
+import { getCurrentYearCosts as getCurrentYearKitchenCosts } from '@/lib/costs'
+import { getCurrentYearCosts as getCurrentYearPullTabCosts } from '@/lib/pullTabCosts'
+import { getCurrentYearTransactions } from '@/lib/pullTabTransactions'
 import { findQohGame } from '@/lib/qohGames'
 import { getServerAuthSession } from '@/util/auth'
 import DashboardView from '@/views/dashboard'
@@ -50,6 +50,7 @@ function getPullTabStats(
 ): PullTab.Stats {
   const bag = transactions.length ? transactions[transactions.length - 1].runningTotal ?? 0 : 0
   const cost = costs.reduce((sum, c) => sum + c.boxPrice, 0)
+
   const sums = transactions.reduce(
     (sums, t) => {
       return {
@@ -77,14 +78,14 @@ export default async function Home(): Promise<React.JSX.Element> {
 
   if (!session?.user) return <UnauthorizedAlert />
 
-  const kitchenCosts = await getCosts()
-  const kitchenServices = await getCheckouts()
+  const kitchenCosts = await getCurrentYearKitchenCosts()
+  const kitchenServices = await getCurrentYearCheckouts()
   const kitchenStats = getKitchenStats(kitchenCosts, kitchenServices)
 
   const qohGame = await findQohGame((g) => !g.endDate)
 
-  const pullTabCosts = await getPullTabCosts()
-  const pullTabTransactions = await getTransaction()
+  const pullTabCosts = await getCurrentYearPullTabCosts()
+  const pullTabTransactions = await getCurrentYearTransactions()
   const pullTabStats = getPullTabStats(pullTabCosts, pullTabTransactions)
 
   return (

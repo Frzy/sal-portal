@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 
-import { getNumber } from '@/util/functions'
+import { getCurrentLegionYear, getNumber } from '@/util/functions'
 
 import {
   createCostItem,
@@ -78,6 +78,15 @@ export async function getCheckoutsBy(
   filter: (item: Kitchen.Checkout.ServerItem) => boolean,
 ): Promise<Kitchen.Checkout.ServerItem[]> {
   return (await getCheckouts()).filter(filter)
+}
+export async function getCurrentYearCheckouts(): Promise<Kitchen.Checkout.ServerItem[]> {
+  const dates = getCurrentLegionYear()
+
+  return await getCheckoutsBy((item) => {
+    const created = dayjs(item.created)
+
+    return created.isAfter(dates.start) && created.isBefore(dates.end)
+  })
 }
 export async function findCheckout(
   filter: (item: Kitchen.Checkout.ServerItem) => boolean,

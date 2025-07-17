@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import { type GoogleSpreadsheetRow } from 'google-spreadsheet'
 
-import { getNumber } from '@/util/functions'
+import { getCurrentLegionYear, getNumber } from '@/util/functions'
 
 import { getGoogleSheetRows, getGoogleSheetWorkSheet } from './sheets'
 
@@ -44,6 +44,15 @@ export async function getTransactionBy(
   filter: (item: PullTab.Transaction.ServerItem) => boolean,
 ): Promise<PullTab.Transaction.ServerItem[]> {
   return (await getTransaction()).filter(filter)
+}
+export async function getCurrentYearTransactions(): Promise<PullTab.Transaction.ServerItem[]> {
+  const dates = getCurrentLegionYear()
+
+  return await getTransactionBy((item) => {
+    const created = dayjs(item.created)
+
+    return created.isAfter(dates.start) && created.isBefore(dates.end)
+  })
 }
 export async function findTransactionItem(
   filter: (item: PullTab.Transaction.ServerItem) => boolean,

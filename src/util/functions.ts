@@ -322,3 +322,12 @@ export function serverToPullTabTransactionItem(
 export function serverToPullTabCostItem(item: PullTab.Cost.ServerItem): PullTab.Cost.Item {
   return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
 }
+export function getCurrentLegionYear(): { start: Dayjs; end: Dayjs } {
+  const today = dayjs()
+  const month = today.month()
+  const year = today.year()
+  const start = dayjs(`07-01-${month >= 6 ? year : year - 1}`, 'MM-DD-YYYY').startOf('day')
+  const end = dayjs(`06-30-${month >= 6 ? year + 1 : year}`, 'MM-DD-YYYY').endOf('day')
+
+  return { start, end }
+}
