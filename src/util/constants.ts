@@ -20,7 +20,7 @@ export const LONG_TIME_FORMAT = 'MMM DD YYYY @ HH:mm'
 export const DATE_FORMAT = 'MMM DD, YYYY'
 
 // July
-export const LEGION_MONTH_START = 7
+export const LEGION_MONTH_START = 6
 
 export const OLD_SCHOOL_QOH = [
   'c76c12d9-3dfb-4ba6-980b-b32ff882b947',

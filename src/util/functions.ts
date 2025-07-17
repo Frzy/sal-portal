@@ -25,20 +25,19 @@ export function arrayFill<D = unknown>(n: number, filler: any): D[] {
   })
 }
 export function getLegionYearDatesFrom(date: Dayjs): { startDate: Dayjs; endDate: Dayjs } {
-  const year = date.year()
   const month = date.month()
-  const format = 'YYYY-M'
-  let startYear = year
-  let endYear = year
+  const year = date.year()
+  const startMonth = `${LEGION_MONTH_START + 1}`.padStart(2, '0')
+  const endMonth = LEGION_MONTH_START > 0 ? `${LEGION_MONTH_START}`.padStart(2, '0') : '12'
 
-  if (month < LEGION_MONTH_START) {
-    startYear -= 1
-  } else {
-    endYear += 1
-  }
-
-  const startDate = dayjs(`${startYear}-${LEGION_MONTH_START}`, format).startOf('month')
-  const endDate = dayjs(`${endYear}-${LEGION_MONTH_START - 1}`, format).endOf('month')
+  const startDate = dayjs(
+    `${startMonth}-01-${month >= LEGION_MONTH_START ? year : year - 1}`,
+    'MM-DD-YYYY',
+  ).startOf('month')
+  const endDate = dayjs(
+    `${endMonth}-30-${month >= LEGION_MONTH_START ? year + 1 : year}`,
+    'MM-DD-YYYY',
+  ).endOf('month')
 
   return { startDate, endDate }
 }
@@ -123,7 +122,6 @@ export function getGamesDisabledCards(game: QoH.Game.Item, cardShuffle?: number)
 
   return cards as Card.Item[]
 }
-
 export function serverToCostItem(item: Kitchen.Cost.ServerItem): Kitchen.Cost.Item {
   return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
 }
@@ -322,12 +320,6 @@ export function serverToPullTabTransactionItem(
 export function serverToPullTabCostItem(item: PullTab.Cost.ServerItem): PullTab.Cost.Item {
   return { ...item, created: dayjs(item.created), modified: dayjs(item.modified) }
 }
-export function getCurrentLegionYear(): { start: Dayjs; end: Dayjs } {
-  const today = dayjs()
-  const month = today.month()
-  const year = today.year()
-  const start = dayjs(`07-01-${month >= 6 ? year : year - 1}`, 'MM-DD-YYYY').startOf('day')
-  const end = dayjs(`06-30-${month >= 6 ? year + 1 : year}`, 'MM-DD-YYYY').endOf('day')
-
-  return { start, end }
+export function getCurrentLegionYear(): { startDate: Dayjs; endDate: Dayjs } {
+  return getLegionYearDatesFrom(dayjs())
 }

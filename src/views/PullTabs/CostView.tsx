@@ -41,7 +41,7 @@ export default function CostView({
   }, [toEdit, toDelete])
   const createCostUrl = useMemo(() => {
     const url = new URL('/pull-tabs/create/cost', window.location.origin)
-    url.searchParams.set('callbackUrl', '/pull-tabs/co')
+    url.searchParams.set('callbackUrl', '/pull-tabs/costs')
 
     return url
   }, [])

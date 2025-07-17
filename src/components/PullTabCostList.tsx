@@ -32,29 +32,16 @@ interface Filters {
 
 const columns: ListColumn<PullTab.Cost.Item>[] = [
   {
-    id: 'name',
-    label: 'Name',
-    sx: { minWidth: 75, maxWidth: 75 },
-  },
-  {
-    id: 'tabPrice',
-    label: 'Tab Price',
-    align: 'right',
-    isCurrency: true,
-    sx: { minWidth: 120 },
+    id: 'created',
+    label: 'Submited',
+    minWidth: 100,
   },
   {
     id: 'boxPrice',
-    label: 'Box Price',
+    label: 'Order Price',
     align: 'right',
     isCurrency: true,
     sx: { minWidth: 150 },
-  },
-  {
-    id: 'created',
-    label: 'Created',
-    align: 'right',
-    minWidth: 150,
   },
 ]
 const adminColumns: ListColumn<PullTab.Cost.Item>[] = [

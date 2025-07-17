@@ -10,16 +10,10 @@ import {
   DialogContent,
   type DialogProps,
   DialogTitle,
-  FormControl,
   InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
-  type SelectChangeEvent,
 } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
-import { formatCurrency } from '@/util/functions'
 import { editPullTabCost } from '@/util/requests'
 
 export interface EditPulltabCostDialogProps extends Omit<DialogProps, 'onClose'> {
@@ -39,20 +33,13 @@ export default function EditPulltabCostDialog({
     tabPrice: initItem.tabPrice,
   })
   const isFormInvalid = useMemo(() => {
-    return item.boxPrice <= 0 && item.tabPrice <= 0
+    return item.boxPrice <= 0
   }, [item])
 
   function handleNumberChange(event: React.ChangeEvent<HTMLNumericElement>): void {
     const { value, name } = event.target
 
     setItem((prev) => ({ ...prev, [name!]: typeof value === 'number' ? value : 0 }))
-  }
-
-  function handleGamePriceChange(event: SelectChangeEvent): void {
-    const { value } = event.target
-    const tabPrice = parseFloat(value)
-
-    setItem((prev) => ({ ...prev, tabPrice: isNaN(tabPrice) ? 0 : tabPrice }))
   }
 
   async function handleEditItem(): Promise<void> {
@@ -83,37 +70,6 @@ export default function EditPulltabCostDialog({
       <DialogTitle>Edit Cost Item</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
-          <Grid xs={12} md={6}>
-            <FormControl
-              fullWidth
-              disabled={loading}
-              sx={{
-                '& .MuiInputLabel-root:not(.MuiInputLabel-shrink)': {
-                  transform: 'translate(14px, 22px) scale(1.5)',
-                },
-              }}
-            >
-              <InputLabel size='normal' id='pulltab-cost-game-price-label'>
-                Tab Price
-              </InputLabel>
-              <Select
-                sx={{ '& .MuiInputBase-input': { fontSize: 32, lineHeight: '46px' } }}
-                labelId='pulltab-cost-game-price-label'
-                id='pulltab-cost-game-price'
-                value={item.tabPrice?.toString() ?? ''}
-                label='Tab Price'
-                onChange={handleGamePriceChange}
-              >
-                <MenuItem value=''>
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={'0.25'}>{formatCurrency(0.25)}</MenuItem>
-                <MenuItem value={'0.5'}>{formatCurrency(0.5)}</MenuItem>
-                <MenuItem value={'1'}>{formatCurrency(1)}</MenuItem>
-                <MenuItem value={'2'}>{formatCurrency(2)}</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
           <Grid xs={12} md={6}>
             <NumberInput
               value={item?.boxPrice ?? 0}

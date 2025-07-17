@@ -85,7 +85,7 @@ export async function getCurrentYearCheckouts(): Promise<Kitchen.Checkout.Server
   return await getCheckoutsBy((item) => {
     const created = dayjs(item.created)
 
-    return created.isAfter(dates.start) && created.isBefore(dates.end)
+    return created.isAfter(dates.startDate) && created.isBefore(dates.endDate)
   })
 }
 export async function findCheckout(

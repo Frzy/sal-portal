@@ -51,7 +51,7 @@ export async function getCurrentYearTransactions(): Promise<PullTab.Transaction.
   return await getTransactionBy((item) => {
     const created = dayjs(item.created)
 
-    return created.isAfter(dates.start) && created.isBefore(dates.end)
+    return created.isAfter(dates.startDate) && created.isBefore(dates.endDate)
   })
 }
 export async function findTransactionItem(
