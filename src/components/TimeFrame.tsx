@@ -18,7 +18,7 @@ import {
 import dayjs, { type Dayjs } from 'dayjs'
 
 import { TIME_FRAME, TIME_FRAMES } from '@/util/constants'
-import { getLegionYearDatesFrom } from '@/util/functions'
+import { getCurrentLegionYear } from '@/util/functions'
 
 export interface TimeFrameValue {
   value: TIME_FRAME
@@ -54,7 +54,7 @@ export function getTimeFrameStartEndDate(
       return { startDate, endDate }
     }
     case TIME_FRAME.LEGION_YEAR:
-      return getLegionYearDatesFrom(dayjs())
+      return getCurrentLegionYear()
     default: {
       return { startDate: minDate, endDate }
     }

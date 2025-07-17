@@ -3,12 +3,15 @@
 import { useMemo, useState } from 'react'
 
 import SingleValueDisplay from '@c/SingleValueDisplay'
-import { Box, Paper, Typography } from '@mui/material'
+import TimeFrame, { type TimeFrameValue } from '@c/TimeFrame'
+import { Box, Paper, Stack, Typography } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
 
+import { TIME_FRAME } from '@/util/constants'
 import {
   formatCurrency,
   formatPercent,
+  getCurrentLegionYear,
   serverToCheckoutItem,
   serverToCostItem,
 } from '@/util/functions'
@@ -21,8 +24,33 @@ export default function KitchenAnalyticsView({
   costs: serverCosts,
   checkouts: serverCheckouts,
 }: KitchenAnalyticsViewProps): React.JSX.Element {
-  const [costs] = useState(serverCosts.map(serverToCostItem))
-  const [checkouts] = useState(serverCheckouts.map(serverToCheckoutItem))
+  const data = useMemo(() => {
+    return {
+      costs: serverCosts.map(serverToCostItem),
+      checkouts: serverCheckouts.map(serverToCheckoutItem),
+    }
+  }, [serverCosts, serverCheckouts])
+  const [timeFrame, setTimeframe] = useState<TimeFrameValue>({
+    value: TIME_FRAME.LEGION_YEAR,
+    ...getCurrentLegionYear(),
+  })
+
+  const costs = useMemo(() => {
+    if (timeFrame.value === TIME_FRAME.ALL) return data.costs
+
+    return data.costs.filter((c) => {
+      return c.created.isAfter(timeFrame.startDate) && c.created.isBefore(timeFrame.endDate)
+    })
+  }, [data, timeFrame])
+
+  const checkouts = useMemo(() => {
+    if (timeFrame.value === TIME_FRAME.ALL) return data.checkouts
+
+    return data.checkouts.filter((c) => {
+      return c.created.isAfter(timeFrame.startDate) && c.created.isBefore(timeFrame.endDate)
+    })
+  }, [data, timeFrame])
+
   const stats = useMemo<Kitchen.Stats>(() => {
     const checkoutStats = checkouts.reduce(
       (stats, c) => {
@@ -60,7 +88,16 @@ export default function KitchenAnalyticsView({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Paper sx={{ p: 2 }}>
-        <Typography variant='h3'>Kitchen Analytics</Typography>
+        <Stack spacing={2}>
+          <Typography variant='h4'>Kitchen Analytics</Typography>
+          <TimeFrame
+            id='kitchen-analytics-timeframe'
+            value={timeFrame.value}
+            onChange={(timeFrame) => {
+              setTimeframe(timeFrame)
+            }}
+          />
+        </Stack>
       </Paper>
       <Grid container spacing={2}>
         <Grid xs={12} sm={6} lg={3}>
@@ -79,7 +116,7 @@ export default function KitchenAnalyticsView({
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
-            label='Revenue'
+            label='Sales'
             value={formatCurrency(stats.totalSales)}
             valueProps={{
               sx: {
@@ -127,12 +164,12 @@ export default function KitchenAnalyticsView({
         </Grid>
         <Grid xs={12}>
           <Paper sx={{ p: 1 }}>
-            <Typography variant='h4'>Service</Typography>
+            <Typography variant='h4'>Average Per Service</Typography>
           </Paper>
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
-            label='Revenue'
+            label='Sales'
             value={formatCurrency(stats.totalSales / stats.totalServices)}
           />
         </Grid>
