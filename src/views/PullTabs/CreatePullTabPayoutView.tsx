@@ -66,13 +66,13 @@ export default function CreatePullTabPayoutView({
 
     if (!response?.length) {
       const event = new CustomEvent<INotification>('notify', {
-        detail: { message: `Failed to create pull tab payout entry.`, severity: 'error' },
+        detail: { message: `Failed to create pulltab payout entry.`, severity: 'error' },
       })
 
       dispatchEvent(event)
     } else {
       const event = new CustomEvent<INotification>('notify', {
-        detail: { message: `Successfully created pull tab payout entry.`, severity: 'success' },
+        detail: { message: `Successfully created pulltab payout entry.`, severity: 'success' },
       })
 
       dispatchEvent(event)
@@ -91,7 +91,7 @@ export default function CreatePullTabPayoutView({
   return (
     <Stack spacing={1}>
       <Paper sx={{ p: 1 }}>
-        <Typography variant='h4'>Pull Tab Payout</Typography>
+        <Typography variant='h4'>Pulltab Payout</Typography>
       </Paper>
       <Paper sx={{ p: 1 }}>
         <Stack spacing={2}>
@@ -101,7 +101,7 @@ export default function CreatePullTabPayoutView({
             variant='outlined'
           />
           <Typography>
-            Please enter the amount paid out for the pull tabs that have been collected. The total
+            Please enter the amount paid out for the pulltabs that have been collected. The total
             above will reflect your current changes.
           </Typography>
           <NumberInput

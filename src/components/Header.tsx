@@ -7,7 +7,6 @@ import AnalyticsIcon from '@mui/icons-material/Analytics'
 import CostIcon from '@mui/icons-material/AttachMoney'
 import MenuIcon from '@mui/icons-material/Fastfood'
 import UsersIcon from '@mui/icons-material/Group'
-import InsightsIcon from '@mui/icons-material/Insights'
 import PullTabIcon from '@mui/icons-material/LocalActivity'
 import LogoutIcon from '@mui/icons-material/Logout'
 import DrawerMenuIcon from '@mui/icons-material/Menu'
@@ -198,15 +197,15 @@ export default function Header(): React.JSX.Element {
                 color: (theme) => theme.vars.palette.primary.contrastText,
               }}
             >
-              Pull Tabs
+              Pulltabs
             </ListSubheader>
             <Divider />
             <ListItem disablePadding>
-              <ListItemButton>
+              <ListItemButton href='/pull-tabs/analytics' onClick={handleDrawerClose}>
                 <ListItemIcon>
-                  <InsightsIcon />
+                  <AnalyticsIcon />
                 </ListItemIcon>
-                <ListItemText primary='Summary' />
+                <ListItemText primary='Analytics' />
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>

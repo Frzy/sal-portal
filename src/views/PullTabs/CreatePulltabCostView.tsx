@@ -49,7 +49,7 @@ export default function CreatePullTabCostView({
     if (!response?.length) {
       const event = new CustomEvent<INotification>('notify', {
         detail: {
-          message: 'Failed to create pull tab cost entry.',
+          message: 'Failed to create pulltab cost entry.',
           severity: 'error',
         },
       })
@@ -58,7 +58,7 @@ export default function CreatePullTabCostView({
     } else {
       const event = new CustomEvent<INotification>('notify', {
         detail: {
-          message: 'Successfully created pull tab cost entry.',
+          message: 'Successfully created pulltab cost entry.',
           severity: 'success',
         },
       })
@@ -79,7 +79,7 @@ export default function CreatePullTabCostView({
   return (
     <Stack spacing={1}>
       <Paper sx={{ p: 1 }}>
-        <Typography variant='h4'>Add Pull Tab Costs</Typography>
+        <Typography variant='h4'>Add Pulltab Costs</Typography>
       </Paper>
       <Paper sx={{ p: 1 }}>
         <Grid container spacing={2}>
@@ -87,7 +87,7 @@ export default function CreatePullTabCostView({
             <NumberInput
               value={item?.boxPrice ?? 0}
               disabled={loading}
-              label='Pull Tab Price'
+              label='Pulltab Price'
               onChange={(event) => {
                 const { value } = event.target
 

@@ -12,6 +12,7 @@ import {
   formatCurrency,
   formatPercent,
   getCurrentLegionYear,
+  getKitchenStats,
   serverToCheckoutItem,
   serverToCostItem,
 } from '@/util/functions'
@@ -34,7 +35,6 @@ export default function KitchenAnalyticsView({
     value: TIME_FRAME.LEGION_YEAR,
     ...getCurrentLegionYear(),
   })
-
   const costs = useMemo(() => {
     if (timeFrame.value === TIME_FRAME.ALL) return data.costs
 
@@ -42,7 +42,6 @@ export default function KitchenAnalyticsView({
       return c.created.isAfter(timeFrame.startDate) && c.created.isBefore(timeFrame.endDate)
     })
   }, [data, timeFrame])
-
   const checkouts = useMemo(() => {
     if (timeFrame.value === TIME_FRAME.ALL) return data.checkouts
 
@@ -50,39 +49,8 @@ export default function KitchenAnalyticsView({
       return c.created.isAfter(timeFrame.startDate) && c.created.isBefore(timeFrame.endDate)
     })
   }, [data, timeFrame])
-
   const stats = useMemo<Kitchen.Stats>(() => {
-    const checkoutStats = checkouts.reduce(
-      (stats, c) => {
-        return {
-          ...stats,
-          totalDeposits: stats.totalDeposits + c.deposit,
-          totalSales: stats.totalSales + c.sales,
-          totalDrinkChips: stats.totalDrinkChips + c.drinkChips,
-          totalOrders: stats.totalOrders + c.totalOrders,
-          totalServices: stats.totalServices + 1,
-        }
-      },
-      {
-        totalDeposits: 0,
-        totalSales: 0,
-        totalDrinkChips: 0,
-        totalOrders: 0,
-        totalServices: 0,
-      },
-    )
-    const totalCost = costs.reduce((sum, c) => sum + c.amount, 0)
-    const netProfit = checkoutStats.totalSales - totalCost
-    const netProfitMargin = checkoutStats.totalSales ? netProfit / checkoutStats.totalSales : 0
-    const profitPercent = totalCost ? netProfit / totalCost : 0
-
-    return {
-      ...checkoutStats,
-      totalCost,
-      profitPercent,
-      netProfit,
-      netProfitMargin,
-    }
+    return getKitchenStats(costs, checkouts)
   }, [costs, checkouts])
 
   return (

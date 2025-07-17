@@ -372,10 +372,17 @@ declare global {
   namespace PullTab {
     interface Stats {
       bag: number
-      cost: number
-      deposit: number
-      machine: number
-      payout: number
+      totalTabCosts: number
+      totalCosts: number
+      totalDeposits: number
+      totalSales: number
+      totalPayouts: number
+      numOfDeposits: number
+      numOfPayouts: number
+      numOfCosts: number
+      netProfit: number
+      netProfitMargin: number
+      profitPercent: number
     }
   }
   namespace PullTab.Transaction {

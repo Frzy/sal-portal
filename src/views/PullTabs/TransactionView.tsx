@@ -33,18 +33,18 @@ export default function TransactionView({
     return (
       <Alert severity='info'>
         <Typography paragraph>
-          No Pull Tab Transactions found. Use the actions below to create some.
+          No Pulltab Transactions found. Use the actions below to create some.
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button href={createPayoutUrl.toString()} variant='outlined' sx={{ textAlign: 'center' }}>
-            Create Pull Tab Payout
+            Create Pulltab Payout
           </Button>
           <Button
             href={createTransactionUrl.toString()}
             variant='outlined'
             sx={{ textAlign: 'center' }}
           >
-            Create Pull Tab Transaction
+            Create Pulltab Transaction
           </Button>
         </Box>
       </Alert>

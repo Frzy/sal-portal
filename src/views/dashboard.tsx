@@ -55,20 +55,23 @@ export default function DashboardView({
           sx={{ mb: 1 }}
         >
           <Tab icon={<KitchenIcon />} label='Kitchen' value='kitchen' />
-          <Tab icon={<PullTabIcon />} label='Pull Tabs' value='pullTabs' />
+          <Tab icon={<PullTabIcon />} label='Pulltabs' value='pullTabs' />
           <Tab icon={<PlayingCardsIcon />} label='Queen' value='queen' />
         </TabList>
-        <Alert severity='info'>
-          <Typography>
-            Data calculated from data between {legionDates.startDate.format('MMMM YYYY')} to{' '}
-            {legionDates.endDate.format('MMMM YYYY')}
-          </Typography>
-        </Alert>
         <TabPanel value='kitchen' sx={{ p: 0 }}>
           <Paper sx={{ p: 1 }}>
             <Grid container spacing={1}>
               <Grid xs={12}>
                 <Typography variant='h4'>Kitchen</Typography>
+              </Grid>
+              <Grid xs={12}>
+                <Alert severity='info' sx={{ mb: 1 }}>
+                  <Typography>
+                    Stats have been calculated from data gathered between{' '}
+                    {legionDates.startDate.format('MMMM YYYY')} through{' '}
+                    {legionDates.endDate.format('MMMM YYYY')}
+                  </Typography>
+                </Alert>
               </Grid>
               {kitchenStats ? (
                 <Fragment>
@@ -137,7 +140,16 @@ export default function DashboardView({
           <Paper sx={{ p: 1 }}>
             <Grid container spacing={1}>
               <Grid xs={12}>
-                <Typography variant='h4'>Pull Tabs</Typography>
+                <Typography variant='h4'>Pulltabs</Typography>
+              </Grid>
+              <Grid xs={12}>
+                <Alert severity='info' sx={{ mb: 1 }}>
+                  <Typography>
+                    Stats have been calculated from data gathered between{' '}
+                    {legionDates.startDate.format('MMMM YYYY')} through{' '}
+                    {legionDates.endDate.format('MMMM YYYY')}
+                  </Typography>
+                </Alert>
               </Grid>
               {pullTabStats ? (
                 <Fragment>
@@ -148,39 +160,53 @@ export default function DashboardView({
                       value={formatCurrency(pullTabStats.bag)}
                     />
                   </Grid>
-                  <Grid xs={12} md={6} lg={3}>
+                  <Grid xs={12} sm={6} lg={3}>
                     <SingleValueDisplay
+                      label='Net Profit'
                       variant='outlined'
-                      label='Profit'
-                      value={formatCurrency(pullTabStats.deposit - pullTabStats.cost)}
+                      value={formatCurrency(pullTabStats.totalSales - pullTabStats.totalCosts)}
                     />
                   </Grid>
-                  <Grid xs={12} md={6} lg={3}>
+                  <Grid xs={12} sm={6} lg={3}>
                     <SingleValueDisplay
+                      label='Sales'
                       variant='outlined'
-                      label='Machine Revenue'
-                      value={formatCurrency(pullTabStats.machine)}
+                      value={formatCurrency(pullTabStats.totalSales)}
                     />
                   </Grid>
-                  <Grid xs={12} md={6} lg={3}>
+                  <Grid xs={12} sm={6} lg={3}>
                     <SingleValueDisplay
-                      variant='outlined'
-                      label='Winner Payouts'
-                      value={formatCurrency(Math.abs(pullTabStats.payout))}
-                    />
-                  </Grid>
-                  <Grid xs={12} md={6} lg={3}>
-                    <SingleValueDisplay
-                      variant='outlined'
-                      label='Costs'
-                      value={formatCurrency(pullTabStats.cost)}
-                    />
-                  </Grid>
-                  <Grid xs={12} md={6} lg={3}>
-                    <SingleValueDisplay
-                      variant='outlined'
                       label='Deposits'
-                      value={formatCurrency(pullTabStats.deposit)}
+                      variant='outlined'
+                      value={formatCurrency(pullTabStats.totalDeposits)}
+                    />
+                  </Grid>
+                  <Grid xs={12} sm={6} lg={3}>
+                    <SingleValueDisplay
+                      label='Payouts'
+                      variant='outlined'
+                      value={formatCurrency(pullTabStats.totalPayouts)}
+                    />
+                  </Grid>
+                  <Grid xs={12} sm={6} lg={3}>
+                    <SingleValueDisplay
+                      label='Box Costs'
+                      variant='outlined'
+                      value={formatCurrency(pullTabStats.totalTabCosts)}
+                    />
+                  </Grid>
+                  <Grid xs={12} sm={6} lg={3}>
+                    <SingleValueDisplay
+                      label='Net Profit %'
+                      variant='outlined'
+                      value={formatPercent(pullTabStats.profitPercent)}
+                    />
+                  </Grid>
+                  <Grid xs={12} sm={6} lg={3}>
+                    <SingleValueDisplay
+                      label='Net Profit Margin'
+                      variant='outlined'
+                      value={formatPercent(pullTabStats.netProfitMargin)}
                     />
                   </Grid>
                 </Fragment>
@@ -233,7 +259,7 @@ export default function DashboardView({
                   {!!qohGame.entries[qohGame.entries.length - 1] && (
                     <Grid xs={12} md={6} lg={3}>
                       <SingleValueDisplay
-                        label='Last Drawing Revenue'
+                        label='Last Drawing Sales'
                         value={formatCurrency(
                           qohGame.entries[qohGame.entries.length - 1].ticketSales,
                         )}

@@ -79,11 +79,11 @@ export default function CostView({
     return (
       <Alert severity='info'>
         <Typography paragraph>
-          No Pull Tab Costs found. Use the actions below to create some.
+          No Pulltab Costs found. Use the actions below to create some.
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button href={createCostUrl.toString()} variant='outlined' sx={{ textAlign: 'center' }}>
-            Create Pull Tab Cost
+            Create Pulltab Cost
           </Button>
         </Box>
       </Alert>

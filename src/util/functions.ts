@@ -323,3 +323,84 @@ export function serverToPullTabCostItem(item: PullTab.Cost.ServerItem): PullTab.
 export function getCurrentLegionYear(): { startDate: Dayjs; endDate: Dayjs } {
   return getLegionYearDatesFrom(dayjs())
 }
+
+export function getKitchenStats(
+  costs: Kitchen.Cost.ServerItem[] | Kitchen.Cost.Item[],
+  checkouts: Kitchen.Checkout.ServerItem[] | Kitchen.Checkout.Item[],
+): Kitchen.Stats {
+  const checkoutStats = checkouts.reduce(
+    (stats, c) => {
+      return {
+        ...stats,
+        totalDeposits: stats.totalDeposits + c.deposit,
+        totalSales: stats.totalSales + c.sales,
+        totalDrinkChips: stats.totalDrinkChips + c.drinkChips,
+        totalOrders: stats.totalOrders + c.orders.reduce((sum, o) => sum + o.menuItemQuantity, 0),
+        totalServices: stats.totalServices + 1,
+      }
+    },
+    {
+      totalDeposits: 0,
+      totalSales: 0,
+      totalDrinkChips: 0,
+      totalOrders: 0,
+      totalServices: 0,
+    },
+  )
+  const totalCost = costs.reduce((sum, c) => sum + c.amount, 0)
+  const netProfit = checkoutStats.totalSales - totalCost
+  const netProfitMargin = checkoutStats.totalSales ? netProfit / checkoutStats.totalSales : 0
+  const profitPercent = totalCost ? netProfit / totalCost : 0
+
+  return {
+    ...checkoutStats,
+    totalCost,
+    profitPercent,
+    netProfit,
+    netProfitMargin,
+  }
+}
+
+export function getPullTabStats(
+  costs: PullTab.Cost.ServerItem[] | PullTab.Cost.Item[],
+  transactions: PullTab.Transaction.ServerItem[] | PullTab.Transaction.Item[],
+): PullTab.Stats {
+  const bag = transactions.length ? transactions[transactions.length - 1].runningTotal ?? 0 : 0
+  const totalTabCosts = costs.reduce((sum, c) => sum + c.boxPrice, 0)
+
+  const sums = transactions.reduce(
+    (sums, t) => {
+      return {
+        ...sums,
+        totalDeposits: sums.totalDeposits + (t.type === 'BankDeposit' ? t.amount : 0),
+        totalSales: sums.totalSales + (t.type === 'MachineWithdrawal' ? t.amount : 0),
+        totalPayouts: sums.totalPayouts + (t.type === 'TabPayout' ? Math.abs(t.amount) : 0),
+        totalCosts: sums.totalCosts + (t.type === 'TabPayout' ? Math.abs(t.amount) : 0),
+        numOfDeposits: t.type === 'BankDeposit' ? sums.numOfDeposits + 1 : sums.numOfDeposits,
+        numOfPayouts: t.type === 'BankDeposit' ? sums.numOfPayouts + 1 : sums.numOfPayouts,
+      }
+    },
+    {
+      totalDeposits: 0,
+      totalSales: 0,
+      totalCosts: totalTabCosts,
+      totalPayouts: 0,
+      numOfDeposits: 0,
+      numOfPayouts: 0,
+    },
+  )
+
+  const netProfit = sums.totalSales - sums.totalCosts
+  const netProfitMargin = sums.totalSales ? netProfit / sums.totalSales : 0
+  const profitPercent = sums.totalCosts ? netProfit / sums.totalCosts : 0
+
+  return {
+    bag,
+    totalTabCosts,
+    numOfCosts: costs.length,
+    ...sums,
+    netProfit,
+    netProfitMargin,
+    profitPercent,
+  }
+}

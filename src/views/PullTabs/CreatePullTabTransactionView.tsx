@@ -86,14 +86,14 @@ export default function CreatePullTabTransactionView({
 
     if (!response?.length) {
       const event = new CustomEvent<INotification>('notify', {
-        detail: { message: `Failed to create pull tab transaction.`, severity: 'error' },
+        detail: { message: `Failed to create pulltab transaction.`, severity: 'error' },
       })
 
       dispatchEvent(event)
     } else {
       const event = new CustomEvent<INotification>('notify', {
         detail: {
-          message: `Successfully created pull tab transaction.`,
+          message: `Successfully created pulltab transaction.`,
           severity: 'success',
         },
       })
@@ -135,7 +135,7 @@ export default function CreatePullTabTransactionView({
         </Grid>
         <Grid xs={12}>
           <Typography>
-            Please fill out the the values below to calculate how the pull tab withdrawal will be
+            Please fill out the the values below to calculate how the pulltab withdrawal will be
             broken down.
           </Typography>
         </Grid>

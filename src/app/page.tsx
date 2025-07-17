@@ -6,72 +6,8 @@ import { getCurrentYearCosts as getCurrentYearPullTabCosts } from '@/lib/pullTab
 import { getCurrentYearTransactions } from '@/lib/pullTabTransactions'
 import { findQohGame } from '@/lib/qohGames'
 import { getServerAuthSession } from '@/util/auth'
+import { getKitchenStats, getPullTabStats } from '@/util/functions'
 import DashboardView from '@/views/dashboard'
-
-function getKitchenStats(
-  costs: Kitchen.Cost.ServerItem[],
-  checkouts: Kitchen.Checkout.ServerItem[],
-): Kitchen.Stats {
-  const checkoutStats = checkouts.reduce(
-    (stats, c) => {
-      return {
-        ...stats,
-        totalDeposits: stats.totalDeposits + c.deposit,
-        totalSales: stats.totalSales + c.sales,
-        totalDrinkChips: stats.totalDrinkChips + c.drinkChips,
-        totalOrders: stats.totalOrders + c.orders.reduce((sum, o) => sum + o.menuItemQuantity, 0),
-        totalServices: stats.totalServices + 1,
-      }
-    },
-    {
-      totalDeposits: 0,
-      totalSales: 0,
-      totalDrinkChips: 0,
-      totalOrders: 0,
-      totalServices: 0,
-    },
-  )
-  const totalCost = costs.reduce((sum, c) => sum + c.amount, 0)
-  const netProfit = checkoutStats.totalSales - totalCost
-  const netProfitMargin = checkoutStats.totalSales ? netProfit / checkoutStats.totalSales : 0
-  const profitPercent = totalCost ? netProfit / totalCost : 0
-
-  return {
-    ...checkoutStats,
-    totalCost,
-    profitPercent,
-    netProfit,
-    netProfitMargin,
-  }
-}
-function getPullTabStats(
-  costs: PullTab.Cost.ServerItem[],
-  transactions: PullTab.Transaction.ServerItem[],
-): PullTab.Stats {
-  const bag = transactions.length ? transactions[transactions.length - 1].runningTotal ?? 0 : 0
-  const cost = costs.reduce((sum, c) => sum + c.boxPrice, 0)
-
-  const sums = transactions.reduce(
-    (sums, t) => {
-      return {
-        deposit: sums.deposit + (t.type === 'BankDeposit' ? t.amount : 0),
-        machine: sums.machine + (t.type === 'MachineWithdrawal' ? t.amount : 0),
-        payout: sums.payout + (t.type === 'TabPayout' ? t.amount : 0),
-      }
-    },
-    {
-      deposit: 0,
-      machine: 0,
-      payout: 0,
-    },
-  )
-
-  return {
-    bag,
-    cost,
-    ...sums,
-  }
-}
 
 export default async function Home(): Promise<React.JSX.Element> {
   const session = await getServerAuthSession()

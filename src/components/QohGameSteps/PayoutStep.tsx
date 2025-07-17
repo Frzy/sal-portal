@@ -54,13 +54,10 @@ export default function PayoutsStep({
 
   return (
     <Stack spacing={2}>
-      {game.createSeed ? (
-        <Typography>
-          Set up how the seed and jackpot will be calculated from the total revenue.
-        </Typography>
-      ) : (
-        <Typography>Set up how the jackpot will be calculated from the total revenue.</Typography>
-      )}
+      <Typography>
+        Set up how the {game.createSeed ? 'seed and jackpot' : 'jackpot'} will be calculated from
+        the total ticket sales.
+      </Typography>
 
       <Grid container spacing={2}>
         {game.createSeed && (
