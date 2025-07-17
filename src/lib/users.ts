@@ -45,12 +45,14 @@ export async function getValidatedUser(
   const { username, password } = credentials
 
   const user = await findGoogleUserRow((r) => {
-    const passwordHash: string = r.get('password')
-
-    return r.get('username') === username && bcrypt.compareSync(password, passwordHash)
+    return r.get('username') === username
   })
 
-  if (user) return userMapper(user)
+  if (user) {
+    const passwordMatch = await bcrypt.compare(password, user.get('password') as string)
+
+    return passwordMatch ? userMapper(user) : undefined
+  }
 }
 export async function validateOldPassword(userId: string, oldPassword: string): Promise<boolean> {
   const googleUser = await findGoogleUserRow((r) => r.get('id') === userId)
