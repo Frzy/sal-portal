@@ -7,7 +7,6 @@ import SingleValueDisplay from '@c/SingleValueDisplay'
 import MoneyIcon from '@mui/icons-material/AttachMoney'
 import { LoadingButton } from '@mui/lab'
 import {
-  Box,
   InputAdornment,
   Paper,
   Stack,
@@ -39,7 +38,7 @@ export default function CreatePullTabPayoutView({
 }: CreatePullTabPayoutViewProps): React.JSX.Element {
   const router = useRouter()
   const payouts = useMemo(() => {
-    return serverPayouts.map(serverToPullTabTransactionItem)
+    return serverPayouts.map(serverToPullTabTransactionItem).reverse()
   }, [serverPayouts])
   const [payload, setPayload] = useState<PullTab.Transaction.Payload>({
     payout: 0,
@@ -123,15 +122,17 @@ export default function CreatePullTabPayoutView({
               ),
             }}
           />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <LoadingButton
-              loading={loading}
-              disabled={(payload?.payout ?? 0) <= 0}
-              onClick={handleCreatePullTabPayout}
-            >
-              Submit
-            </LoadingButton>
-          </Box>
+
+          <LoadingButton
+            loading={loading}
+            disabled={(payload?.payout ?? 0) <= 0}
+            onClick={handleCreatePullTabPayout}
+            size='large'
+            variant='outlined'
+            fullWidth
+          >
+            Submit
+          </LoadingButton>
         </Stack>
       </Paper>
 
@@ -142,9 +143,10 @@ export default function CreatePullTabPayoutView({
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Created</TableCell>
+                  <TableCell sx={{ minWidth: 150 }}>Created</TableCell>
                   <TableCell align='right'>Amount</TableCell>
                   <TableCell align='right'>Bag</TableCell>
+                  <TableCell align='right'>Created By</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -162,6 +164,9 @@ export default function CreatePullTabPayoutView({
                       <Typography>
                         {row.runningTotal == null ? '--' : formatCurrency(row.runningTotal)}
                       </Typography>
+                    </TableCell>
+                    <TableCell align='right'>
+                      <Typography>{row.createdBy}</Typography>
                     </TableCell>
                   </TableRow>
                 ))}
