@@ -175,6 +175,12 @@ export default function KitchenAnalyticsView({
         </Grid>
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay
+            label='Profit'
+            value={formatCurrency(stats.netProfit / stats.totalServices)}
+          />
+        </Grid>
+        <Grid xs={12} sm={6} lg={3}>
+          <SingleValueDisplay
             label='Costs'
             value={formatCurrency(stats.totalCost / stats.totalServices)}
           />
