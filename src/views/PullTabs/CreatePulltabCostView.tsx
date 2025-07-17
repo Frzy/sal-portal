@@ -3,20 +3,11 @@
 import { useMemo, useState } from 'react'
 
 import NumberInput from '@c/NumberInput'
-import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart'
 import MoneyIcon from '@mui/icons-material/AttachMoney'
-import RemoveIcon from '@mui/icons-material/Remove'
 import { LoadingButton } from '@mui/lab'
 import {
-  Button,
-  FormControl,
-  IconButton,
   InputAdornment,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
-  type SelectChangeEvent,
   Stack,
   Table,
   TableBody,
@@ -45,48 +36,20 @@ export default function CreatePullTabCostView({
 }: CreatePullTabCostViewProps): React.JSX.Element {
   const router = useRouter()
   const costs = useMemo(() => {
-    return serverCosts.map(serverToPullTabCostItem)
+    return serverCosts.map(serverToPullTabCostItem).reverse()
   }, [serverCosts])
-  const [payload, setPayload] = useState<PullTab.Cost.Payload[]>([])
-  const payloadTotal = useMemo(() => {
-    return payload.reduce((cur, next) => {
-      return cur + next.boxPrice
-    }, 0)
-  }, [payload])
   const [loading, setLoading] = useState(false)
-  const [item, setItem] = useState<Partial<PullTab.Cost.Payload>>({})
-
-  function handleGamePriceChange(event: SelectChangeEvent): void {
-    const { value } = event.target
-    const tabPrice = parseFloat(value)
-    setItem((prev) => ({ ...prev, tabPrice: isNaN(tabPrice) ? undefined : tabPrice }))
-  }
-  function handleAddItem(): void {
-    const { boxPrice, tabPrice } = item
-    if (boxPrice && tabPrice) {
-      setPayload((prev) => [...prev, { boxPrice, tabPrice }])
-      setItem({})
-    }
-  }
-  function handleRemovePayload(index: number): () => void {
-    return () => {
-      const newPayload = [...payload]
-
-      newPayload.splice(index, 1)
-
-      setPayload(newPayload)
-    }
-  }
+  const [item, setItem] = useState<PullTab.Cost.Payload>({ tabPrice: 0, boxPrice: 0 })
 
   async function handleCreatePullTabCosts(): Promise<void> {
     setLoading(true)
-
+    const payload = [{ ...item } satisfies PullTab.Cost.Payload]
     const response = await createPullTabCosts(payload)
 
     if (!response?.length) {
       const event = new CustomEvent<INotification>('notify', {
         detail: {
-          message: `Failed to create pull tab cost ${payload.length > 1 ? 'entries' : 'entry'}.`,
+          message: 'Failed to create pull tab cost entry.',
           severity: 'error',
         },
       })
@@ -95,7 +58,7 @@ export default function CreatePullTabCostView({
     } else {
       const event = new CustomEvent<INotification>('notify', {
         detail: {
-          message: `Successfully created pull tab payout cost ${payload.length > 1 ? 'entries' : 'entry'}.`,
+          message: 'Successfully created pull tab cost entry.',
           severity: 'success',
         },
       })
@@ -121,41 +84,10 @@ export default function CreatePullTabCostView({
       <Paper sx={{ p: 1 }}>
         <Grid container spacing={2}>
           <Grid xs={12} md>
-            <FormControl
-              fullWidth
-              disabled={loading}
-              sx={{
-                '& .MuiInputLabel-root:not(.MuiInputLabel-shrink)': {
-                  transform: 'translate(14px, 22px) scale(1.5)',
-                },
-              }}
-            >
-              <InputLabel size='normal' id='pulltab-cost-game-price-label'>
-                Tab Price
-              </InputLabel>
-              <Select
-                sx={{ '& .MuiInputBase-input': { fontSize: 32, lineHeight: '46px' } }}
-                labelId='pulltab-cost-game-price-label'
-                id='pulltab-cost-game-price'
-                value={item.tabPrice?.toString() ?? ''}
-                label='Tab Price'
-                onChange={handleGamePriceChange}
-              >
-                <MenuItem value=''>
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={'0.25'}>{formatCurrency(0.25)}</MenuItem>
-                <MenuItem value={'0.5'}>{formatCurrency(0.5)}</MenuItem>
-                <MenuItem value={'1'}>{formatCurrency(1)}</MenuItem>
-                <MenuItem value={'2'}>{formatCurrency(2)}</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid xs={12} md>
             <NumberInput
               value={item?.boxPrice ?? 0}
               disabled={loading}
-              label='Box Price'
+              label='Pull Tab Price'
               onChange={(event) => {
                 const { value } = event.target
 
@@ -172,77 +104,20 @@ export default function CreatePullTabCostView({
               fullWidth
             />
           </Grid>
-          <Grid xs={12} md='auto'>
-            <Button
+
+          <Grid xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <LoadingButton
+              loading={loading}
+              onClick={handleCreatePullTabCosts}
               variant='outlined'
-              startIcon={<AddShoppingCartIcon />}
               size='large'
               sx={{ height: '100%' }}
               fullWidth
-              disabled={loading || !item.boxPrice || !item.tabPrice}
-              onClick={handleAddItem}
+              disabled={loading || !item.boxPrice}
             >
-              Add
-            </Button>
+              Submit
+            </LoadingButton>
           </Grid>
-          {!!payload.length && (
-            <Grid xs={12}>
-              <TableContainer component={Paper} variant='outlined'>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Tab Price ($)</TableCell>
-                      <TableCell align='right'>Box Price ($)</TableCell>
-                      <TableCell align='right' />
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {payload.map((row, index) => (
-                      <TableRow
-                        key={index}
-                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                      >
-                        <TableCell component='th' scope='row' sx={{ width: 120 }}>
-                          {formatCurrency(row.tabPrice)}
-                        </TableCell>
-                        <TableCell align='right'>{formatCurrency(row.boxPrice)}</TableCell>
-                        <TableCell align='right' sx={{ width: 70 }}>
-                          <IconButton
-                            onClick={handleRemovePayload(index)}
-                            size='small'
-                            color='secondary'
-                            sx={{ display: { xs: 'inherit', sm: 'none' } }}
-                          >
-                            <RemoveIcon />
-                          </IconButton>
-                          <Button
-                            sx={{ display: { xs: 'none', sm: 'inherit' } }}
-                            onClick={handleRemovePayload(index)}
-                          >
-                            Remove
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                      <TableCell component='th' scope='row' sx={{ width: 120 }}>
-                        Total
-                      </TableCell>
-                      <TableCell align='right'>{formatCurrency(payloadTotal)}</TableCell>
-                      <TableCell align='right' sx={{ width: 70 }} />
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Grid>
-          )}
-          {!!payload.length && (
-            <Grid xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <LoadingButton loading={loading} onClick={handleCreatePullTabCosts}>
-                Submit
-              </LoadingButton>
-            </Grid>
-          )}
         </Grid>
       </Paper>
       {!!costs.length && (
@@ -253,8 +128,8 @@ export default function CreatePullTabCostView({
               <TableHead>
                 <TableRow>
                   <TableCell>Created</TableCell>
-                  <TableCell align='right'>Tab Price</TableCell>
-                  <TableCell align='right'>Box Price</TableCell>
+                  <TableCell align='right'>Price ($)</TableCell>
+                  <TableCell align='right'>Created By</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -266,10 +141,10 @@ export default function CreatePullTabCostView({
                       </Tooltip>
                     </TableCell>
                     <TableCell align='right'>
-                      <Typography>{formatCurrency(row.tabPrice)}</Typography>
+                      <Typography>{formatCurrency(row.boxPrice)}</Typography>
                     </TableCell>
                     <TableCell align='right'>
-                      <Typography>{formatCurrency(row.boxPrice)}</Typography>
+                      <Typography>{row.createdBy}</Typography>
                     </TableCell>
                   </TableRow>
                 ))}
