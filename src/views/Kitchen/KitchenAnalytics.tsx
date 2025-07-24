@@ -68,8 +68,6 @@ export default function KitchenAnalyticsView({
     }
   }, [timeFrame, data.checkouts])
 
-  console.log({ time })
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Paper sx={{ p: 2 }}>
