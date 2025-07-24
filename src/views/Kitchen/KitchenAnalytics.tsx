@@ -6,6 +6,7 @@ import SingleValueDisplay from '@c/SingleValueDisplay'
 import TimeFrame, { type TimeFrameValue } from '@c/TimeFrame'
 import { Box, Paper, Stack, Typography } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2/Grid2'
+import dayjs from 'dayjs'
 
 import { TIME_FRAME } from '@/util/constants'
 import {
@@ -52,6 +53,22 @@ export default function KitchenAnalyticsView({
   const stats = useMemo<Kitchen.Stats>(() => {
     return getKitchenStats(costs, checkouts)
   }, [costs, checkouts])
+  const time = useMemo(() => {
+    const today = dayjs()
+    const endDate = timeFrame.endDate.isAfter(today) ? today : timeFrame.endDate
+    const startDate = timeFrame.startDate.isBefore(data.checkouts[0].created)
+      ? data.checkouts[0].created
+      : timeFrame.startDate
+
+    return {
+      years: endDate.diff(startDate, 'years'),
+      months: endDate.diff(startDate, 'months'),
+      weeks: endDate.diff(startDate, 'weeks'),
+      days: endDate.diff(startDate, 'days'),
+    }
+  }, [timeFrame, data.checkouts])
+
+  console.log({ time })
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -130,6 +147,41 @@ export default function KitchenAnalyticsView({
         <Grid xs={12} sm={6} lg={3}>
           <SingleValueDisplay label='Orders' value={stats.totalOrders} />
         </Grid>
+
+        {time.months > 0 && (
+          <>
+            <Grid xs={12}>
+              <Paper sx={{ p: 1 }}>
+                <Typography variant='h4'>Averages Per Month</Typography>
+              </Paper>
+            </Grid>
+            <Grid xs={12} sm={6} lg={3}>
+              <SingleValueDisplay
+                label='Sales'
+                value={formatCurrency(stats.totalSales / time.months)}
+              />
+            </Grid>
+            <Grid xs={12} sm={6} lg={3}>
+              <SingleValueDisplay
+                label='Profit'
+                value={formatCurrency(stats.netProfit / time.months)}
+              />
+            </Grid>
+            <Grid xs={12} sm={6} lg={3}>
+              <SingleValueDisplay
+                label='Costs'
+                value={formatCurrency(stats.totalCost / time.months)}
+              />
+            </Grid>
+            <Grid xs={12} sm={6} lg={3}>
+              <SingleValueDisplay
+                label='Orders'
+                value={Math.round(stats.totalOrders / time.months)}
+              />
+            </Grid>
+          </>
+        )}
+
         <Grid xs={12}>
           <Paper sx={{ p: 1 }}>
             <Typography variant='h4'>Average Per Service</Typography>
